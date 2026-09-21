@@ -4,6 +4,7 @@ import { objectFixtures, predictionFixtures, ticketFixtures } from './fixtures';
 import { dashboardSummaryFixture } from './dashboard';
 import { operationalPredictions, objectStatusFixtures } from './operational';
 import { objectDetailFixtures, objectTopologyFixture, objectWorkspacePredictions } from './object-workspace';
+import { emptyTelemetry, telemetryFixture } from './telemetry';
 
 const endpoint = (path: string) => `${apiConfig.baseUrl}${path}`;
 const missing = () => HttpResponse.json({ message: 'Запись не найдена.' }, { status: 404 });
@@ -83,6 +84,22 @@ export const handlers = [
     await delay(250);
     const detail = objectDetailFixtures.find((item) => String(item.object_id) === params.id);
     return detail ? HttpResponse.json(detail) : objectMissing();
+  }),
+  http.get(endpoint('/sensors/:channelId/telemetry'), async ({ request, params }) => {
+    const url = new URL(request.url);
+    const state = url.searchParams.get('scenario');
+    await delay(state === 'slow' ? 2500 : 250);
+    if (state === 'error')
+      return HttpResponse.json({ message: 'Сервис телеметрии временно недоступен.' }, { status: 503 });
+    const channelId = Number(params.channelId);
+    if (!Number.isFinite(channelId)) return missing();
+    const dateTo = Date.parse(url.searchParams.get('date_to') ?? '') || Date.now();
+    const dateFrom = Date.parse(url.searchParams.get('date_from') ?? '') || dateTo - 24 * 3_600_000;
+    const limit = Math.min(Number(url.searchParams.get('limit')) || 144, 1000);
+    if (state === 'empty') return HttpResponse.json(emptyTelemetry(channelId));
+    return HttpResponse.json(
+      telemetryFixture(channelId, dateFrom, dateTo, limit) ?? emptyTelemetry(channelId),
+    );
   }),
   http.get(
     endpoint('/tickets'),

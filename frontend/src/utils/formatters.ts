@@ -1,4 +1,4 @@
-import type { MaintenanceUrgency, RiskLevel } from '../domain/prediction/types';
+import type { MaintenanceUrgency, ReviewStatus, RiskLevel } from '../domain/prediction/types';
 export const riskLabels: Record<RiskLevel, string> = {
   low: 'Низкий',
   medium: 'Умеренный',
@@ -10,6 +10,12 @@ export const urgencyLabels: Record<MaintenanceUrgency, string> = {
   PLANNED_24_48H: '24–48 ч',
   URGENT_6_24H: '6–24 ч',
   FLASH_1_6H: '1–6 ч',
+};
+export const reviewStatusLabels: Record<ReviewStatus, string> = {
+  pending_review: 'Ожидает рассмотрения',
+  acknowledged: 'Подтверждён',
+  rejected: 'Отклонён',
+  ticket_created: 'Создан наряд',
 };
 export const getRiskLabel = (risk: RiskLevel | null) => (risk === null ? 'Нет данных' : riskLabels[risk]);
 export const getUrgencyLabel = (urgency: MaintenanceUrgency | null) =>
@@ -24,6 +30,13 @@ export const formatProbability = (value: number | null) =>
   value === null || !Number.isFinite(value) ? '—' : probabilityFormatter.format(value);
 export const formatHealthIndex = (value: number | null) =>
   value === null || !Number.isFinite(value) ? '—' : numberFormatter.format(value);
+const telemetryFormatter = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 });
+// Display only: formats one measured sample, it never rescales or interprets the value.
+export function formatTelemetryValue(value: number | null, unit: string | null) {
+  if (value === null || !Number.isFinite(value)) return '—';
+  const formatted = telemetryFormatter.format(value);
+  return unit ? `${formatted} ${unit}` : formatted;
+}
 // Display only: numeric piket values stay numbers for filtering, sorting and topology geometry.
 export function formatPiket(value: number | null) {
   if (value === null || !Number.isFinite(value)) return '—';

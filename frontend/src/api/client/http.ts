@@ -11,6 +11,8 @@ export class ApiError extends Error {
   }
 }
 
+export const isNotFound = (error: unknown) => error instanceof ApiError && error.status === 404;
+
 export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   let response: Response;
   try {

@@ -194,7 +194,7 @@ try {
     await row.focus();
     await page.keyboard.press('Enter');
     await page.waitForURL('**/predictions/OW-004');
-    await page.getByRole('heading', { name: 'Прогноз OW-004', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: 'Температура ВШ-3', exact: true }).waitFor();
     await page.goBack();
     await ready(page);
 

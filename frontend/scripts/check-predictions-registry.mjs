@@ -98,12 +98,12 @@ try {
     assert.equal(await temperature.evaluate((el) => getComputedStyle(el).outlineStyle), 'solid');
     await page.keyboard.press('Enter');
     await page.waitForURL('**/predictions/OP-001');
-    await page.getByRole('heading', { name: 'Прогноз OP-001', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: 'Температура ВШ-3', exact: true }).waitFor();
     await page.goBack();
     await ready();
     await temperature.click();
     await page.waitForURL('**/predictions/OP-001');
-    await page.getByRole('heading', { name: 'Прогноз OP-001', exact: true }).waitFor();
+    await page.getByRole('heading', { level: 1, name: 'Температура ВШ-3', exact: true }).waitFor();
     await page.goBack();
     await ready();
     // Sequential tab order through all four filters.

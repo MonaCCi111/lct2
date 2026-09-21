@@ -1,4 +1,5 @@
 import type { RiskLevel } from '../../domain/prediction/types';
+import type { TelemetryRange } from '../../domain/telemetry/types';
 export interface PredictionFilters {
   objectId?: number;
   riskLevel?: RiskLevel;
@@ -15,6 +16,15 @@ export const objectKeys = {
   statusSummary: () => [...objectKeys.all, 'status-summary'] as const,
   detail: (id: number) => [...objectKeys.all, 'detail', id] as const,
   topology: (id: number) => [...objectKeys.all, 'topology', id] as const,
+};
+export interface TelemetryParams {
+  range: TelemetryRange;
+}
+// The key holds the semantic range; absolute date_from/date_to are built at fetch time.
+export const telemetryKeys = {
+  all: ['telemetry'] as const,
+  sensor: (channelId: number, params: TelemetryParams) =>
+    [...telemetryKeys.all, 'sensor', channelId, params] as const,
 };
 export const ticketKeys = { all: ['tickets'] as const };
 export const systemKeys = { all: ['system'] as const };

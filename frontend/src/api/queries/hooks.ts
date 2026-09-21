@@ -11,6 +11,9 @@ import type { ObjectTopologyDto } from '../dto/object-topology';
 import { toObjectStatusList } from '../adapters/object-status';
 import { toObjectDetail } from '../adapters/object-detail';
 import { toObjectTopology } from '../adapters/object-topology';
+import type { TelemetryResponseDto } from '../dto/telemetry';
+import type { TelemetryRange } from '../../domain/telemetry/types';
+import { toTelemetrySeries } from '../adapters/telemetry';
 import { toOperationalQueue } from '../adapters/operational-queue';
 import { toObject, toTicket } from '../adapters/resources';
 import {
@@ -18,8 +21,10 @@ import {
   objectKeys,
   predictionKeys,
   systemKeys,
+  telemetryKeys,
   ticketKeys,
   type PredictionFilters,
+  type TelemetryParams,
 } from './keys';
 
 export const useDashboardSummary = () =>
@@ -74,6 +79,35 @@ export const useObjectTopology = (id: number) =>
       toObjectTopology(await apiGet<ObjectTopologyDto>(`/objects/${id}/topology`, signal)),
     enabled: Number.isFinite(id),
   });
+// Range tokens live in the UI; the query layer converts them into absolute UTC instants.
+const rangeHours: Record<TelemetryRange, number> = { '6h': 6, '24h': 24, '48h': 48 };
+const rangePoints: Record<TelemetryRange, number> = { '6h': 96, '24h': 144, '48h': 192 };
+export const TELEMETRY_MAX_POINTS = 1000;
+export function telemetryWindow(range: TelemetryRange, now = Date.now()) {
+  const limit = Math.min(rangePoints[range], TELEMETRY_MAX_POINTS);
+  return {
+    dateFrom: new Date(now - rangeHours[range] * 3_600_000).toISOString(),
+    dateTo: new Date(now).toISOString(),
+    limit,
+  };
+}
+export function useSensorTelemetry(channelId: number, params: TelemetryParams) {
+  return useQuery({
+    queryKey: telemetryKeys.sensor(channelId, params),
+    queryFn: async ({ signal }) => {
+      const { dateFrom, dateTo, limit } = telemetryWindow(params.range);
+      const search = new URLSearchParams({
+        date_from: dateFrom,
+        date_to: dateTo,
+        limit: String(limit),
+      });
+      return toTelemetrySeries(
+        await apiGet<TelemetryResponseDto>(`/sensors/${channelId}/telemetry?${search}`, signal),
+      );
+    },
+    enabled: Number.isFinite(channelId),
+  });
+}
 export const useTickets = () =>
   useQuery({
     queryKey: ticketKeys.all,

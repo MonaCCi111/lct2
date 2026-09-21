@@ -1,6 +1,7 @@
-import type { Prediction, RiskLevel, MaintenanceUrgency, ReviewStatus } from '../../domain/prediction/types';
+import type { Prediction, RiskLevel, MaintenanceUrgency } from '../../domain/prediction/types';
 import type { SortState } from '../../components/data-display/DataTable';
 import { compareByUrgency } from '../../api/adapters/operational-queue';
+import { reviewStatusLabels } from '../../utils/formatters';
 
 export interface RegistryFilters {
   search: string;
@@ -9,12 +10,8 @@ export interface RegistryFilters {
   objectId: string;
 }
 export const initialFilters: RegistryFilters = { search: '', risk: 'all', urgency: 'all', objectId: 'all' };
-export const reviewLabels: Record<ReviewStatus, string> = {
-  pending_review: 'Ожидает рассмотрения',
-  acknowledged: 'Подтверждён',
-  rejected: 'Отклонён',
-  ticket_created: 'Создан наряд',
-};
+// Shared with Prediction Investigation; the label map lives with the other domain formatters.
+export const reviewLabels = reviewStatusLabels;
 export const hasFilters = (filters: RegistryFilters) =>
   filters.search.trim() !== '' ||
   filters.risk !== 'all' ||

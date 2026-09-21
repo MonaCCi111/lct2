@@ -60,7 +60,11 @@ export const predictionFixtures: PredictionDto[] = [
     maintenance_urgency: 'URGENT_6_24H',
     lead_time_hours: 12,
     health_index_its: 44,
-    top_risk_factors: ['Повышенная частота пусков'],
+    top_risk_factors: ['Повышенная частота пусков', 'Рост потребляемого тока при той же подаче'],
+    recommendation: 'Проверить состояние подшипникового узла и режим работы насоса.',
+    // Investigation demo: this prediction already has an approved work order.
+    review_status: 'ticket_created',
+    ticket_id: 'WO-2026-0917',
   },
   {
     ...base,

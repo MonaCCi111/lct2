@@ -156,6 +156,49 @@ const predictionSeeds: PredictionSeed[] = [
   [208, 201.7, 'Фаза A · щит освещения', 'Состояние фазы', 'POWER_PHASE', 0.26, 'low', 'NORMAL', 84],
 ];
 
+// Root-cause factors and the recommendation are backend ML output. They are authored here as
+// mock content and are never generated, rewritten or inferred by the frontend.
+const domainFactors: Record<ModelDomain, string[]> = {
+  ANALOG_TEMP: ['Рост дисперсии температурного канала', 'Отклонение от профиля соседних датчиков'],
+  ANALOG_GAS: ['Смещение базовой линии газоанализатора', 'Увеличенное время восстановления после продувки'],
+  POWER_PHASE: ['Асимметрия фазных напряжений', 'Учащённые кратковременные просадки'],
+  FIRE_SAFETY: ['Снижение чувствительности оптической камеры', 'Накопление запылённости'],
+  HYDRO_MECHANICS: ['Повышенная частота пусков', 'Рост потребляемого тока при той же подаче'],
+};
+const domainRecommendations: Record<ModelDomain, string> = {
+  ANALOG_TEMP: 'Проверить измерительный тракт и крепление датчика, при подтверждении — заменить термопару.',
+  ANALOG_GAS: 'Выполнить калибровку газоанализатора по поверочной смеси и проверить линию отбора пробы.',
+  POWER_PHASE: 'Проверить контактные соединения ввода и протяжку клемм, снять термограмму под нагрузкой.',
+  FIRE_SAFETY: 'Провести чистку и функциональную проверку извещателя по регламенту ТО.',
+  HYDRO_MECHANICS: 'Проверить виброконтроль и состояние подшипникового узла, оценить режим работы насоса.',
+};
+// Explicit, channel-specific factors for the predictions used as investigation demo cases.
+const investigationFactors: Record<string, string[]> = {
+  'OW-004': [
+    'Зависание младшего бита АЦП (16 ч постоянного значения)',
+    'Высокий шум термопары (СКО = 2,84 °C)',
+    'Длительный дрейф сигнала относительно соседних каналов',
+  ],
+  'OW-005': [
+    'Кратковременные просадки фазы B под нагрузкой',
+    'Дребезг сигнала состояния ввода',
+    'Асимметрия фазных напряжений выше порога',
+  ],
+  'OW-016': ['Устойчивый рост концентрации CO в венткамере', 'Смещение базовой линии газоанализатора'],
+};
+const investigationRecommendations: Record<string, string> = {
+  'OW-004': 'Калибровка измерительного тракта или замена термопары.',
+  'OW-005': 'Проверить силовые контакты ввода и цепь контроля состояния фазы под нагрузкой.',
+  'OW-016': 'Проверить работу приточной вентиляции и выполнить калибровку газоанализатора.',
+};
+// Indicative planning horizon supplied by backend; it is not a predicted failure moment.
+const leadTimeHours: Record<MaintenanceUrgency, number> = {
+  FLASH_1_6H: 4,
+  URGENT_6_24H: 14,
+  PLANNED_24_48H: 32,
+  NORMAL: 96,
+};
+
 export const objectWorkspacePredictions: PredictionDto[] = predictionSeeds.map(
   ([objectId, piketValue, sensor, type, domain, probability, risk, urgency, health], index) => ({
     prediction_id: `OW-${String(index + 1).padStart(3, '0')}`,
@@ -175,10 +218,13 @@ export const objectWorkspacePredictions: PredictionDto[] = predictionSeeds.map(
     failure_probability: probability,
     risk_level: risk,
     maintenance_urgency: urgency,
-    lead_time_hours: null,
+    lead_time_hours: leadTimeHours[urgency],
     health_index_its: health,
-    top_risk_factors: [],
-    recommendation: null,
+    top_risk_factors:
+      investigationFactors[`OW-${String(index + 1).padStart(3, '0')}`] ?? domainFactors[domain],
+    recommendation:
+      investigationRecommendations[`OW-${String(index + 1).padStart(3, '0')}`] ??
+      domainRecommendations[domain],
     generated_at: `2026-09-20T15:${String(41 - (index % 12)).padStart(2, '0')}:00Z`,
     review_status: 'pending_review',
     ticket_id: null,

@@ -30,6 +30,25 @@ export function setDashboardScenario(
     }),
   );
 }
+// Telemetry is served by MSW, so browser checks override the worker instead of the network layer.
+export function setTelemetryScenario(worker: SetupWorker, state: 'error' | 'loading' | 'empty') {
+  worker.use(
+    http.get(`${apiConfig.baseUrl}/sensors/:channelId/telemetry`, async ({ params }) => {
+      if (state === 'error')
+        return HttpResponse.json({ message: 'Сервис телеметрии временно недоступен.' }, { status: 503 });
+      if (state === 'loading') await delay(5000);
+      return HttpResponse.json({
+        channel_id: Number(params.channelId),
+        sensor_name: 'Канал без телеметрии',
+        sensor_type: 'Неизвестно',
+        value_type: 'numeric',
+        unit: null,
+        points_count: 0,
+        telemetry: [],
+      });
+    }),
+  );
+}
 export type ObjectWorkspaceEndpoint = 'detail' | 'topology' | 'predictions';
 export function setObjectWorkspaceScenario(
   worker: SetupWorker,

@@ -137,7 +137,7 @@ try {
   await temperature.focus();
   await page.keyboard.press('Enter');
   await page.waitForURL('**/predictions/OP-001');
-  await page.getByRole('heading', { name: 'Прогноз OP-001', exact: true }).waitFor();
+  await page.getByRole('heading', { level: 1, name: 'Температура ВШ-3', exact: true }).waitFor();
   await page.goBack();
   await ready();
   await page

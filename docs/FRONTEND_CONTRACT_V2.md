@@ -2,7 +2,7 @@
 
 Актуальная frontend-спецификация. Этот файл — **source of truth для последующих задач**: архитектура, визуальные ограничения, доменная семантика, API-контракты и правила времени. README описывает запуск и проверку, но не переопределяет этот контракт. Изменения требований нужно отражать здесь вместе с кодом и тестами.
 
-Состояние: реализованы Task 01 (Frontend Foundation), Task 02 (`/overview` — Operational Center), Task 03 (`/objects/:objectId` — Object Workspace), Objects Registry (`/objects`) и Predictions Registry (`/predictions`). Последние две разрабатывались параллельно в отдельной ветке и внесены controlled integration поверх Task 03. Остальные продуктовые страницы остаются shell screens. Task 04 (Prediction Investigation, telemetry charts, наряды, аналитика) не входит в текущий объём.
+Состояние: реализованы Task 01 (Frontend Foundation), Task 02 (`/overview` — Operational Center), Task 03 (`/objects/:objectId` — Object Workspace), Objects Registry (`/objects`), Predictions Registry (`/predictions`) и Task 04 (`/predictions/:predictionId` — Prediction Investigation). Реестры разрабатывались параллельно в отдельной ветке и внесены controlled integration поверх Task 03. `/tickets` и `/analytics` остаются shell screens. Task 05 (создание нарядов, мутации, supervisor analytics) не входит в текущий объём.
 
 ## 1. Назначение и границы текущего этапа
 
@@ -43,7 +43,7 @@ frontend/src/
 | `/objects`                   | Objects Registry: реестр объектов с риском и ML-покрытием   |
 | `/objects/:objectId`         | Object Workspace: состояние, топология по пикетам, прогнозы |
 | `/predictions`               | Predictions Registry: операционный реестр прогнозов         |
-| `/predictions/:predictionId` | Prediction Investigation shell                              |
+| `/predictions/:predictionId` | Prediction Investigation: телеметрия, факторы, рекомендация |
 | `/tickets`                   | Наряды                                                      |
 | `/analytics`                 | Аналитика                                                   |
 | `/foundation`                | Технический стенд компонентов и fixtures, только mock mode  |
@@ -276,7 +276,7 @@ export interface SystemDto {
 
 `toObject` → `InfrastructureObject` (`id`, `name`, `parentObjectId`, `subsystem`); `toTicket` → `Ticket` (`id`, `predictionId`, `title`, `status`, `createdAt`). System query переводит `updated_at` в `updatedAt`.
 
-Telemetry domain foundation: `channelId`, `timestamp`, nullable `value`, `unit`, `quality: 'valid' | 'missing' | 'invalid'`. Telemetry API и графики пока не определены.
+Telemetry domain определён в разделе 16: `TelemetrySeries` / `TelemetryPoint` и endpoint `GET /sensors/:channelId/telemetry`. Прежний placeholder `TelemetrySample` больше не используется.
 
 ## 10. Endpoints, client, Query и mock mode
 
@@ -292,6 +292,7 @@ Telemetry domain foundation: `channelId`, `timestamp`, nullable `value`, `unit`,
 | GET    | `/objects/status-summary`     | ObjectStatusSummaryDto[], отдельные агрегаты объектов |
 | GET    | `/objects/:id`                | ObjectDetailDto; 404 при отсутствии                   |
 | GET    | `/objects/:objectId/topology` | ObjectTopologyDto; 404 при отсутствии объекта         |
+| GET    | `/sensors/:channelId/telemetry` | TelemetryResponseDto; `date_from`, `date_to`, `limit` ≤ 1000 |
 | GET    | `/tickets`                    | TicketDto[]; сейчас пустой mock list                  |
 
 List endpoints возвращают массивы. Write endpoints и создание нарядов в этот этап не входят.
@@ -305,7 +306,7 @@ VITE_ENABLE_MOCKS=true
 
 Общий `ApiError`: message, status, code (`NETWORK_ERROR`, `HTTP_ERROR`, `INVALID_RESPONSE`). HTTP errors могут содержать JSON `{ message: string }`. Отмена запроса не превращается в network error. `alert()` запрещён.
 
-Query keys централизованы: `predictionKeys.all/list(filters)/detail(id)`, `objectKeys.all/list()/statusSummary()/detail(id)/topology(id)`, `ticketKeys.all`, `systemKeys.all`, `dashboardKeys.all/summary()`. QueryClient: staleTime 60 секунд, gcTime 5 минут, один retry для network/server errors, без retry на 4xx; refetch on focus. System status polling — 60 секунд. Summary отдельный polling пока не имеет.
+Query keys централизованы: `predictionKeys.all/list(filters)/detail(id)`, `objectKeys.all/list()/statusSummary()/detail(id)/topology(id)`, `telemetryKeys.all/sensor(channelId, params)`, `ticketKeys.all`, `systemKeys.all`, `dashboardKeys.all/summary()`. QueryClient: staleTime 60 секунд, gcTime 5 минут, один retry для network/server errors, без retry на 4xx; refetch on focus. System status polling — 60 секунд. Summary отдельный polling пока не имеет.
 
 UI states: loading, error, empty, success, stale. Cached data сохраняется при ошибке обновления с предупреждением, retry доступен пользователю.
 
@@ -313,7 +314,7 @@ Mock list endpoints поддерживают `?scenario=empty|error|slow`; эт�
 
 ## 11. Проверки и ограничения интеграции
 
-Перед завершением изменений: `npm run typecheck`, `npm test`, `npm run build`, `npm run format:check`, `npm run test:browser` (check-browser → check-overview → check-object-workspace → check-theme), `npm run test:real`. При системном Node 18 на текущем компьютере используется `frontend/scripts/npm.ps1`, выбирающий доступный Node 24.
+Перед завершением изменений: `npm run typecheck`, `npm test`, `npm run build`, `npm run format:check`, `npm run test:browser` (check-browser → check-overview → check-object-workspace → check-objects-registry → check-predictions-registry → check-prediction-investigation → check-theme), `npm run test:real`. При системном Node 18 на текущем компьютере используется `frontend/scripts/npm.ps1`, выбирающий доступный Node 24.
 
 Проверки должны сохранять сценарии 46% = critical, unsupported ML, отсутствие пересчёта backend aggregate, московское время при другой browser timezone, routing, клавиатурный фокус, loading/error/empty/stale и mock/real mode. Браузерные тесты запускаются в Edge или Chrome.
 
@@ -506,7 +507,7 @@ Unit: object detail rendering, proportional segment widths, critical segment sem
 
 Browser (`scripts/check-object-workspace.mjs`, включён в `npm run test:browser`): dark и light при 1920×1080 и 1366×768, отсутствие page-level horizontal overflow, отсутствие `.badge` и залитых risk pills, пропорциональная геометрия, различие цвета critical и нейтрального участка, tooltip без тени, отсутствие наложения подписей участков, выбор мышью и с клавиатуры, видимый focus ring, переход в прогноз, независимые ошибки, пустые состояния и object 404. Скриншоты: `object-workspace-{dark,light}-{1920,1366}.png`, `object-workspace-selected-critical.png`, `object-workspace-topology-error.png`.
 
-Task 04 не начинается: telemetry chart, Prediction Investigation, Root Cause Analysis UI, ticket creation drawer, ticket mutations и supervisor analytics не реализуются.
+Ограничение объёма Task 03: telemetry chart и Prediction Investigation в него не входили — они реализованы отдельно в разделе 16.
 
 ## 14. Objects Registry — `/objects`
 
@@ -573,6 +574,128 @@ loading, initial error с retry, пустой ответ API, пустой ре�
 `view=operational` — приоритетная выборка: adapter оставляет только supported прогнозы с риском medium/high/critical. Поэтому реестр сейчас **не содержит low и ML-unsupported прогнозов** и не является полным реестром всех активных прогнозов сети.
 
 Полный registry (включая low и unsupported), серверная пагинация и серверная сортировка требуют расширения backend-контракта и в текущий объём не входят. До этого счётчик результата описывает загруженную выборку, а не общее число прогнозов из `dashboard.summary.predictions.active`.
+
+## 16. Task 04 — Prediction Investigation
+
+Центральный рабочий экран расследования одного прогноза: `/predictions/:predictionId`. Экран отвечает на пять вопросов диспетчера — что произошло, насколько это срочно, где проблема, почему модель считает прогноз рискованным и что рекомендуется сделать. Это не аналитический dashboard.
+
+Порядок блоков повторяет порядок принятия решения: header прогноза → телеметрия и контекстная панель (риск, вероятность, ИТС, факторы, рекомендация, действие) → технические данные. На 1920×1080 в первом экране умещаются header, риск и срочность, график телеметрии, вероятность и ИТС, факторы, рекомендация и CTA.
+
+Реализация в `pages/prediction-investigation/`: `PredictionInvestigationPage`, `PredictionHeader`, `PredictionContextPanel`, `PredictionRiskSummary`, `RiskFactors`, `RecommendationSection`, `TelemetrySection`, `NumericTelemetryChart`, `StateTelemetryChart`, `TelemetryRangeControl`, `telemetry-chart-parts.tsx`, `PredictionTechnicalDetails`, `prediction-investigation-model.ts`, `prediction-investigation.css`. Новых зависимостей не добавлено: график построен на уже установленном Recharts.
+
+### Prediction detail
+
+Используется существующий `GET /predictions/:predictionId`, существующие `PredictionDto` и `Prediction`, hook `usePrediction(id)` и key `predictionKeys.detail(id)`. Отдельная detail-модель не создаётся.
+
+Header: `sensorType` как eyebrow, `sensorName` как `h1`, контекстная строка «объект (ссылка на `/objects/:objectId`) · пикет · подсистема», справа `generatedAt` в МСК, review status и ID прогноза. Технические поля вынесены в отдельный блок и не конкурируют с рабочей информацией.
+
+Review status отображается сдержанным `workflow-status` badge; общий словарь меток — `reviewStatusLabels` в `utils/formatters.ts` (используется и Predictions Registry).
+
+### Риск, срочность, ИТС
+
+`riskLevel`, `maintenanceUrgency`, `failureProbability` и `healthIndex` выводятся ровно так, как их прислал backend. Frontend ничего не пересчитывает: `ANALOG_TEMP` с вероятностью 46% остаётся `critical` и `FLASH_1_6H`.
+
+Срочность формулируется только по `maintenanceUrgency`: FLASH_1_6H → «Требуется проверка в течение 1–6 часов», URGENT_6_24H → «в течение 6–24 часов», PLANNED_24_48H → «Плановая проверка в течение 24–48 часов», NORMAL → «Штатный режим наблюдения», null → «Срочность обслуживания не определена».
+
+`leadTimeHours` не является моментом отказа и никогда не подаётся как «отказ произойдёт через N часов». Он присутствует только в технических данных с пометкой «ориентировочно».
+
+ИТС выводится компактно как `54 / 100` с простым линейным индикатором. Donut, speedometer и circular gauge запрещены.
+
+### Факторы риска и рекомендация
+
+`topRiskFactors` выводится нумерованным списком с нейтральной типографикой и разделителями; semantic-цвет к каждому пункту не применяется, отдельные цветные карточки не создаются. Строка фактора отображается как есть — дополнительные числовые поля поверх неё не выдумываются. Пустой список даёт честное сообщение, а не заглушку.
+
+`recommendation` выводится отдельной секцией дословно. Frontend не переписывает и не генерирует рекомендацию.
+
+### Unsupported ML
+
+При `predictionSupported === false` секция модели показывает «ML-анализ недоступен» и пояснение «Тип датчика пока не входит в область активного предиктивного мониторинга». Подстановка low / 1% / ИТС 99 запрещена; факторы и рекомендация модели не выводятся. Телеметрия при этом остаётся доступной, а действие по наряду не блокируется автоматически.
+
+### Telemetry — новый endpoint
+
+**`GET /sensors/:channelId/telemetry`**, query-параметры `date_from`, `date_to`, `limit` (`limit <= 1000`).
+
+```ts
+export type TelemetryValueType = 'numeric' | 'state';
+export type TelemetryStatusCode = 'normal' | 'failure' | 'alarm' | 'unknown';
+
+export interface TelemetryPointDto {
+  timestamp: string;
+  raw_value: string;
+  numeric_value: number | null;
+  status_code: TelemetryStatusCode;
+  is_alarm: boolean;
+  is_chatter: boolean;
+}
+export interface TelemetryResponseDto {
+  channel_id: number;
+  sensor_name: string;
+  sensor_type: string;
+  value_type: TelemetryValueType;
+  unit: string | null;
+  points_count: number;
+  telemetry: TelemetryPointDto[];
+}
+```
+
+Domain `TelemetrySeries` / `TelemetryPoint` (camelCase: `rawValue`, `numericValue`, `statusCode`, `isAlarm`, `isChatter`, `valueType`, `pointsCount`). `toTelemetrySeries()` переносит поля и сортирует точки по времени; DTO в chart-компоненты не передаётся. Прежний placeholder `TelemetrySample` заменён этой моделью.
+
+Hook `useSensorTelemetry(channelId, { range })`, keys `telemetryKeys.all` и `telemetryKeys.sensor(channelId, params)`, общий `apiGet` с AbortSignal. Запрос включается только когда известен `channelId` загруженного прогноза.
+
+### Range semantics
+
+Контролы периода: `6 ч`, `24 ч`, `48 ч`, по умолчанию `24 ч`. Полноценный calendar range picker в этот этап не входит.
+
+UI хранит токен `'6h' | '24h' | '48h'`; query-слой преобразует его в абсолютные UTC-инстанты и формирует реальные `date_from` / `date_to` / `limit` (96 / 144 / 192 точек). Query key содержит токен диапазона, окно вычисляется в `queryFn`, поэтому ключ стабилен. Ручное прибавление timezone offset запрещено: работа идёт с epoch/UTC, а отображение — через московские formatters.
+
+### Визуализация
+
+`valueType = numeric` → line chart: тонкая линия, сдержанная сетка, подписи осей, без gradient fill и без декоративной анимации. Разрывы данных не соединяются (`connectNulls={false}`).
+
+`valueType = state` → step chart (`stepAfter`). Плавная интерполяция между состояниями запрещена. Внутренний числовой индекс используется только для позиционирования; подписи оси и tooltip всегда показывают реальный `rawValue` (`Норма`, `Просадка`, `Отказ`).
+
+**Прогнозная линия будущего запрещена.** ML-контракт возвращает вероятность риска, а не будущий временной ряд телеметрии. Forecast line, future dashed signal, predicted value и confidence band будущего не рисуются; данные графика никогда не выходят за последний измеренный timestamp.
+
+`is_alarm` и `is_chatter` показываются точечными маркерами на самой точке, без заливки всего графика и без мигающей анимации. Список «События периода» дублирует их текстом и схлопывает подряд идущие одинаковые события в одну запись.
+
+Tooltip: московское время, значение с единицей измерения либо реальное состояние, плюс пометки «Аварийное значение» / «Дребезг сигнала».
+
+### Локальные метрики и доступность
+
+Из загруженного ряда допустимо вычислять только обычные статистики: min, max, последнее значение, число точек. Они используются в подписи под графиком и в screen-reader summary вида «Телеметрия: Температура ВШ-3, 24 часа. 144 точек. Минимум 21,6 °C, максимум 27,3 °C, последнее значение 27,3 °C». Это статистика выборки, а не ML-семантика: риск, срочность, ИТС и вероятность будущего отказа из телеметрии не выводятся.
+
+График помечен `role="img"` с этим summary; текстовое описание доступно через `figcaption`. Контролы периода, CTA, ссылка на объект и раскрытие технических данных доступны с клавиатуры; состояние не передаётся одним лишь цветом.
+
+### Ticket handoff
+
+Primary action «Создать наряд» ведёт на `/tickets?predictionId=<predictionId>`. Мутации, форма, drawer и имитация успешного создания наряда в Task 04 не реализуются — это handoff в Task 05.
+
+Если `ticketId !== null`, primary CTA заменяется блоком «Наряд уже создан #WO-…» со ссылкой `/tickets?ticketId=<ticketId>`; detail-маршрут наряда пока отсутствует. При unsupported ML действие остаётся доступным.
+
+### Состояния
+
+Prediction detail и telemetry — независимые источники. Если не загрузился прогноз, страница показывает ErrorState с retry либо, при 404, экран «Прогноз не найден» с переходом «К журналу прогнозов». Если не загрузилась телеметрия, контекст прогноза сохраняется, а блок графика показывает «Не удалось загрузить телеметрию. Данные прогноза остаются доступны.» с retry.
+
+Telemetry также поддерживает loading (skeleton в области графика при доступном контексте), пустой ответ («Телеметрия отсутствует» / «За выбранный период данные не получены.») и `StaleState` поверх сохранённых данных после неудачного обновления — график при этом не очищается.
+
+### Mock-сценарии
+
+Фикстуры телеметрии детерминированы (стабильный псевдошум по индексу точки) и строятся под запрошенное окно: канал 30004 — числовая температура с шумным участком, плато «зависшего младшего бита АЦП» и alarm-точками; 30005 — состояния фазы с просадкой, серией дребезга и отказом; 30016 — числовой CO; 1006 — дверь (unsupported ML, телеметрия есть); 1003 — насос с уже созданным нарядом `WO-2026-0917`. Канал без фикстуры возвращает пустой ряд. `?scenario=error|empty|slow` поддерживается; для браузерных проверок доступен `setTelemetryScenario(worker, state)`.
+
+Факторы и рекомендации mock-прогнозов авторские: явные наборы для демонстрационных прогнозов и наборы по `model_domain` для остальных. Они являются содержимым backend и не генерируются frontend.
+
+### Проверки Task 04
+
+Unit: рендер детали прогноза, 46% critical, формулировка срочности, факторы, рекомендация, числовая и state-телеметрия, переключение диапазона с проверкой абсолютных параметров, отсутствие прогнозной линии, маркеры chatter и alarm, loading телеметрии при доступном контексте, независимая ошибка телеметрии, пустая телеметрия, stale, unsupported ML без 1% и ИТС 99, 404 прогноза, переход к объекту, handoff в наряды, состояние существующего наряда, московские timestamps, обе темы, клавиатурный доступ и accessibility summary.
+
+Browser (`scripts/check-prediction-investigation.mjs`, включён в `npm run test:browser`): dark и light при 1920×1080 и 1366×768, отсутствие page-level overflow, отсутствие залитых risk pills, незалитая линия графика, alarm/chatter маркеры, московский tooltip, подписи оси состояний, диапазоны 6/24/48 ч с клавиатуры, раскрытие технических данных с клавиатуры, unsupported ML, пустая телеметрия, локальная ошибка телеметрии, существующий наряд и переход в `/tickets`. Скриншоты: `prediction-investigation-{dark,light}-{1920,1366}.png`, `prediction-investigation-state-telemetry.png`, `prediction-investigation-unsupported.png`, `prediction-investigation-telemetry-error.png`, `prediction-investigation-no-telemetry.png`.
+
+### Ограничения
+
+- Breadcrumb в `AppLayout` формируется по route ID и показывает идентификатор прогноза, а не цепочку «Прогнозы / объект / датчик»: осмысленный breadcrumb требует общего redesign breadcrumb-системы. На странице есть собственная ссылка «← Прогнозы».
+- Telemetry backend пока mock: реальный источник и ретеншн не определены.
+- Пользовательский выбор произвольного интервала (calendar range) не реализован.
+- Task 05 не начат: создание наряда, форма, drawer, мутации, бригады, QR, Tickets Registry и аналитика не реализуются.
 
 ## Theme System (Task 02.2)
 

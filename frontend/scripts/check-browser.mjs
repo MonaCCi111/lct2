@@ -51,7 +51,7 @@ try {
     ['/objects', 'Объекты'],
     ['/objects/101', 'Технический блок № 1'],
     ['/predictions', 'Прогнозы'],
-    ['/predictions/TEMP-001', 'Прогноз TEMP-001'],
+    ['/predictions/TEMP-001', 'Температура шкафа управления'],
     ['/tickets', 'Наряды'],
     ['/analytics', 'Аналитика'],
   ];
