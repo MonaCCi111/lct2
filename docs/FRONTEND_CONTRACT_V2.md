@@ -2,15 +2,15 @@
 
 Актуальная frontend-спецификация. Этот файл — **source of truth для последующих задач**: архитектура, визуальные ограничения, доменная семантика, API-контракты и правила времени. README описывает запуск и проверку, но не переопределяет этот контракт. Изменения требований нужно отражать здесь вместе с кодом и тестами.
 
-Состояние: Task 01 (Frontend Foundation), Task 02 (`/overview` — Operational Center) и Task 03 (`/objects/:objectId` — Object Workspace) реализованы. Остальные продуктовые страницы остаются shell screens. Task 04 (Prediction Investigation, telemetry charts, наряды, аналитика) не входит в текущий объём.
+Состояние: реализованы Task 01 (Frontend Foundation), Task 02 (`/overview` — Operational Center), Task 03 (`/objects/:objectId` — Object Workspace), Objects Registry (`/objects`) и Predictions Registry (`/predictions`). Последние две разрабатывались параллельно в отдельной ветке и внесены controlled integration поверх Task 03. Остальные продуктовые страницы остаются shell screens. Task 04 (Prediction Investigation, telemetry charts, наряды, аналитика) не входит в текущий объём.
 
 ## 1. Назначение и границы текущего этапа
 
 Dolos — система предиктивного мониторинга инженерной инфраструктуры, рабочий инструмент диспетчера. На текущем этапе реализованы application shell, routing, design tokens, reusable primitives, domain types, API client, DTO adapters, TanStack Query и mock API.
 
-Кроме `/overview` и `/objects/:objectId`, продуктовые страницы остаются минимальными shell screens: заголовок, breadcrumb и аккуратный placeholder. Telemetry charts, Prediction Investigation, Predictions Registry, ticket creation flow и analytics charts реализуются отдельными задачами.
+Кроме `/overview`, `/objects`, `/objects/:objectId` и `/predictions`, продуктовые страницы остаются минимальными shell screens: заголовок, breadcrumb и аккуратный placeholder. Telemetry charts, Prediction Investigation, ticket creation flow и analytics charts реализуются отдельными задачами.
 
-Task 02 разрешает подключить Dashboard Summary к `/overview` в рамках спецификации раздела 12. Task 03 добавляет Object Workspace в рамках раздела 13. Существующая архитектура сохраняется.
+Task 02 разрешает подключить Dashboard Summary к `/overview` в рамках спецификации раздела 12. Task 03 добавляет Object Workspace в рамках раздела 13. Разделы 14 и 15 описывают Objects Registry и Predictions Registry. Существующая архитектура сохраняется.
 
 ## 2. Стек и архитектура
 
@@ -40,9 +40,9 @@ frontend/src/
 | ---------------------------- | ----------------------------------------------------------- |
 | `/`                          | Redirect на `/overview`                                     |
 | `/overview`                  | Оперативный центр: summary, очередь рисков, объекты         |
-| `/objects`                   | Объекты                                                     |
+| `/objects`                   | Objects Registry: реестр объектов с риском и ML-покрытием   |
 | `/objects/:objectId`         | Object Workspace: состояние, топология по пикетам, прогнозы |
-| `/predictions`               | Прогнозы                                                    |
+| `/predictions`               | Predictions Registry: операционный реестр прогнозов         |
 | `/predictions/:predictionId` | Prediction Investigation shell                              |
 | `/tickets`                   | Наряды                                                      |
 | `/analytics`                 | Аналитика                                                   |
@@ -507,6 +507,72 @@ Unit: object detail rendering, proportional segment widths, critical segment sem
 Browser (`scripts/check-object-workspace.mjs`, включён в `npm run test:browser`): dark и light при 1920×1080 и 1366×768, отсутствие page-level horizontal overflow, отсутствие `.badge` и залитых risk pills, пропорциональная геометрия, различие цвета critical и нейтрального участка, tooltip без тени, отсутствие наложения подписей участков, выбор мышью и с клавиатуры, видимый focus ring, переход в прогноз, независимые ошибки, пустые состояния и object 404. Скриншоты: `object-workspace-{dark,light}-{1920,1366}.png`, `object-workspace-selected-critical.png`, `object-workspace-topology-error.png`.
 
 Task 04 не начинается: telemetry chart, Prediction Investigation, Root Cause Analysis UI, ticket creation drawer, ticket mutations и supervisor analytics не реализуются.
+
+## 14. Objects Registry — `/objects`
+
+Реестр объектов инженерной инфраструктуры: плотная enterprise-таблица, из которой диспетчер переходит в Object Workspace. Страница реализована в `pages/objects/` (`ObjectsPage`, `ObjectsFilters`, `ObjectsRegistryTable`, `registry-model.ts`, `objects-page.css`) и не создаёт дублирующих примитивов: используются общие DataTable, RiskBadge, Button, SearchInput, Select, Skeleton, EmptyState, ErrorState, StaleState и formatters.
+
+### Источник данных
+
+Используется существующий агрегат **`GET /objects/status-summary`** через `useObjectStatusSummary()` и `objectKeys.statusSummary()`. Новый endpoint не вводится, отдельный Object DTO не создаётся.
+
+`riskLevel`, `activePredictions`, `criticalPredictions`, `highPredictions`, `mlSupportedChannels` и `channelsTotal` приходят готовыми с backend. Frontend не выводит риск объекта из прогнозов и не пересчитывает counts. `registryCoverage()` только делит два присланных счётчика каналов для отображения — это форматирование, а не восстановление покрытия по прогнозам.
+
+### Колонки, фильтры и сортировка
+
+Колонки: Объект, Риск, Активные, Критические, Высокие, ML-покрытие, Обновлено. Время — в `Europe/Moscow` через общий `formatDateTime`.
+
+Фильтры: поиск по названию объекта и фильтр по уровню риска (`RiskLevel | 'all'`). Поиск по прогнозам и датчикам на этой странице не нужен. Фильтрация применяется к загруженной выборке; отображается фактическое `Показано N из M загруженных объектов`.
+
+Default sorting в `selectObjects()` — упорядочивание готовых значений, не вычисление severity:
+
+1. `riskLevel`: critical → high → medium → low → null;
+2. `criticalPredictions` DESC;
+3. `activePredictions` DESC;
+4. `objectName` (`Intl.Collator('ru')`);
+5. `objectId` как стабильный tie-breaker.
+
+### Навигация и состояния
+
+Клик строки и Enter на сфокусированной строке → `/objects/:objectId` (Object Workspace раздела 13). Реестр не перехватывает detail route. Видимый focus, корректная table semantics, без nested buttons.
+
+Состояния: loading (skeleton строк), initial error с retry, пустой ответ API, пустой результат фильтра с отдельным сообщением и сбросом, `StaleState` поверх cached data после неудачного обновления. Обновление запускается локальным контролом страницы. Обе темы обязательны.
+
+### Ограничение
+
+`GET /objects/status-summary` — приоритетная выборка: adapter оставляет только объекты с `activePredictions > 0`. Поэтому реестр сейчас показывает **только объекты с активными прогнозами**, а не весь каталог. Полный список объектов, включая `active_predictions = 0`, потребует расширения backend-контракта и в текущий объём не входит.
+
+## 15. Predictions Registry — `/predictions`
+
+Операционный реестр прогнозов: плотная таблица по всей загруженной выборке с комбинируемыми фильтрами и сортировкой. Реализация в `pages/predictions/` (`PredictionsPage`, `PredictionsFilters`, `PredictionsRegistryTable`, `predictions-registry-model.ts`, `predictions-page.css`). Новый Prediction DTO не создаётся — используется существующий domain раздела 7.
+
+### Источник данных
+
+Используется существующий `usePredictions()` и `GET /predictions` с frontend-facing параметром `view=operational` (раздел 12). Отдельный агрегат не вводится. Ответ — `PredictionDto[]`, далее общий `toPrediction()`.
+
+### Фильтры и сортировка
+
+Фильтры: срочность, риск, объект и поисковая строка по датчику, типу, объекту и пикету. Фильтры комбинируются по «И»: строка должна удовлетворять всем активным условиям одновременно. Сброс возвращает все четыре фильтра в исходное состояние. Это фильтрация загруженной выборки, глобальные агрегаты не пересчитываются; счётчик результата отражает фактически загруженные строки.
+
+Default sorting использует общий **`compareByUrgency`** из `api/adapters/operational-queue.ts`: FLASH_1_6H → URGENT_6_24H → PLANNED_24_48H → NORMAL → неизвестная срочность, внутри `failureProbability` DESC (null последним), ID как стабильный tie-breaker. Локальная копия urgency mapping запрещена — это единственный источник порядка срочности, общий с Operational Center и Object Workspace.
+
+Пользовательская сортировка доступна по вероятности, времени обновления и объекту; `compareByUrgency` остаётся финальным tie-breaker, поэтому порядок внутри равных значений стабилен. Сортировка по вероятности учитывает `predictionSupported`: у неподдерживаемых каналов значение считается отсутствующим и уходит в конец независимо от направления.
+
+### Семантика ML и навигация
+
+Готовые значения не пересчитываются: `46%` для `ANALOG_TEMP` остаётся `critical`. Риск и срочность отображаются нейтральным текстом с маленьким semantic-маркером; залитые цветные капсулы не используются.
+
+Клик строки и Enter → `/predictions/:predictionId`. Prediction Investigation пока остаётся shell.
+
+### Состояния
+
+loading, initial error с retry, пустой ответ API, пустой результат фильтра с отдельным сообщением и сбросом, `StaleState` поверх cached data после неудачного обновления. Обе темы обязательны. На 1920×1080 в первом экране видно не менее 15 строк.
+
+### Ограничения и будущее требование
+
+`view=operational` — приоритетная выборка: adapter оставляет только supported прогнозы с риском medium/high/critical. Поэтому реестр сейчас **не содержит low и ML-unsupported прогнозов** и не является полным реестром всех активных прогнозов сети.
+
+Полный registry (включая low и unsupported), серверная пагинация и серверная сортировка требуют расширения backend-контракта и в текущий объём не входят. До этого счётчик результата описывает загруженную выборку, а не общее число прогнозов из `dashboard.summary.predictions.active`.
 
 ## Theme System (Task 02.2)
 
