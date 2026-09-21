@@ -2,15 +2,15 @@
 
 Актуальная frontend-спецификация. Этот файл — **source of truth для последующих задач**: архитектура, визуальные ограничения, доменная семантика, API-контракты и правила времени. README описывает запуск и проверку, но не переопределяет этот контракт. Изменения требований нужно отражать здесь вместе с кодом и тестами.
 
-Состояние: реализованы Task 01 (Frontend Foundation), Task 02 (`/overview` — Operational Center), Task 03 (`/objects/:objectId` — Object Workspace), Objects Registry (`/objects`), Predictions Registry (`/predictions`) и Task 04 (`/predictions/:predictionId` — Prediction Investigation). Реестры разрабатывались параллельно в отдельной ветке и внесены controlled integration поверх Task 03. `/tickets` и `/analytics` остаются shell screens. Task 05 (создание нарядов, мутации, supervisor analytics) не входит в текущий объём.
+Состояние: реализованы Task 01 (Frontend Foundation), Task 02 (`/overview` — Operational Center), Task 03 (`/objects/:objectId` — Object Workspace), Objects Registry (`/objects`), Predictions Registry (`/predictions`), Task 04 (`/predictions/:predictionId` — Prediction Investigation) и Task 05 (`/tickets` — наряды). Основной рабочий цикл замкнут: риск → прогноз → расследование → создание наряда → обработка наряда. Реестры разрабатывались параллельно в отдельной ветке и внесены controlled integration поверх Task 03. `/analytics` остаётся shell screen; supervisor analytics в текущий объём не входит.
 
 ## 1. Назначение и границы текущего этапа
 
 Dolos — система предиктивного мониторинга инженерной инфраструктуры, рабочий инструмент диспетчера. На текущем этапе реализованы application shell, routing, design tokens, reusable primitives, domain types, API client, DTO adapters, TanStack Query и mock API.
 
-Кроме `/overview`, `/objects`, `/objects/:objectId` и `/predictions`, продуктовые страницы остаются минимальными shell screens: заголовок, breadcrumb и аккуратный placeholder. Telemetry charts, Prediction Investigation, ticket creation flow и analytics charts реализуются отдельными задачами.
+Единственная оставшаяся shell screen — `/analytics`: заголовок, breadcrumb и аккуратный placeholder. Analytics charts реализуются отдельной задачей.
 
-Task 02 разрешает подключить Dashboard Summary к `/overview` в рамках спецификации раздела 12. Task 03 добавляет Object Workspace в рамках раздела 13. Разделы 14 и 15 описывают Objects Registry и Predictions Registry. Существующая архитектура сохраняется.
+Task 02 разрешает подключить Dashboard Summary к `/overview` в рамках спецификации раздела 12. Task 03 добавляет Object Workspace в рамках раздела 13. Разделы 14 и 15 описывают Objects Registry и Predictions Registry, раздел 16 — Prediction Investigation, раздел 17 — наряды. Существующая архитектура сохраняется.
 
 ## 2. Стек и архитектура
 
@@ -44,7 +44,7 @@ frontend/src/
 | `/objects/:objectId`         | Object Workspace: состояние, топология по пикетам, прогнозы |
 | `/predictions`               | Predictions Registry: операционный реестр прогнозов         |
 | `/predictions/:predictionId` | Prediction Investigation: телеметрия, факторы, рекомендация |
-| `/tickets`                   | Наряды                                                      |
+| `/tickets`                   | Журнал нарядов; `?ticketId=` и `?predictionId=` открывают drawer |
 | `/analytics`                 | Аналитика                                                   |
 | `/foundation`                | Технический стенд компонентов и fixtures, только mock mode  |
 | Неизвестный route            | Экран «Страница не найдена»                                 |
@@ -261,20 +261,15 @@ export interface ObjectDto {
   parent_object_id: number | null;
   subsystem: string;
 }
-export interface TicketDto {
-  ticket_id: string;
-  prediction_id: string;
-  title: string;
-  status: TicketStatus;
-  created_at: string;
-}
 export interface SystemDto {
   status: "operational" | "degraded";
   updated_at: string;
 }
 ```
 
-`toObject` → `InfrastructureObject` (`id`, `name`, `parentObjectId`, `subsystem`); `toTicket` → `Ticket` (`id`, `predictionId`, `title`, `status`, `createdAt`). System query переводит `updated_at` в `updatedAt`.
+`toObject` → `InfrastructureObject` (`id`, `name`, `parentObjectId`, `subsystem`). System query переводит `updated_at` в `updatedAt`.
+
+`TicketDto` и `toTicket` определены в разделе 17 и живут в `dto/ticket.ts` и `adapters/ticket.ts`.
 
 Telemetry domain определён в разделе 16: `TelemetrySeries` / `TelemetryPoint` и endpoint `GET /sensors/:channelId/telemetry`. Прежний placeholder `TelemetrySample` больше не используется.
 
@@ -293,9 +288,12 @@ Telemetry domain определён в разделе 16: `TelemetrySeries` / `T
 | GET    | `/objects/:id`                | ObjectDetailDto; 404 при отсутствии                   |
 | GET    | `/objects/:objectId/topology` | ObjectTopologyDto; 404 при отсутствии объекта         |
 | GET    | `/sensors/:channelId/telemetry` | TelemetryResponseDto; `date_from`, `date_to`, `limit` ≤ 1000 |
-| GET    | `/tickets`                    | TicketDto[]; сейчас пустой mock list                  |
+| GET    | `/tickets`                    | TicketDto[]; фильтры `status`, `search`, `prediction_id`, `object_id` |
+| GET    | `/tickets/:ticketId`          | TicketDto; 404 при отсутствии                         |
+| POST   | `/tickets`                    | CreateTicketRequestDto → TicketDto (201)              |
+| PATCH  | `/tickets/:ticketId/status`   | UpdateTicketStatusRequestDto → TicketDto              |
 
-List endpoints возвращают массивы. Write endpoints и создание нарядов в этот этап не входят.
+List endpoints возвращают массивы. Write endpoints — только по нарядам (раздел 17); они идут через общий `apiSend`.
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api/v1
@@ -306,7 +304,7 @@ VITE_ENABLE_MOCKS=true
 
 Общий `ApiError`: message, status, code (`NETWORK_ERROR`, `HTTP_ERROR`, `INVALID_RESPONSE`). HTTP errors могут содержать JSON `{ message: string }`. Отмена запроса не превращается в network error. `alert()` запрещён.
 
-Query keys централизованы: `predictionKeys.all/list(filters)/detail(id)`, `objectKeys.all/list()/statusSummary()/detail(id)/topology(id)`, `telemetryKeys.all/sensor(channelId, params)`, `ticketKeys.all`, `systemKeys.all`, `dashboardKeys.all/summary()`. QueryClient: staleTime 60 секунд, gcTime 5 минут, один retry для network/server errors, без retry на 4xx; refetch on focus. System status polling — 60 секунд. Summary отдельный polling пока не имеет.
+Query keys централизованы: `predictionKeys.all/list(filters)/detail(id)`, `objectKeys.all/list()/statusSummary()/detail(id)/topology(id)`, `telemetryKeys.all/sensor(channelId, params)`, `ticketKeys.all/list(filters)/detail(id)`, `systemKeys.all`, `dashboardKeys.all/summary()`. QueryClient: staleTime 60 секунд, gcTime 5 минут, один retry для network/server errors, без retry на 4xx; refetch on focus. System status polling — 60 секунд. Summary отдельный polling пока не имеет.
 
 UI states: loading, error, empty, success, stale. Cached data сохраняется при ошибке обновления с предупреждением, retry доступен пользователю.
 
@@ -314,7 +312,7 @@ Mock list endpoints поддерживают `?scenario=empty|error|slow`; эт�
 
 ## 11. Проверки и ограничения интеграции
 
-Перед завершением изменений: `npm run typecheck`, `npm test`, `npm run build`, `npm run format:check`, `npm run test:browser` (check-browser → check-overview → check-object-workspace → check-objects-registry → check-predictions-registry → check-prediction-investigation → check-theme), `npm run test:real`. При системном Node 18 на текущем компьютере используется `frontend/scripts/npm.ps1`, выбирающий доступный Node 24.
+Перед завершением изменений: `npm run typecheck`, `npm test`, `npm run build`, `npm run format:check`, `npm run test:browser` (check-browser → check-overview → check-object-workspace → check-objects-registry → check-predictions-registry → check-prediction-investigation → check-tickets → check-theme), `npm run test:real`. При системном Node 18 на текущем компьютере используется `frontend/scripts/npm.ps1`, выбирающий доступный Node 24.
 
 Проверки должны сохранять сценарии 46% = critical, unsupported ML, отсутствие пересчёта backend aggregate, московское время при другой browser timezone, routing, клавиатурный фокус, loading/error/empty/stale и mock/real mode. Браузерные тесты запускаются в Edge или Chrome.
 
@@ -696,6 +694,161 @@ Browser (`scripts/check-prediction-investigation.mjs`, включён в `npm ru
 - Telemetry backend пока mock: реальный источник и ретеншн не определены.
 - Пользовательский выбор произвольного интервала (calendar range) не реализован.
 - Task 05 не начат: создание наряда, форма, drawer, мутации, бригады, QR, Tickets Registry и аналитика не реализуются.
+
+## 17. Task 05 — Наряды (Tickets / Work Orders)
+
+`/tickets` — рабочий журнал нарядов, замыкающий основной workflow: риск → прогноз → расследование → создание наряда → обработка наряда. Реестр остаётся плотной enterprise-таблицей: kanban, workflow-карточки, board и card grid не используются.
+
+Реализация в `pages/tickets/`: `TicketsPage`, `TicketsRegistryTable`, `TicketsFilters`, `TicketDetailDrawer`, `CreateTicketDrawer`, `TicketStatusActions`, `TicketSourceContext`, `ticket-registry-model.ts`, `ticket-form-model.ts`, `tickets-page.css`. Общий `ConfirmDialog` добавлен в `components/ui/` поверх уже установленного Radix Dialog; `window.confirm` не используется. Новых зависимостей, в том числе form- и toast-библиотек, не добавлено.
+
+### Ticket DTO → domain
+
+`TicketDto` вынесен из `dto/resources.ts` в `dto/ticket.ts` и расширен; адаптер — `adapters/ticket.ts`.
+
+```ts
+export interface TicketDto {
+  ticket_id: string;
+  prediction_id: string | null;
+  object_id: number;
+  object_name: string;
+  sensor_name: string | null;
+  piket: string | null;
+  title: string;
+  description: string;
+  status: TicketStatus;
+  priority: RiskLevel | null;
+  assignee: string | null;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+}
+export interface CreateTicketRequestDto {
+  prediction_id: string | null;
+  object_id: number;
+  title: string;
+  description: string;
+  assignee: string | null;
+}
+export interface UpdateTicketStatusRequestDto {
+  status: TicketStatus;
+}
+```
+
+Domain `Ticket` — те же поля в camelCase (`id`, `predictionId`, `objectId`, `objectName`, `sensorName`, `piket`, `title`, `description`, `status`, `priority`, `assignee`, `createdAt`, `updatedAt`, `completedAt`). `toTicket()` только переносит поля.
+
+`priority` — это сохранённый `riskLevel` исходного прогноза. Он копируется при создании и никогда не выводится из `failureProbability`. У ручного наряда и у неподдерживаемого ML-канала `priority = null`.
+
+`assigneeOptions` — небольшой справочник бригад в `domain/ticket/types.ts`. Полноценная система сотрудников, роли и авторизация в объём не входят.
+
+### Lifecycle
+
+Канонические статусы: `draft`, `approved`, `rejected`, `completed`. Статусы `created`, `open`, `closed`, `new`, `pending` не вводятся.
+
+Допустимые переходы:
+
+```text
+draft → approved
+draft → rejected
+approved → completed
+```
+
+Обратные и сквозные переходы (`completed → draft`, `rejected → approved`, `completed → rejected`, `draft → completed`) запрещены.
+
+Правило живёт в `domain/ticket/types.ts` (`ticketTransitions`, `getAllowedTicketTransitions`, `isAllowedTicketTransition`) и используется UI только для того, чтобы показать доступные действия. Валидация перехода обязательна и на стороне API: mock повторно проверяет переход и отвечает `409`. Полагаться только на disabled-кнопки нельзя.
+
+### Endpoints
+
+| Method | Endpoint                     | Назначение                                              |
+| ------ | ---------------------------- | ------------------------------------------------------- |
+| GET    | `/tickets`                   | TicketDto[]; фильтры `status`, `search`, `prediction_id`, `object_id` |
+| GET    | `/tickets/:ticketId`         | TicketDto; 404 при отсутствии                           |
+| POST   | `/tickets`                   | CreateTicketRequestDto → TicketDto (201)                |
+| PATCH  | `/tickets/:ticketId/status`  | UpdateTicketStatusRequestDto → TicketDto                |
+
+`POST /tickets` назначает `ticket_id`, `status = draft`, `created_at` и `updated_at` на стороне backend; клиент их не передаёт. Generic JSON patch не используется — смена статуса имеет отдельный endpoint. Серверная пагинация не вводится.
+
+Ошибки mock API: `422` — нарушение длины `title`/`description`, `404` — неизвестный прогноз или наряд, `409` — дубликат наряда для прогноза либо недопустимый переход.
+
+Write-запросы идут через общий `apiSend('POST' | 'PATCH', …)` в `api/client/http.ts`, поэтому форма ошибки, сообщения и отмена совпадают с `apiGet`.
+
+### Query и мутации
+
+Keys: `ticketKeys.all / list(filters) / detail(id)`. Hooks: `useTickets(filters)`, `useTicket(id)`, `useCreateTicket()`, `useUpdateTicketStatus()`. Мутации выполняются только через TanStack Query, прямой `fetch()` из компонентов запрещён.
+
+Optimistic update не используется: после успешной мутации обновляется detail-кэш и инвалидируются затронутые ключи. `useCreateTicket` дополнительно инвалидирует `predictionKeys.all`, потому что создание наряда меняет и исходный прогноз.
+
+### Реестр
+
+Колонки: Наряд, Статус, Название, Объект, Источник, Приоритет, Исполнитель, Создан, Обновлён. «Источник» — идентификатор прогноза либо «Ручной». На ширине до 1500 px колонка «Создан» скрывается; значение остаётся в detail drawer.
+
+Статус отображается существующим `StatusBadge` в сдержанном стиле `workflow-status` (radius 4 px, subtle border и background, нейтральная типографика). Четыре ярких цветных капсулы не используются. Приоритет — semantic dot через `RiskBadge`, без filled pill.
+
+Сортировка по умолчанию: `draft → approved → rejected → completed`, внутри `updatedAt` DESC, затем `id`. Требующие решения наряды всегда сверху.
+
+Фильтры: поиск (по `ticketId`, названию, объекту, `predictionId`, исполнителю; case-insensitive, trim) и статус. Фильтрация выполняется по загруженной выборке. Счётчик показывает `15 нарядов`, а после фильтров — `4 из 15 нарядов`.
+
+Клик строки и Enter открывают detail drawer; отдельный detail-route в Task 05 не вводится. Состояние синхронизировано с query-параметром `ticketId`, что даёт deep-link из Prediction Investigation.
+
+### Query-параметры `/tickets`
+
+- `?ticketId=WO-…` — открыть detail drawer сразу, без дополнительного клика. Неизвестный идентификатор даёт локальное «Наряд не найден», реестр остаётся рабочим; закрытие удаляет параметр из URL.
+- `?predictionId=OW-…` — открыть create flow с контекстом прогноза и предзаполненной формой. Неизвестный прогноз даёт локальное «Прогноз не найден», реестр остаётся доступным.
+
+Оба параметра взаимоисключающие: открытие наряда удаляет `predictionId`.
+
+### Create drawer
+
+Используется существующий Drawer, отдельная страница создания не создаётся. Форма плотная, controls совпадают с общими 32–36 px.
+
+Блок «Источник» — компактный readonly-контекст (идентификатор прогноза, датчик, объект · пикет, risk dot и urgency marker), не карточка.
+
+Prefill из прогноза: `title` = `Проверка: <sensorName>`; `description` собирается из уровня риска, датчика, расположения и **существующей** `recommendation` прогноза. Новые рекомендации frontend не генерирует и не переписывает. Оба поля редактируются.
+
+Валидация: `title` — trim, 3–120 символов; `description` — trim, 10–2000 символов; исполнитель необязателен; объект обязателен только для ручного наряда. Ошибки выводятся inline и связаны с полем через `aria-describedby`; `alert()` не используется.
+
+Ручной наряд создаётся кнопкой «Новый наряд»; объект выбирается из существующего `/objects` через `useObjects()`. Отдельный Objects API и собственный список объектов не вводятся.
+
+После успешного `POST`: create-режим закрывается, кэш нарядов инвалидируется, открывается detail нового наряда, прогноз получает `ticketId` и `reviewStatus = ticket_created`. Незавершённая форма при закрытии drawer просто сбрасывается.
+
+### Duplicate protection
+
+Один прогноз — максимум один наряд. Если у прогноза уже есть наряд, create flow показывает «Для прогноза уже создан наряд» с идентификатором и кнопкой «Открыть наряд»; форма не отображается. Mock API независимо отклоняет повторный `prediction_id` с `409`.
+
+### Detail drawer
+
+Идентификатор наряда, статус, приоритет, название, объект (ссылка на `/objects/:objectId`), источник и «Открыть прогноз» (ссылка на `/predictions/:predictionId`), датчик и пикет, исполнитель, `createdAt`, `updatedAt` и `completedAt` — все в `Europe/Moscow` через существующие formatters.
+
+Действия соответствуют статусу: `draft` → «Согласовать» и «Отклонить»; `approved` → «Отметить выполненным»; `rejected` и `completed` — действий нет, вместо них поясняющая строка. Лес disabled-кнопок не показывается.
+
+Каждое действие подтверждается через `ConfirmDialog`. «Отклонить» и «Отметить выполненным» предупреждают о необратимости; reason при отклонении не запрашивается, поскольку backend-контракт такого поля не определяет. Ошибка мутации выводится внутри диалога подтверждения — вне его Radix помечает контент `aria-hidden`, и сообщение было бы недоступно. Drawer при ошибке не закрывается, данные не теряются, повтор доступен.
+
+### Синхронизация с прогнозом
+
+Прогнозы не хранят свой наряд: единственный источник истины — ticket store. Mock применяет `applyTicketState()` ко всем выдаваемым прогнозам, поэтому `ticket_id` и `review_status = ticket_created` появляются одинаково и у фикстур, и у нарядов, созданных мутацией. После создания Prediction Investigation показывает «Наряд уже создан», а не CTA.
+
+### Mock dataset и persistence
+
+15 нарядов: 5 draft, 4 approved, 2 rejected, 4 completed, из них 3 ручных без прогноза и 3 с `completed_at`. `WO-2026-0917` связан с `HYDRO-003` — сценарий существующего наряда из Task 04. Прогноз `OW-004` намеренно оставлен без наряда: это демонстрационный прогноз для create flow.
+
+Созданные наряды хранятся в in-memory состоянии mock и живут в пределах сессии страницы. Полная перезагрузка страницы сбрасывает их к фикстурам; persistence между перезапусками dev-сервера не требуется. Для тестов экспортирован `resetTicketStore()`, он вызывается в `afterEach`, поэтому изменяемое состояние не делает тесты нестабильными.
+
+### Состояния
+
+loading (skeleton строк), initial error с retry, пустой ответ API («Наряды отсутствуют» / «Рабочие задания пока не создавались.»), пустой результат фильтра с отдельным сообщением и сбросом, `StaleState` поверх сохранённых строк после неудачного обновления. Detail drawer при deep-link открывается со skeleton и не блокирует реестр.
+
+### Проверки Task 05
+
+Unit: рендер реестра, сортировка по умолчанию, фильтр статуса, поиск, комбинация фильтров, сброс, счётчик результата, открытие detail кликом и Enter, deep-link `ticketId`, отсутствующий наряд, deep-link `predictionId`, prefill, отсутствующий прогноз, валидация формы, создание черновика, защита от дубликата, сохранение формы при ошибке мутации, три допустимых перехода, отклонение недопустимого перехода на стороне API, терминальные статусы без действий, Escape в диалоге подтверждения, связь прогноза с нарядом после создания, consistency фикстур в обе стороны, один наряд на прогноз, loading, error, empty, filtered empty, stale, московские timestamps, навигация к объекту и прогнозу, обе темы.
+
+Browser (`scripts/check-tickets.mjs`, включён в `npm run test:browser`): dark и light при 1920×1080 и 1366×768, отсутствие page-level overflow, сдержанные статусы без цветных капсул, фильтры и поиск, detail drawer по Enter и deep-link, workflow A (создание из расследования с обратной связью в прогноз), workflow B (согласование и завершение), workflow C (отклонение), терминальные статусы без действий, неизвестный наряд и защита от дубликата. Скриншоты: `tickets-registry-{dark,light}-{1920,1366}.png`, `tickets-create-drawer.png`, `tickets-detail-drawer.png`, `tickets-approved.png`, `tickets-completed.png`.
+
+### Ограничения
+
+- Серверная фильтрация параметрами `/tickets` реализована в mock, но реестр работает с загруженной выборкой; серверная пагинация не вводится.
+- Наряды, созданные мутацией, живут только в пределах сессии страницы.
+- Reason при отклонении, история изменений статуса, вложения и бригадный справочник не реализованы — соответствующего backend-контракта нет.
+- Detail-route наряда (`/tickets/:ticketId`) не вводится: состояние выражено query-параметром.
+- Аналитика по нарядам (SLA, MTTR, дашборды) в Task 05 не реализуется.
 
 ## Theme System (Task 02.2)
 

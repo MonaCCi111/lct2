@@ -1,5 +1,5 @@
 import type { PredictionDto } from '../dto/prediction';
-import type { ObjectDto, TicketDto } from '../dto/resources';
+import type { ObjectDto } from '../dto/resources';
 
 const base: PredictionDto = {
   prediction_id: 'TEMP-001',
@@ -62,9 +62,6 @@ export const predictionFixtures: PredictionDto[] = [
     health_index_its: 44,
     top_risk_factors: ['Повышенная частота пусков', 'Рост потребляемого тока при той же подаче'],
     recommendation: 'Проверить состояние подшипникового узла и режим работы насоса.',
-    // Investigation demo: this prediction already has an approved work order.
-    review_status: 'ticket_created',
-    ticket_id: 'WO-2026-0917',
   },
   {
     ...base,
@@ -126,4 +123,3 @@ export const objectFixtures: ObjectDto[] = [
   },
   { object_id: 102, object_name: 'Насосная станция', parent_object_id: null, subsystem: 'Водоотведение' },
 ];
-export const ticketFixtures: TicketDto[] = [];

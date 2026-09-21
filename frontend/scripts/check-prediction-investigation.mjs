@@ -212,7 +212,14 @@ try {
     await cta.waitFor();
     await cta.click();
     await page.waitForURL(new RegExp(`/tickets\\?predictionId=${TEMP}$`));
-    await page.getByRole('heading', { name: 'Наряды', exact: true }).waitFor();
+    // The tickets page opens its create flow for this prediction. The page heading itself is
+    // aria-hidden while the modal drawer is open, so the drawer is what we assert on.
+    const handoff = page.getByRole('dialog');
+    await handoff.waitFor();
+    assert.match(await handoff.innerText(), /Создание наряда/);
+    assert.match(await handoff.innerText(), new RegExp(TEMP));
+    // Nothing is created by the handoff itself: the draft still has to be submitted.
+    assert.equal(await page.getByRole('button', { name: 'Создать черновик' }).count(), 1);
 
     await page.close();
   }

@@ -21,7 +21,9 @@ describe('mock API and client', () => {
     expect(await apiGet('/predictions/TEMP-001')).toMatchObject({ risk_level: 'critical' });
     expect(await apiGet('/objects')).toHaveLength(2);
     expect(await apiGet('/objects/101')).toMatchObject({ object_id: 101 });
-    expect(await apiGet('/tickets')).toEqual([]);
+    expect(await apiGet('/tickets')).toHaveLength(15);
+    expect(await apiGet('/tickets/WO-2026-0917')).toMatchObject({ prediction_id: 'HYDRO-003' });
+    await expect(apiGet('/tickets/WO-NOPE')).rejects.toMatchObject({ status: 404 });
     expect(await apiGet('/system')).toMatchObject({ status: 'operational' });
   });
   it('reports missing records, empty and error responses', async () => {

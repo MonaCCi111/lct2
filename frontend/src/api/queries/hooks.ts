@@ -1,8 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiGet } from '../client/http';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiGet, apiSend } from '../client/http';
 import type { PredictionDto } from '../dto/prediction';
 import type { DashboardSummaryDto } from '../dto/dashboard';
-import type { ObjectDto, SystemDto, TicketDto } from '../dto/resources';
+import type { ObjectDto, SystemDto } from '../dto/resources';
+import type { CreateTicketRequestDto, TicketDto, UpdateTicketStatusRequestDto } from '../dto/ticket';
+import type { TicketStatus } from '../../domain/ticket/types';
+import { toTicket } from '../adapters/ticket';
 import { toPrediction } from '../adapters/prediction';
 import { toDashboardSummary } from '../adapters/dashboard';
 import type { ObjectStatusSummaryDto } from '../dto/object-status';
@@ -15,7 +18,7 @@ import type { TelemetryResponseDto } from '../dto/telemetry';
 import type { TelemetryRange } from '../../domain/telemetry/types';
 import { toTelemetrySeries } from '../adapters/telemetry';
 import { toOperationalQueue } from '../adapters/operational-queue';
-import { toObject, toTicket } from '../adapters/resources';
+import { toObject } from '../adapters/resources';
 import {
   dashboardKeys,
   objectKeys,
@@ -25,6 +28,7 @@ import {
   ticketKeys,
   type PredictionFilters,
   type TelemetryParams,
+  type TicketFilters,
 } from './keys';
 
 export const useDashboardSummary = () =>
@@ -108,11 +112,57 @@ export function useSensorTelemetry(channelId: number, params: TelemetryParams) {
     enabled: Number.isFinite(channelId),
   });
 }
-export const useTickets = () =>
-  useQuery({
-    queryKey: ticketKeys.all,
-    queryFn: async ({ signal }) => (await apiGet<TicketDto[]>('/tickets', signal)).map(toTicket),
+export function useTickets(filters: TicketFilters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set('status', filters.status);
+  if (filters.search) params.set('search', filters.search);
+  if (filters.predictionId) params.set('prediction_id', filters.predictionId);
+  if (filters.objectId !== undefined) params.set('object_id', String(filters.objectId));
+  return useQuery({
+    queryKey: ticketKeys.list(filters),
+    queryFn: async ({ signal }) =>
+      (await apiGet<TicketDto[]>(`/tickets${params.size ? `?${params}` : ''}`, signal)).map(toTicket),
   });
+}
+export const useTicket = (id: string) =>
+  useQuery({
+    queryKey: ticketKeys.detail(id),
+    queryFn: async ({ signal }) =>
+      toTicket(await apiGet<TicketDto>(`/tickets/${encodeURIComponent(id)}`, signal)),
+    enabled: id !== '',
+  });
+
+/**
+ * Creating a ticket also changes the source prediction (ticketId and reviewStatus), so both
+ * caches are invalidated instead of being patched by hand.
+ */
+export function useCreateTicket() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: CreateTicketRequestDto) =>
+      toTicket(await apiSend<TicketDto>('POST', '/tickets', body)),
+    onSuccess: (ticket) => {
+      queryClient.setQueryData(ticketKeys.detail(ticket.id), ticket);
+      void queryClient.invalidateQueries({ queryKey: ticketKeys.all });
+      void queryClient.invalidateQueries({ queryKey: predictionKeys.all });
+    },
+  });
+}
+export function useUpdateTicketStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: TicketStatus }) =>
+      toTicket(
+        await apiSend<TicketDto>('PATCH', `/tickets/${encodeURIComponent(id)}/status`, {
+          status,
+        } satisfies UpdateTicketStatusRequestDto),
+      ),
+    onSuccess: (ticket) => {
+      queryClient.setQueryData(ticketKeys.detail(ticket.id), ticket);
+      void queryClient.invalidateQueries({ queryKey: ticketKeys.all });
+    },
+  });
+}
 export const useSystem = () =>
   useQuery({
     queryKey: systemKeys.all,

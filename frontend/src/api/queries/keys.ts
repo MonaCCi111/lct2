@@ -1,5 +1,6 @@
 import type { RiskLevel } from '../../domain/prediction/types';
 import type { TelemetryRange } from '../../domain/telemetry/types';
+import type { TicketStatus } from '../../domain/ticket/types';
 export interface PredictionFilters {
   objectId?: number;
   riskLevel?: RiskLevel;
@@ -26,7 +27,17 @@ export const telemetryKeys = {
   sensor: (channelId: number, params: TelemetryParams) =>
     [...telemetryKeys.all, 'sensor', channelId, params] as const,
 };
-export const ticketKeys = { all: ['tickets'] as const };
+export interface TicketFilters {
+  status?: TicketStatus;
+  search?: string;
+  predictionId?: string;
+  objectId?: number;
+}
+export const ticketKeys = {
+  all: ['tickets'] as const,
+  list: (filters: TicketFilters = {}) => [...ticketKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...ticketKeys.all, 'detail', id] as const,
+};
 export const systemKeys = { all: ['system'] as const };
 export const dashboardKeys = {
   all: ['dashboard'] as const,
