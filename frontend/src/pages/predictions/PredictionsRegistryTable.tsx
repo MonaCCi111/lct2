@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { DataTable, type Column, type SortState } from '../../components/data-display/DataTable';
+import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { UnsupportedMlState } from '../../components/feedback/States';
@@ -10,7 +11,7 @@ import {
   formatProbability,
   formatHealthIndex,
 } from '../../utils/formatters';
-import { reviewLabels } from './predictions-registry-model';
+import { reviewLabels, reviewShortLabels } from './predictions-registry-model';
 
 const columns: readonly Column<Prediction>[] = [
   {
@@ -36,7 +37,7 @@ const columns: readonly Column<Prediction>[] = [
       </span>
     ),
   },
-  { id: 'piket', header: 'Пикет', className: 'pr-piket', cell: (row) => row.piket ?? '—' },
+  { id: 'piket', header: 'Пикет', className: 'pr-piket cell-secondary', cell: (row) => row.piket ?? '—' },
   {
     id: 'sensor',
     header: 'Датчик',
@@ -49,17 +50,13 @@ const columns: readonly Column<Prediction>[] = [
   {
     id: 'type',
     header: 'Тип',
-    className: 'pr-type',
-    cell: (row) => (
-      <span className="truncate" title={row.sensorType}>
-        {row.sensorType}
-      </span>
-    ),
+    className: 'pr-type cell-secondary',
+    cell: (row) => <SensorTypeCell sensorType={row.sensorType} />,
   },
   {
     id: 'probability',
     header: 'Вероятность',
-    className: 'pr-probability',
+    className: 'pr-probability cell-secondary',
     align: 'right',
     sortable: true,
     cell: (row) => formatProbability(row.predictionSupported ? row.failureProbability : null),
@@ -67,7 +64,7 @@ const columns: readonly Column<Prediction>[] = [
   {
     id: 'health',
     header: 'ИТС',
-    className: 'pr-health',
+    className: 'pr-health cell-secondary',
     align: 'right',
     cell: (row) => formatHealthIndex(row.predictionSupported ? row.healthIndex : null),
   },
@@ -75,12 +72,16 @@ const columns: readonly Column<Prediction>[] = [
     id: 'status',
     header: 'Статус',
     className: 'pr-status',
-    cell: (row) => <span className="predictions-review-status">{reviewLabels[row.reviewStatus]}</span>,
+    cell: (row) => (
+      <span className="predictions-review-status" title={reviewLabels[row.reviewStatus]}>
+        {reviewShortLabels[row.reviewStatus]}
+      </span>
+    ),
   },
   {
     id: 'updated',
     header: 'Обновлено',
-    className: 'pr-updated',
+    className: 'pr-updated cell-tertiary',
     sortable: true,
     cell: (row) => (
       <time

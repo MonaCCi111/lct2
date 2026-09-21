@@ -1,4 +1,4 @@
-import type { Prediction, RiskLevel, MaintenanceUrgency } from '../../domain/prediction/types';
+import type { Prediction, RiskLevel, MaintenanceUrgency, ReviewStatus } from '../../domain/prediction/types';
 import type { SortState } from '../../components/data-display/DataTable';
 import { compareByUrgency } from '../../api/adapters/operational-queue';
 import { reviewStatusLabels } from '../../utils/formatters';
@@ -12,6 +12,16 @@ export interface RegistryFilters {
 export const initialFilters: RegistryFilters = { search: '', risk: 'all', urgency: 'all', objectId: 'all' };
 // Shared with Prediction Investigation; the label map lives with the other domain formatters.
 export const reviewLabels = reviewStatusLabels;
+/**
+ * Compact column labels for the registry. The domain status values are untouched and the full
+ * wording stays reachable through the cell title.
+ */
+export const reviewShortLabels: Record<ReviewStatus, string> = {
+  pending_review: 'Ожидает',
+  acknowledged: 'Подтверждён',
+  rejected: 'Отклонён',
+  ticket_created: 'Наряд создан',
+};
 export const hasFilters = (filters: RegistryFilters) =>
   filters.search.trim() !== '' ||
   filters.risk !== 'all' ||

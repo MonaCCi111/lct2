@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowDownWideNarrow, ArrowUpRight, RefreshCw } from 'lucide-react';
 import { usePredictions } from '../../api/queries/hooks';
 import { DataTable, type Column } from '../../components/data-display/DataTable';
+import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
 import { Button, IconButton } from '../../components/ui/Button';
 import { StaleState } from '../../components/feedback/States';
@@ -37,8 +38,8 @@ const columns: Column<RiskQueueRow>[] = [
   {
     id: 'piket',
     header: 'Пикет',
-    className: 'queue-piket',
-    cell: (row) => <span className="muted nowrap">{row.piket}</span>,
+    className: 'queue-piket cell-secondary',
+    cell: (row) => <span className="nowrap">{row.piket}</span>,
   },
   {
     id: 'sensor',
@@ -58,28 +59,30 @@ const columns: Column<RiskQueueRow>[] = [
   {
     id: 'type',
     header: 'Тип',
-    className: 'queue-type',
-    cell: (row) => (
-      <span className="truncate muted" title={row.sensorType}>
-        {row.sensorType}
-      </span>
-    ),
+    className: 'queue-type cell-secondary',
+    cell: (row) => <SensorTypeCell sensorType={row.sensorType} />,
   },
   {
     id: 'probability',
     header: 'Вероятность',
-    className: 'queue-probability',
+    className: 'queue-probability cell-secondary',
     align: 'right',
     cell: (row) => row.probability,
   },
-  { id: 'health', header: 'ИТС', className: 'queue-health', align: 'right', cell: (row) => row.health },
+  {
+    id: 'health',
+    header: 'ИТС',
+    className: 'queue-health cell-secondary',
+    align: 'right',
+    cell: (row) => row.health,
+  },
   {
     id: 'updated',
     header: 'МСК',
-    className: 'queue-updated',
+    className: 'queue-updated cell-tertiary',
     align: 'right',
     cell: (row) => (
-      <span title={row.fullUpdated} aria-label={`Обновлено ${row.fullUpdated}`} className="muted">
+      <span title={row.fullUpdated} aria-label={`Обновлено ${row.fullUpdated}`}>
         {row.updated}
       </span>
     ),

@@ -246,8 +246,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
 }
 .object-risk-filter {
   flex: 0 1 150px;
@@ -302,8 +302,13 @@
   .object-summary-metrics {
     grid-template-columns: 1fr 0.7fr 0.7fr 0.8fr 1.5fr;
   }
-  .object-col-type {
+  /* Same responsive priority as the other registries: "Тип" stays, ИТС yields its width. */
+  .object-col-health {
     display: none;
+  }
+  .object-col-type {
+    width: 104px;
+    min-width: 96px;
   }
   .object-predictions .table-scroll {
     max-height: 360px;

@@ -60,21 +60,28 @@ export default function AnalyticsPage() {
   const refresh = () => void query.refetch();
   return (
     <div className="analytics-page">
-      <PageHeader title="Аналитика" description="Состояние предиктивного мониторинга" />
+      {/* Same header structure as the other pages: title and description left, freshness and the
+          refresh control right; the range filter keeps its own row. */}
+      <PageHeader
+        title="Аналитика"
+        description="Состояние предиктивного мониторинга"
+        action={
+          <div className="analytics-update">
+            <span>{data ? `Обновлено ${formatDateTime(data.generatedAt)}` : 'Агрегат не загружен'}</span>
+            <Button
+              variant="ghost"
+              aria-label="Обновить аналитику"
+              disabled={query.isFetching}
+              onClick={refresh}
+            >
+              <RefreshCw size={14} aria-hidden="true" />
+              Обновить
+            </Button>
+          </div>
+        }
+      />
       <div className="analytics-controls">
         <AnalyticsRangeControl value={range} onChange={setRange} />
-        <div className="analytics-update">
-          <span>{data ? `Обновлено ${formatDateTime(data.generatedAt)}` : 'Агрегат не загружен'}</span>
-          <Button
-            variant="ghost"
-            aria-label="Обновить аналитику"
-            disabled={query.isFetching}
-            onClick={refresh}
-          >
-            <RefreshCw size={14} aria-hidden="true" />
-            Обновить
-          </Button>
-        </div>
       </div>
       {data && data.range !== range && (
         <p role="status" className="analytics-range-notice">

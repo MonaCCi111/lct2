@@ -2,10 +2,14 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import type { AnalyticsRange, AnalyticsRiskTimelinePoint } from '../../domain/analytics/types';
 import { formatCount, formatDateTime, formatOperationalTime } from '../../utils/formatters';
 import { analyticsRangeLabels, formatAnalyticsDay } from './analytics-model';
+/**
+ * Critical carries the most weight, and the medium line is dashed: the risk tokens for high and
+ * medium are close in hue by design, so the stroke pattern — not a louder colour — separates them.
+ */
 const series = [
-  { key: 'critical', label: 'Критические' },
-  { key: 'high', label: 'Высокие' },
-  { key: 'medium', label: 'Умеренные' },
+  { key: 'critical', label: 'Критические', width: 1.9, dash: undefined },
+  { key: 'high', label: 'Высокие', width: 1.5, dash: undefined },
+  { key: 'medium', label: 'Умеренные', width: 1.4, dash: '5 3' },
 ] as const;
 export function RiskTimelineTooltip({
   active,
@@ -47,7 +51,17 @@ export function RiskTimelineChart({
       <div className="analytics-legend" aria-hidden="true">
         {series.map((item) => (
           <span key={item.key}>
-            <i style={{ background: `var(--risk-${item.key})` }} />
+            <svg width="16" height="2" viewBox="0 0 16 2">
+              <line
+                x1="0"
+                y1="1"
+                x2="16"
+                y2="1"
+                stroke={`var(--risk-${item.key})`}
+                strokeWidth="2"
+                strokeDasharray={item.dash}
+              />
+            </svg>
             {item.label}
           </span>
         ))}
@@ -64,29 +78,30 @@ export function RiskTimelineChart({
             data={points.map((point) => ({ ...point, time: Date.parse(point.timestamp) }))}
             margin={{ top: 10, right: 18, bottom: 0, left: 0 }}
           >
-            <CartesianGrid stroke="var(--border-subtle)" strokeDasharray="2 4" vertical={false} />
+            {/* A quiet horizontal grid: it should support reading values, not draw attention. */}
+            <CartesianGrid stroke="var(--border-subtle)" strokeOpacity={0.6} vertical={false} />
             <XAxis
               dataKey="time"
               type="number"
               scale="time"
               domain={['dataMin', 'dataMax']}
               tickFormatter={range === '24h' ? formatOperationalTime : formatAnalyticsDay}
-              tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
-              stroke="var(--border-default)"
+              tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+              stroke="var(--border-subtle)"
               tickLine={false}
+              tickMargin={8}
               minTickGap={32}
             />
             <YAxis
               allowDecimals={false}
               width={34}
-              tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
-              stroke="var(--border-default)"
+              tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
               content={(props) => <RiskTimelineTooltip active={props.active} payload={props.payload} />}
-              cursor={{ stroke: 'var(--border-default)' }}
+              cursor={{ stroke: 'var(--border-default)', strokeWidth: 1 }}
             />
             {series.map((item) => (
               <Line
@@ -95,9 +110,11 @@ export function RiskTimelineChart({
                 dataKey={item.key}
                 name={item.label}
                 stroke={`var(--risk-${item.key})`}
-                strokeWidth={1.5}
+                strokeWidth={item.width}
+                strokeDasharray={item.dash}
+                // Point markers appear on hover only, so the line stays clean while scanning.
                 dot={false}
-                activeDot={{ r: 3 }}
+                activeDot={{ r: 3, strokeWidth: 0 }}
                 isAnimationActive={false}
               />
             ))}

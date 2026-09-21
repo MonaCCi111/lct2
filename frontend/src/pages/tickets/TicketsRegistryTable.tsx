@@ -45,8 +45,8 @@ const columns: readonly Column<Ticket>[] = [
   {
     id: 'source',
     header: 'Источник',
-    className: 'tk-source',
-    cell: (row) => <span className="muted nowrap">{ticketSourceLabel(row)}</span>,
+    className: 'tk-source cell-secondary',
+    cell: (row) => <span className="nowrap">{ticketSourceLabel(row)}</span>,
   },
   {
     id: 'priority',
@@ -58,7 +58,7 @@ const columns: readonly Column<Ticket>[] = [
   {
     id: 'assignee',
     header: 'Исполнитель',
-    className: 'tk-assignee',
+    className: 'tk-assignee cell-secondary',
     cell: (row) =>
       row.assignee === null ? (
         <span className="muted">Не назначен</span>
@@ -68,8 +68,18 @@ const columns: readonly Column<Ticket>[] = [
         </span>
       ),
   },
-  { id: 'created', header: 'Создан', className: 'tk-created', cell: (row) => timeCell(row.createdAt) },
-  { id: 'updated', header: 'Обновлён', className: 'tk-updated', cell: (row) => timeCell(row.updatedAt) },
+  {
+    id: 'created',
+    header: 'Создан',
+    className: 'tk-created cell-tertiary',
+    cell: (row) => timeCell(row.createdAt),
+  },
+  {
+    id: 'updated',
+    header: 'Обновлён',
+    className: 'tk-updated cell-tertiary',
+    cell: (row) => timeCell(row.updatedAt),
+  },
 ];
 
 export function TicketsRegistryTable({

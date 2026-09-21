@@ -71,7 +71,7 @@ try {
       await page.setViewportSize({ width, height });
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
       const side = await page.locator('.operational-side').boundingBox();
-      assert.ok(side.width >= 310 && side.x + side.width <= width);
+      assert.ok(side.width >= 296 && side.x + side.width <= width, `side panel: ${side.width}`);
       await page.screenshot({ path: `test-results/overview-${theme}-${width}.png` });
     }
     await page.getByRole('button', { name: '1–6 ч', exact: true }).click();

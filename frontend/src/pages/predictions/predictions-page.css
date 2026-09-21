@@ -12,7 +12,7 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--space-3);
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4);
 }
 .predictions-registry-search {
   display: grid;
@@ -64,23 +64,22 @@
 .predictions-registry .pr-piket {
   width: 96px;
 }
+/* Short display labels fit without an ellipsis at this width. */
 .predictions-registry .pr-type {
-  width: 112px;
-  color: var(--text-secondary);
+  width: 108px;
+  min-width: 96px;
 }
 .predictions-registry .pr-probability {
-  width: 126px;
+  width: 118px;
 }
 .predictions-registry .pr-health {
   width: 50px;
 }
 .predictions-registry .pr-status {
-  width: 160px;
+  width: 124px;
 }
 .predictions-registry .pr-updated {
   width: 106px;
-  color: var(--text-secondary);
-  font-size: var(--font-xs);
 }
 .predictions-review-status {
   font-size: var(--font-xs);
@@ -105,8 +104,16 @@
   .predictions-registry .data-table {
     min-width: 1040px;
   }
-  .predictions-registry .pr-type,
+  /* "Тип" stays: it answers what kind of equipment failed. ИТС yields its width instead, the
+     same responsive priority the Operational Center queue uses. */
   .predictions-registry .pr-health {
     display: none;
+  }
+  .predictions-registry .pr-type {
+    width: 96px;
+    min-width: 90px;
+  }
+  .predictions-registry .pr-probability {
+    width: 104px;
   }
 }

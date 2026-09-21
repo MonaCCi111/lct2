@@ -5,6 +5,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import type { Prediction } from '../../domain/prediction/types';
 import type { TopologySegment } from '../../domain/object/topology';
 import { DataTable, type Column } from '../../components/data-display/DataTable';
+import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
 import { Button, IconButton } from '../../components/ui/Button';
 import { StaleState, UnsupportedMlState } from '../../components/feedback/States';
@@ -34,8 +35,8 @@ const columns: Column<ObjectPredictionRow>[] = [
   {
     id: 'piket',
     header: 'Пикет',
-    className: 'object-col-piket',
-    cell: (row) => <span className="muted nowrap">{row.piket}</span>,
+    className: 'object-col-piket cell-secondary',
+    cell: (row) => <span className="nowrap">{row.piket}</span>,
   },
   {
     id: 'sensor',
@@ -55,28 +56,30 @@ const columns: Column<ObjectPredictionRow>[] = [
   {
     id: 'type',
     header: 'Тип',
-    className: 'object-col-type',
-    cell: (row) => (
-      <span className="truncate muted" title={row.sensorType}>
-        {row.sensorType}
-      </span>
-    ),
+    className: 'object-col-type cell-secondary',
+    cell: (row) => <SensorTypeCell sensorType={row.sensorType} />,
   },
   {
     id: 'probability',
     header: 'Вероятность',
-    className: 'object-col-probability',
+    className: 'object-col-probability cell-secondary',
     align: 'right',
     cell: (row) => (row.risk === null ? <UnsupportedMlState /> : row.probability),
   },
-  { id: 'health', header: 'ИТС', className: 'object-col-health', align: 'right', cell: (row) => row.health },
+  {
+    id: 'health',
+    header: 'ИТС',
+    className: 'object-col-health cell-secondary',
+    align: 'right',
+    cell: (row) => row.health,
+  },
   {
     id: 'updated',
     header: 'Обновлено',
-    className: 'object-col-updated',
+    className: 'object-col-updated cell-tertiary',
     align: 'right',
     cell: (row) => (
-      <span title={row.fullUpdated} aria-label={`Обновлено ${row.fullUpdated}`} className="muted">
+      <span title={row.fullUpdated} aria-label={`Обновлено ${row.fullUpdated}`}>
         {row.updated}
       </span>
     ),

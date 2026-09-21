@@ -137,11 +137,17 @@
   width: var(--control-height);
   padding: 0;
 }
+/* One control system across every filter bar: same label size, gap and control height. */
 .field {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   color: var(--text-secondary);
+}
+.field > label,
+.field > span {
+  font-size: var(--font-xs);
+  line-height: 16px;
 }
 .input {
   height: var(--control-height);
@@ -325,10 +331,24 @@
   height: 6px;
   border-radius: 3px;
 }
-.urgency-marker {
-  width: 2px;
-  height: 14px;
+/* Urgency squares: fixed slot width keeps the labels aligned down the column, while only the
+   filled squares are drawn so the indicator never reads as a rating control. */
+.urgency-squares {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  width: 22px;
+}
+.urgency-square {
+  width: 6px;
+  height: 6px;
   border-radius: 1px;
+  background: currentColor;
+}
+.urgency-squares.tone-low .urgency-square,
+.urgency-squares.tone-neutral .urgency-square {
+  background: var(--text-muted);
 }
 .workflow-status {
   color: var(--text-secondary);
@@ -561,6 +581,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Shared row hierarchy for dense registries: operational data stays at full contrast, supporting
+   values step back one level, service values two. Headers keep their own muted styling. */
+.data-table td.cell-secondary {
+  color: var(--text-secondary);
+}
+.data-table td.cell-tertiary {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+}
+.data-table td.cell-numeric {
+  font-variant-numeric: tabular-nums;
 }
 .breadcrumbs,
 .breadcrumbs li {

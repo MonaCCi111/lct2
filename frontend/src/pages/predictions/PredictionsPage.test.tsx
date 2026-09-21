@@ -106,7 +106,7 @@ describe('Predictions registry', () => {
     expect(rows()).toHaveLength(3);
     expect(rows().every((row) => row.textContent?.includes('объект Фита'))).toBe(true);
   });
-  it.each(['  тЕмПеРаТуРа ВШ-3  ', 'Фита', 'ПК 88+50', 'Состояние фазы'])(
+  it.each(['  тЕмПеРаТуРа ВШ-3  ', 'Фита', 'ПК 88+50'])(
     'searches sensor/type/object/piket: %s',
     async (term) => {
       mount();
@@ -120,6 +120,19 @@ describe('Predictions registry', () => {
       ).toBe(true);
     },
   );
+  it('searches the full sensor type while the column shows its short label', async () => {
+    mount();
+    await ready();
+    await userEvent.type(screen.getByRole('searchbox'), 'Состояние фазы');
+    expect(rows().length).toBeGreaterThan(0);
+    // Matching still runs against the domain value; the cell renders the compact label and keeps
+    // the original wording in its title.
+    for (const row of rows()) {
+      expect(row.textContent).toContain('Фаза');
+      expect(row.textContent).not.toContain('Состояние фазы');
+      expect(within(row).getByTitle('Состояние фазы')).toBeInTheDocument();
+    }
+  });
   it('intersects all filters and resets them', async () => {
     mount();
     await ready();
@@ -223,8 +236,17 @@ describe('Predictions registry', () => {
     );
     mount();
     await ready();
-    for (const label of ['Ожидает рассмотрения', 'Подтверждён', 'Отклонён', 'Создан наряд'])
-      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    // The column shows a compact label; the full domain wording stays in the cell title.
+    const compact: Record<string, string> = {
+      'Ожидает рассмотрения': 'Ожидает',
+      Подтверждён: 'Подтверждён',
+      Отклонён: 'Отклонён',
+      'Создан наряд': 'Наряд создан',
+    };
+    for (const [full, short] of Object.entries(compact)) {
+      expect(screen.getAllByText(short).length).toBeGreaterThan(0);
+      expect(screen.getAllByTitle(full).length).toBeGreaterThan(0);
+    }
   });
   it.each(['light', 'dark'])('keeps textual semantic indicators in %s', async (theme) => {
     document.documentElement.dataset.theme = theme;

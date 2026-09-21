@@ -210,8 +210,11 @@ describe('Analytics workspace', () => {
   it('range control is keyboard reachable and labelled', async () => {
     mount();
     await ready();
-    await userEvent.tab();
-    expect(screen.getByRole('combobox', { name: 'Период аналитики' })).toHaveFocus();
+    const control = screen.getByRole('combobox', { name: 'Период аналитики' });
+    // The header refresh control now precedes it, so walk the tab order instead of assuming it
+    // is the very first stop.
+    for (let stop = 0; stop < 5 && document.activeElement !== control; stop++) await userEvent.tab();
+    expect(control).toHaveFocus();
   });
   it('contains no fabricated performance metrics or future failures', async () => {
     const { container } = mount();

@@ -30,6 +30,7 @@ const columns: readonly Column<ObjectStatusSummary>[] = [
     header: 'Критические',
     width: '10%',
     align: 'right',
+    className: 'cell-secondary',
     cell: (row) => formatCount(row.criticalPredictions),
   },
   {
@@ -37,6 +38,7 @@ const columns: readonly Column<ObjectStatusSummary>[] = [
     header: 'Высокие',
     width: '8%',
     align: 'right',
+    className: 'cell-secondary',
     cell: (row) => formatCount(row.highPredictions),
   },
   {
@@ -57,6 +59,7 @@ const columns: readonly Column<ObjectStatusSummary>[] = [
     id: 'updated',
     header: 'Обновлено',
     width: '19%',
+    className: 'cell-tertiary',
     cell: (row) => (
       <time className="objects-registry-time" dateTime={row.updatedAt}>
         {formatDateTime(row.updatedAt)}

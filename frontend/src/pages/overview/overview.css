@@ -98,8 +98,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
 }
 .queue-object-filter {
   flex: 0 1 158px;
@@ -130,14 +130,14 @@
   min-height: 410px;
 }
 .risk-queue .data-table {
-  min-width: 700px;
+  min-width: 720px;
 }
 .risk-queue .data-table th,
 .risk-queue .data-table td {
   padding: 8px;
 }
 .queue-urgency {
-  width: 82px;
+  width: 84px;
 }
 .queue-risk {
   width: 108px;
@@ -146,23 +146,25 @@
   width: 120px;
 }
 .queue-piket {
-  width: 88px;
-  font-size: 12px;
+  width: 86px;
+  font-size: var(--font-xs);
 }
+/* Wide enough for the longest short label ("Вентилятор") without an ellipsis. */
 .queue-type {
-  width: 110px;
+  width: 104px;
+  min-width: 96px;
 }
 .queue-probability {
-  width: 92px;
+  width: 88px;
 }
 .queue-health {
-  width: 46px;
+  width: 44px;
 }
 .queue-updated {
-  width: 58px;
+  width: 56px;
 }
 .queue-sensor {
-  min-width: 140px;
+  min-width: 150px;
 }
 .ticket-summary a {
   display: inline-flex;
@@ -183,7 +185,7 @@
 }
 .object-status-list a {
   display: block;
-  padding: 10px 16px;
+  padding: 9px 16px;
 }
 .object-status-list a:hover {
   background: var(--bg-hover);
@@ -198,16 +200,22 @@
   align-items: center;
   gap: 8px;
 }
+/* Object name leads, risk sits right of it, counts step back on the second line. */
 .object-name {
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .object-status-detail {
   color: var(--text-secondary);
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: var(--font-xs);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
 }
 .object-status-detail > span:last-child {
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 .object-loading > div {
   display: grid;
@@ -230,30 +238,37 @@
 .ticket-summary a {
   font-size: 12px;
 }
+/* Three-column operational summary: labels read down the left, counts align on the right. */
 .ticket-summary dl {
   display: grid;
-  gap: 5px;
+  gap: 4px;
   margin: 0;
 }
 .ticket-summary dl > div {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
 }
 .ticket-summary dt {
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: var(--font-xs);
 }
 .ticket-summary dd {
   margin: 0;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 .coverage-status {
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-top: 1px solid var(--border-subtle);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  align-items: baseline;
   gap: 4px 12px;
-  font-size: 12px;
+  font-size: var(--font-xs);
   color: var(--text-secondary);
 }
 .coverage-status strong {
@@ -268,8 +283,13 @@
   font-size: 12px;
 }
 @media (max-width: 1600px) {
-  .queue-type {
+  /* The queue keeps "Тип": with short labels it stays readable, so ИТС — a supporting index that
+     the prediction detail repeats — yields its width instead. */
+  .queue-health {
     display: none;
+  }
+  .operational-workspace {
+    grid-template-columns: minmax(0, 2.6fr) minmax(296px, 1fr);
   }
   .queue-object {
     width: 106px;
@@ -278,13 +298,17 @@
     width: 80px;
   }
   .queue-urgency {
-    width: 76px;
+    width: 78px;
   }
   .queue-risk {
     width: 100px;
   }
+  .queue-type {
+    width: 96px;
+    min-width: 90px;
+  }
   .queue-probability {
-    width: 86px;
+    width: 84px;
   }
   .summary-metrics dd > span:not(.summary-total) {
     display: none;

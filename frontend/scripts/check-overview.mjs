@@ -61,8 +61,11 @@ try {
     .evaluateAll((elements) =>
       elements.map((element) => {
         const style = getComputedStyle(element);
-        const marker = element.querySelector('.semantic-marker');
+        const urgency = element.classList.contains('urgency-indicator');
+        // Risk keeps a single dot; urgency is a fixed-width group of small squares.
+        const marker = element.querySelector(urgency ? '.urgency-squares' : '.semantic-marker');
         const markerStyle = getComputedStyle(marker);
+        const square = element.querySelector('.urgency-square');
         return {
           background: style.backgroundColor,
           border: style.borderTopWidth,
@@ -72,10 +75,11 @@ try {
           fontWeight: style.fontWeight,
           numeric: style.fontVariantNumeric,
           markerWidth: markerStyle.width,
-          markerHeight: markerStyle.height,
-          markerRadius: markerStyle.borderRadius,
+          markerHeight: square ? getComputedStyle(square).height : markerStyle.height,
+          markerRadius: square ? getComputedStyle(square).borderRadius : markerStyle.borderRadius,
+          squares: element.querySelectorAll('.urgency-square').length,
           decorative: marker.getAttribute('aria-hidden'),
-          urgency: element.classList.contains('urgency-indicator'),
+          urgency,
           label: element.textContent.trim(),
         };
       }),
@@ -90,9 +94,12 @@ try {
     assert.equal(style.numeric, 'tabular-nums');
     assert.equal(style.decorative, 'true');
     assert.ok(style.label.length > 0);
-    assert.equal(style.markerWidth, style.urgency ? '2px' : '6px');
-    assert.equal(style.markerHeight, style.urgency ? '14px' : '6px');
+    assert.equal(style.markerWidth, style.urgency ? '22px' : '6px');
+    assert.equal(style.markerHeight, style.urgency ? '6px' : '6px');
     assert.equal(style.markerRadius, style.urgency ? '1px' : '3px');
+    // Squares encode urgency only, and never more than the three lifecycle steps.
+    if (style.urgency) assert.ok(style.squares >= 1 && style.squares <= 3, `squares: ${style.squares}`);
+    else assert.equal(style.squares, 0);
   }
   assert.equal(
     await page
@@ -116,8 +123,19 @@ try {
     const right = await page.locator('.operational-side').boundingBox();
     const left = await page.locator('.sidebar').boundingBox();
     const table = await queue.boundingBox();
-    assert.ok(right.width >= 310 && right.x + right.width <= width);
+    // The side panel keeps a workable width without starving the queue of horizontal space.
+    assert.ok(right.width >= 296 && right.x + right.width <= width, `side panel: ${right.width}`);
     assert.ok(table.x >= left.x + left.width);
+    // "Тип" stays readable at every supported width instead of collapsing to "Состояние фа...".
+    const typeColumn = await queue.locator('.queue-type').first().boundingBox();
+    assert.ok(typeColumn && typeColumn.width >= 88, `type column: ${typeColumn?.width}`);
+    const typeText = await queue.locator('td.queue-type').first().innerText();
+    assert.doesNotMatch(typeText, /…|\.\.\./, `truncated type: ${typeText}`);
+    // The queue itself must not need horizontal scrolling at supported widths.
+    const queueScroll = await page
+      .locator('.risk-queue .table-scroll')
+      .evaluate((element) => element.scrollWidth - element.clientWidth);
+    assert.equal(queueScroll, 0, `queue overflows by ${queueScroll}px at ${width}`);
     assert.equal(await queue.getByRole('columnheader', { name: 'Вероятность' }).isVisible(), true);
     assert.ok((await queue.locator('tbody tr').count()) >= 10);
     if (width === 1920) {

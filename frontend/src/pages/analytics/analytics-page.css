@@ -11,7 +11,7 @@
   gap: 16px;
 }
 .analytics-controls {
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 .analytics-controls .field {
   display: flex;
@@ -64,7 +64,7 @@
   min-width: 0;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .analytics-section > header {
@@ -85,15 +85,17 @@
   margin: 0;
   padding: 12px 16px;
 }
+/* The written summary supports the chart for screen readers and quick reading; it stays one
+   contrast step behind the chart itself. */
 .analytics-chart-summary {
-  color: var(--text-secondary);
-  font-size: 12px;
+  color: var(--text-muted);
+  font-size: var(--font-xs);
   line-height: 18px;
 }
 .analytics-legend {
   display: flex;
   gap: 18px;
-  margin: 8px 0 0;
+  margin: 10px 0 2px;
   font-size: 11px;
   color: var(--text-secondary);
 }
@@ -102,22 +104,24 @@
   align-items: center;
   gap: 6px;
 }
-.analytics-legend i {
-  width: 14px;
-  height: 2px;
+.analytics-legend svg {
+  flex-shrink: 0;
+  overflow: visible;
 }
 .analytics-tooltip {
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-default);
-  border-radius: 4px;
-  padding: 12px;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
   color: var(--text-primary);
   box-shadow: var(--shadow-popover);
-  font-size: 12px;
-  min-width: 190px;
+  font-size: var(--font-xs);
+  min-width: 176px;
 }
 .analytics-tooltip p {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 .analytics-tooltip dl {
   margin: 0;
@@ -126,10 +130,15 @@
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  line-height: 22px;
+  line-height: 19px;
+}
+.analytics-tooltip dt {
+  color: var(--text-secondary);
 }
 .analytics-tooltip dd {
   margin: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 .analytics-data {
   font-size: 11px;
@@ -141,11 +150,11 @@
 }
 .analytics-distribution {
   margin: 0;
-  padding: 22px 20px;
+  padding: 16px 20px;
 }
 .analytics-distribution ul {
   display: grid;
-  gap: 21px;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -153,14 +162,19 @@
 .analytics-distribution li > div:first-child {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 12px;
-  margin-bottom: 8px;
-  font-size: 12px;
+  margin-bottom: 6px;
+  font-size: var(--font-xs);
   font-weight: 500;
 }
+/* Counts align on the right edge of every row. */
+.analytics-distribution li > div:first-child > span:last-child {
+  font-variant-numeric: tabular-nums;
+}
 .analytics-bar {
-  height: 4px;
-  background: var(--border-subtle);
+  height: 3px;
+  background: var(--bg-hover);
   border-radius: 1px;
   overflow: hidden;
 }
