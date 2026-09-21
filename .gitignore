@@ -7,3 +7,7 @@ node_modules/
 dist/
 test-results/
 playwright-report/
+data/v6_stream_full_18m.parquet
+.env
+.env.*
+!.env.example
