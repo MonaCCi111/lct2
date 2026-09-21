@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDateTime, formatRelativeTime } from './formatters';
+import { formatDataAge, formatDateTime, formatRelativeTime } from './formatters';
 
 describe('operational timestamps in Europe/Moscow', () => {
   it('formats UTC with a four-digit year and explicit MSK label', () => {
@@ -41,5 +41,25 @@ describe('operational timestamps in Europe/Moscow', () => {
     expect(formatRelativeTime('2026-09-20T08:40:00-07:00', now)).toBe('2 минуты назад');
     expect(formatRelativeTime('2026-09-20T15:44:00Z', now)).toBe('через 2 минуты');
     expect(formatRelativeTime(now, Number.NaN)).toBe('—');
+  });
+});
+
+describe('data freshness', () => {
+  const now = Date.parse('2026-09-20T15:42:00Z');
+  it.each([
+    [0, 'только что'],
+    [30_000, 'только что'],
+    [59_000, 'только что'],
+    [-20_000, 'только что'],
+  ])('reads a %i ms old timestamp as "%s"', (age, expected) => {
+    expect(formatDataAge(new Date(now - age).toISOString(), now)).toBe(expected);
+  });
+  it('switches to a relative age once a minute has passed', () => {
+    expect(formatDataAge(new Date(now - 4 * 60_000).toISOString(), now)).toBe('4 минуты назад');
+    expect(formatDataAge(new Date(now - 120 * 60_000).toISOString(), now)).toBe('2 часа назад');
+  });
+  it('never invents an age for a missing or ambiguous timestamp', () => {
+    expect(formatDataAge(null, now)).toBe('—');
+    expect(formatDataAge('2026-09-20T15:42:00', now)).toBe('—');
   });
 });

@@ -65,7 +65,8 @@ describe('Analytics workspace', () => {
     expect(screen.getByLabelText('Период аналитики')).toHaveValue('7d');
     expect(requests).toEqual(['7d']);
     expect(screen.getByText('42')).toBeVisible();
-    expect(screen.getByText('Обновлено 20.09.2026, 18:42 МСК')).toBeVisible();
+    // Freshness reads as a relative age; the exact Moscow timestamp stays in the title.
+    expect(screen.getByTitle('20.09.2026, 18:42 МСК')).toHaveTextContent(/^Обновлено /);
     expect(screen.getByText('137')).toBeVisible();
     expect(screen.getAllByText('80%').length).toBeGreaterThan(0);
     expect(client.getQueryData(analyticsKeys.summary('7d'))).toHaveProperty('totals.openTickets', 42);

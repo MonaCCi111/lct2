@@ -1,6 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { DataTable, type Column, type SortState } from '../../components/data-display/DataTable';
 import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
+import { UrgencyColumnHint } from '../../components/data-display/UrgencyColumnHint';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { UnsupportedMlState } from '../../components/feedback/States';
@@ -17,6 +18,7 @@ const columns: readonly Column<Prediction>[] = [
   {
     id: 'urgency',
     header: 'Срочность',
+    headerHint: <UrgencyColumnHint />,
     className: 'pr-urgency',
     cell: (row) => <UrgencyBadge value={row.predictionSupported ? row.maintenanceUrgency : null} />,
   },
@@ -32,9 +34,9 @@ const columns: readonly Column<Prediction>[] = [
     className: 'pr-object',
     sortable: true,
     cell: (row) => (
-      <span className="truncate" title={row.objectName}>
+      <Link className="table-entity-link" to={`/objects/${row.objectId}`} title={row.objectName}>
         {row.objectName}
-      </span>
+      </Link>
     ),
   },
   { id: 'piket', header: 'Пикет', className: 'pr-piket cell-secondary', cell: (row) => row.piket ?? '—' },
@@ -135,7 +137,10 @@ export function PredictionsRegistryTable({
         tabIndex: 0,
         className: 'predictions-registry-row',
         'aria-label': `Открыть прогноз: ${row.sensorName}, ${row.objectName}`,
-        onClick: () => open(row),
+        // The object cell is its own link; the row must not hijack that click.
+        onClick: (event) => {
+          if (!(event.target instanceof Element && event.target.closest('a,button'))) open(row);
+        },
         onKeyDown: (event) => {
           if (event.key === 'Enter' && event.target === event.currentTarget) {
             event.preventDefault();

@@ -4,6 +4,7 @@ import { ArrowDownWideNarrow, ArrowUpRight, RefreshCw } from 'lucide-react';
 import { usePredictions } from '../../api/queries/hooks';
 import { DataTable, type Column } from '../../components/data-display/DataTable';
 import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
+import { UrgencyColumnHint } from '../../components/data-display/UrgencyColumnHint';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
 import { Button, IconButton } from '../../components/ui/Button';
 import { StaleState } from '../../components/feedback/States';
@@ -21,18 +22,25 @@ const columns: Column<RiskQueueRow>[] = [
   {
     id: 'urgency',
     header: 'Срочность',
+    headerHint: <UrgencyColumnHint />,
     className: 'queue-urgency',
     cell: (row) => <UrgencyBadge value={row.urgency} />,
   },
-  { id: 'risk', header: 'Риск', className: 'queue-risk', cell: (row) => <RiskBadge value={row.risk} /> },
+  {
+    id: 'risk',
+    header: 'Риск',
+    className: 'queue-risk',
+    // The urgency squares already mark this row, so risk reads as coloured text without a dot.
+    cell: (row) => <RiskBadge value={row.risk} showMarker={false} />,
+  },
   {
     id: 'object',
     header: 'Объект',
     className: 'queue-object',
     cell: (row) => (
-      <span className="truncate" title={row.objectName}>
+      <Link className="table-entity-link" to={`/objects/${row.objectId}`} title={row.objectName}>
         {row.objectName}
-      </span>
+      </Link>
     ),
   },
   {

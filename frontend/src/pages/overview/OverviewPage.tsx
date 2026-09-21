@@ -2,7 +2,7 @@ import { RefreshCw } from 'lucide-react';
 import { useDashboardSummary } from '../../api/queries/hooks';
 import { Button } from '../../components/ui/Button';
 import { PageHeader } from '../../components/feedback/PageShell';
-import { formatDateTime } from '../../utils/formatters';
+import { UpdatedAtLabel } from '../../components/feedback/UpdatedAtLabel';
 import { SummaryStrip } from './SummaryStrip';
 import { RiskQueue } from './RiskQueue';
 import { ObjectStatusPanel } from './ObjectStatusPanel';
@@ -17,13 +17,11 @@ export default function OverviewPage() {
         description="Текущее состояние инженерной инфраструктуры"
         action={
           <div className="overview-update">
-            <span>
-              {summary.data
-                ? `Обновлено ${formatDateTime(summary.data.generatedAt)}`
-                : summary.isPending
-                  ? 'Загрузка сводки…'
-                  : 'Сводка недоступна'}
-            </span>
+            {summary.data ? (
+              <UpdatedAtLabel value={summary.data.generatedAt} />
+            ) : (
+              <span>{summary.isPending ? 'Загрузка сводки…' : 'Сводка недоступна'}</span>
+            )}
             <Button
               variant="ghost"
               aria-label="Обновить сводку"

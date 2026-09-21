@@ -3,9 +3,9 @@ import { RefreshCw } from 'lucide-react';
 import { useAnalyticsSummary } from '../../api/queries/hooks';
 import type { AnalyticsRange, AnalyticsSummary } from '../../domain/analytics/types';
 import { PageHeader } from '../../components/feedback/PageShell';
+import { UpdatedAtLabel } from '../../components/feedback/UpdatedAtLabel';
 import { EmptyState, ErrorState, Skeleton, StaleState } from '../../components/feedback/States';
 import { Button } from '../../components/ui/Button';
-import { formatDateTime } from '../../utils/formatters';
 import { AnalyticsRangeControl } from './AnalyticsRangeControl';
 import { AnalyticsSummaryStrip } from './AnalyticsSummaryStrip';
 import { RiskTimelineChart } from './RiskTimelineChart';
@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
         description="Состояние предиктивного мониторинга"
         action={
           <div className="analytics-update">
-            <span>{data ? `Обновлено ${formatDateTime(data.generatedAt)}` : 'Агрегат не загружен'}</span>
+            {data ? <UpdatedAtLabel value={data.generatedAt} /> : <span>Агрегат не загружен</span>}
             <Button
               variant="ghost"
               aria-label="Обновить аналитику"
@@ -104,22 +104,28 @@ export default function AnalyticsPage() {
       ) : (
         <>
           <AnalyticsSummaryStrip data={data} />
+          {/* Two independent columns instead of a four-cell grid: the short distribution panels
+              stack on the right, so the tall timeline no longer leaves a gap beneath them. */}
           <div className="analytics-grid" aria-busy={query.isFetching}>
-            <Section
-              title="Динамика рисков"
-              note={`Исторические срезы · ${analyticsRangeLabels[data.range]} · МСК`}
-            >
-              <RiskTimelineChart points={data.riskTimeline} range={data.range} />
-            </Section>
-            <Section title="Распределение по срочности" note="Активные риски на момент обновления">
-              <UrgencyDistributionChart items={data.urgencyDistribution} />
-            </Section>
-            <Section title="Объекты с наибольшим риском" note="Активные риски и нагрузка по нарядам">
-              <TopRiskObjects items={data.topObjects} />
-            </Section>
-            <Section title="Статусы нарядов" note="Текущие статусы всех нарядов">
-              <TicketStatusChart items={data.ticketStatusDistribution} />
-            </Section>
+            <div className="analytics-column">
+              <Section
+                title="Динамика рисков"
+                note={`Исторические срезы · ${analyticsRangeLabels[data.range]} · МСК`}
+              >
+                <RiskTimelineChart points={data.riskTimeline} range={data.range} />
+              </Section>
+              <Section title="Объекты с наибольшим риском" note="Активные риски и нагрузка по нарядам">
+                <TopRiskObjects items={data.topObjects} />
+              </Section>
+            </div>
+            <div className="analytics-column">
+              <Section title="Распределение по срочности" note="Активные риски на момент обновления">
+                <UrgencyDistributionChart items={data.urgencyDistribution} />
+              </Section>
+              <Section title="Статусы нарядов" note="Текущие статусы всех нарядов">
+                <TicketStatusChart items={data.ticketStatusDistribution} />
+              </Section>
+            </div>
           </div>
           <Section
             title="ML-покрытие по доменам"

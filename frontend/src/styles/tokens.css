@@ -11,8 +11,8 @@
   --text-secondary: #a5a9b0;
   --text-muted: #9a9fa8;
   --risk-critical: #e29395;
-  --risk-high: #dfac79;
-  --risk-medium: #c9ba80;
+  --risk-high: #e6a263;
+  --risk-medium: #bdb491;
   --risk-low: #91b7a0;
   --status-info: #9eb9d5;
   --status-success: #91b7a0;
@@ -47,8 +47,8 @@
   --text-secondary: #5e636b;
   --text-muted: #686e77;
   --risk-critical: #aa343e;
-  --risk-high: #985819;
-  --risk-medium: #776516;
+  --risk-high: #9c530d;
+  --risk-medium: #756a49;
   --risk-low: #386b4c;
   --status-info: #426888;
   --status-success: #386b4c;

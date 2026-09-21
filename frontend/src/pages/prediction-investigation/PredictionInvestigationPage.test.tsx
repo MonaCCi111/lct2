@@ -62,7 +62,8 @@ describe('Prediction Investigation', () => {
     expect(screen.getByText('Температура')).toBeVisible();
     expect(screen.getByRole('link', { name: 'объект Фита' })).toBeVisible();
     expect(screen.getByText('ПК 89+40')).toBeVisible();
-    expect(screen.getByText('Обновлено 20.09.2026, 18:38 МСК')).toBeVisible();
+    // Freshness reads as a relative age; the exact Moscow timestamp stays in the title.
+    expect(screen.getByTitle('20.09.2026, 18:38 МСК')).toHaveTextContent(/^Обновлено /);
     expect(screen.getByText('Ожидает рассмотрения')).toBeVisible();
   });
   it('keeps 46% ANALOG_TEMP critical and shows ready urgency wording', async () => {

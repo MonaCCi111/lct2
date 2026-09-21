@@ -38,22 +38,37 @@
   font-weight: 500;
   color: var(--text-secondary);
 }
+/* All four KPIs share one rhythm: label, then the headline number on a common baseline with its
+   supporting text. Three contrast levels carry the hierarchy, not three different sizes. */
 .summary-metrics dd {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 7px;
   font-size: 22px;
-  line-height: 28px;
+  line-height: 26px;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 .summary-metrics dd > span {
-  font-size: 12px;
+  font-size: var(--font-sm);
+  line-height: 18px;
   font-weight: 400;
   color: var(--text-secondary);
 }
+/* Secondary: the denominator of the affected/total pair. */
 .summary-metrics dd > .summary-total {
-  font-size: 16px;
+  font-size: var(--font-md);
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+/* Tertiary: supporting metadata that must never compete with the headline number. */
+.summary-metrics dd > .summary-note {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  margin-left: 2px;
+  font-variant-numeric: tabular-nums;
 }
 .summary-metrics .skeleton {
   margin: 6px 0;
@@ -137,7 +152,7 @@
   padding: 8px;
 }
 .queue-urgency {
-  width: 84px;
+  width: 98px;
 }
 .queue-risk {
   width: 108px;
@@ -298,7 +313,7 @@
     width: 80px;
   }
   .queue-urgency {
-    width: 78px;
+    width: 92px;
   }
   .queue-risk {
     width: 100px;

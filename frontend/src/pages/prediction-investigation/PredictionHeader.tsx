@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import type { Prediction } from '../../domain/prediction/types';
 import { Skeleton } from '../../components/feedback/States';
-import { formatDateTime, reviewStatusLabels } from '../../utils/formatters';
+import { UpdatedAtLabel } from '../../components/feedback/UpdatedAtLabel';
+import { reviewStatusLabels } from '../../utils/formatters';
 
 export function PredictionHeader({
   prediction,
@@ -38,7 +39,7 @@ export function PredictionHeader({
             </p>
           </div>
           <div className="investigation-header-meta">
-            <span>Обновлено {formatDateTime(prediction.generatedAt)}</span>
+            <UpdatedAtLabel value={prediction.generatedAt} />
             <span className="badge workflow-status">{reviewStatusLabels[prediction.reviewStatus]}</span>
             <span className="investigation-header-id">{prediction.id}</span>
           </div>

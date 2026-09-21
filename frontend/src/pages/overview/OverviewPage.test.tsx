@@ -54,7 +54,8 @@ describe('Operational Center', () => {
     expect(summary().getByText('8')).toBeVisible();
     expect(summary().getByText('32')).toBeVisible();
     expect(summary().getByText('42')).toBeVisible();
-    expect(screen.getByText('Обновлено 20.09.2026, 18:42 МСК')).toBeVisible();
+    // Freshness reads as a relative age; the exact Moscow timestamp stays in the title.
+    expect(screen.getByTitle('20.09.2026, 18:42 МСК')).toHaveTextContent(/^Обновлено /);
     expect(screen.getByText('80%')).toBeVisible();
     expect(screen.queryByText('8000%')).not.toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Сводка нарядов' })).getByText('19')).toBeVisible();
@@ -173,5 +174,40 @@ describe('Operational Center', () => {
       expect(block.getByText('Показаны сохранённые данные. Требуется обновление.')).toBeVisible(),
     );
     expect(block.getByText(text)).toBeVisible();
+  });
+  it('reads risk as coloured text in the queue while the object panel keeps its dots', async () => {
+    mount();
+    await ready();
+    const riskCells = queue().getAllByRole('cell', { name: /Критический|Высокий|Умеренный/ });
+    expect(riskCells.length).toBeGreaterThan(0);
+    // The urgency squares already mark the row, so the queue drops the duplicate risk dot.
+    for (const cell of riskCells) expect(cell.querySelector('.semantic-marker')).toBeNull();
+    expect(riskCells[0]?.querySelector('.risk-indicator-text')).not.toBeNull();
+    // Scoped change: the object panel still shows a dot next to each risk label.
+    const panel = within(screen.getByRole('region', { name: 'Состояние объектов' }));
+    expect(panel.getAllByText('Критический')[0]?.closest('.semantic-indicator')).toHaveClass(
+      'risk-indicator',
+    );
+    expect(
+      screen.getByRole('region', { name: 'Состояние объектов' }).querySelectorAll('.semantic-marker').length,
+    ).toBeGreaterThan(0);
+  });
+  it('opens the object workspace from the object cell without opening the prediction', async () => {
+    mount();
+    await ready();
+    await userEvent.click(queue().getAllByRole('link', { name: 'объект Фита' })[0]!);
+    expect(screen.getByRole('heading', { name: 'Объект shell' })).toBeVisible();
+    expect(screen.queryByText('Расследование shell')).not.toBeInTheDocument();
+  });
+  it('explains the urgency squares from a keyboard-reachable header hint', async () => {
+    mount();
+    await ready();
+    const hint = queue().getByRole('button', { name: 'Как читать индикатор срочности' });
+    hint.focus();
+    expect(hint).toHaveFocus();
+    const tooltip = await screen.findByRole('tooltip');
+    // Squares never replace the label: every step is spelled out.
+    for (const label of ['1–6 ч', '6–24 ч', '24–48 ч'])
+      expect(within(tooltip).getByText(label)).toBeInTheDocument();
   });
 });

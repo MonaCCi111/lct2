@@ -60,6 +60,14 @@
   gap: 16px;
   align-items: start;
 }
+/* Each column stacks its own sections, so panels keep their natural height instead of being
+   stretched to match a neighbour. */
+.analytics-column {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  align-content: start;
+}
 .analytics-section {
   min-width: 0;
   background: var(--bg-surface);

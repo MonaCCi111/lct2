@@ -6,10 +6,16 @@ export type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'error' | RiskLe
 export function Badge({ tone = 'neutral', children }: { tone?: Tone; children: ReactNode }) {
   return <span className={`badge tone-${tone}`}>{children}</span>;
 }
-export function RiskBadge({ value }: { value: RiskLevel | null }) {
+/**
+ * Risk reads as a dot plus a neutral label by default. Where the row already carries the urgency
+ * squares, `showMarker={false}` drops the dot and moves the semantic colour onto the label itself,
+ * so the left edge of the row stays calm without losing the severity cue.
+ */
+export function RiskBadge({ value, showMarker = true }: { value: RiskLevel | null; showMarker?: boolean }) {
+  const tone = `tone-${value ?? 'neutral'}`;
   return (
-    <span className="semantic-indicator risk-indicator">
-      <span className={`semantic-marker risk-marker tone-${value ?? 'neutral'}`} aria-hidden="true" />
+    <span className={`semantic-indicator risk-indicator ${showMarker ? '' : `risk-indicator-text ${tone}`}`}>
+      {showMarker && <span className={`semantic-marker risk-marker ${tone}`} aria-hidden="true" />}
       {getRiskLabel(value)}
     </span>
   );

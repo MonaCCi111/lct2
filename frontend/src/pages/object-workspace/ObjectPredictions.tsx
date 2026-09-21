@@ -6,6 +6,7 @@ import type { Prediction } from '../../domain/prediction/types';
 import type { TopologySegment } from '../../domain/object/topology';
 import { DataTable, type Column } from '../../components/data-display/DataTable';
 import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
+import { UrgencyColumnHint } from '../../components/data-display/UrgencyColumnHint';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
 import { Button, IconButton } from '../../components/ui/Button';
 import { StaleState, UnsupportedMlState } from '../../components/feedback/States';
@@ -23,6 +24,7 @@ const columns: Column<ObjectPredictionRow>[] = [
   {
     id: 'urgency',
     header: 'Срочность',
+    headerHint: <UrgencyColumnHint />,
     className: 'object-col-urgency',
     cell: (row) => <UrgencyBadge value={row.urgency} />,
   },

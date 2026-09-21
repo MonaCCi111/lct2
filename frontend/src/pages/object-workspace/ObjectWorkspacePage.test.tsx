@@ -55,7 +55,8 @@ describe('Object Workspace', () => {
     await ready();
     expect(screen.getByRole('heading', { name: 'объект Фита' })).toBeVisible();
     expect(screen.getByText('Инженерный объект · 860 каналов · ML-покрытие 84%')).toBeVisible();
-    expect(screen.getByText('Обновлено 20.09.2026, 18:42 МСК')).toBeVisible();
+    // Freshness reads as a relative age; the exact Moscow timestamp stays in the title.
+    expect(screen.getByTitle('20.09.2026, 18:42 МСК')).toHaveTextContent(/^Обновлено /);
     expect(summary().getByText('Критический')).toBeVisible();
     expect(summary().getByText('4')).toBeVisible();
     expect(summary().getByText('8')).toBeVisible();

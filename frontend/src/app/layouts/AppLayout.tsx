@@ -5,12 +5,12 @@ import { Sidebar } from './Sidebar';
 import { SystemIndicator, SystemStatus } from './SystemStatus';
 import { navigation } from '../router/navigation';
 import { Breadcrumbs, type BreadcrumbItem } from '../../components/navigation/Breadcrumbs';
+import { UpdatedAtLabel } from '../../components/feedback/UpdatedAtLabel';
 import { Drawer } from '../../components/ui/Drawer';
 import { Dropdown } from '../../components/ui/Dropdown';
 import { Button } from '../../components/ui/Button';
 import { useSystem } from '../../api/queries/hooks';
 import { apiConfig } from '../../api/client/config';
-import { formatDateTime } from '../../utils/formatters';
 import { useTheme, type ThemePreference } from '../providers/ThemeProvider';
 export function AppLayout() {
   const { preference, setPreference } = useTheme();
@@ -41,7 +41,7 @@ export function AppLayout() {
           <div className="topbar-right">
             <SystemIndicator />
             {location.pathname !== '/overview' && (
-              <span className="topbar-time">Обновлено {formatDateTime(system.data?.updatedAt ?? null)}</span>
+              <UpdatedAtLabel className="topbar-time" value={system.data?.updatedAt ?? null} />
             )}
             <Dropdown
               label="Меню профиля"

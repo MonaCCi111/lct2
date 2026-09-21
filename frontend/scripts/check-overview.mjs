@@ -55,18 +55,23 @@ async function scenario(path, state, clearCache = true) {
 try {
   await page.goto(`${origin}/overview`);
   await ready();
-  assert.match(await page.locator('.overview-update').innerText(), /20\.09\.2026, 18:42 МСК/);
+  // Freshness reads as a relative age; the exact Moscow timestamp stays reachable in the title.
+  assert.match(await page.locator('.overview-update time').innerText(), /^Обновлено /);
+  assert.equal(await page.locator('.overview-update time').getAttribute('title'), '20.09.2026, 18:42 МСК');
   const semanticStyles = await page
     .locator('.operational-workspace .semantic-indicator')
     .evaluateAll((elements) =>
       elements.map((element) => {
         const style = getComputedStyle(element);
         const urgency = element.classList.contains('urgency-indicator');
-        // Risk keeps a single dot; urgency is a fixed-width group of small squares.
+        // Three shapes now: urgency squares, a risk dot, or risk rendered as coloured text
+        // (the queue, where the squares already mark the row).
+        const dotless = element.classList.contains('risk-indicator-text');
         const marker = element.querySelector(urgency ? '.urgency-squares' : '.semantic-marker');
-        const markerStyle = getComputedStyle(marker);
+        const markerStyle = marker ? getComputedStyle(marker) : null;
         const square = element.querySelector('.urgency-square');
         return {
+          dotless,
           background: style.backgroundColor,
           border: style.borderTopWidth,
           color: style.color,
@@ -74,11 +79,11 @@ try {
           fontSize: style.fontSize,
           fontWeight: style.fontWeight,
           numeric: style.fontVariantNumeric,
-          markerWidth: markerStyle.width,
-          markerHeight: square ? getComputedStyle(square).height : markerStyle.height,
-          markerRadius: square ? getComputedStyle(square).borderRadius : markerStyle.borderRadius,
+          markerWidth: markerStyle?.width ?? null,
+          markerHeight: square ? getComputedStyle(square).height : (markerStyle?.height ?? null),
+          markerRadius: square ? getComputedStyle(square).borderRadius : (markerStyle?.borderRadius ?? null),
           squares: element.querySelectorAll('.urgency-square').length,
-          decorative: marker.getAttribute('aria-hidden'),
+          decorative: marker?.getAttribute('aria-hidden') ?? null,
           urgency,
           label: element.textContent.trim(),
         };
@@ -88,15 +93,22 @@ try {
   for (const style of semanticStyles) {
     assert.equal(style.background, 'rgba(0, 0, 0, 0)');
     assert.equal(style.border, '0px');
-    assert.equal(style.color, 'rgb(231, 232, 234)');
     assert.equal(style.fontSize, '12px');
     assert.equal(style.fontWeight, '500');
     assert.equal(style.numeric, 'tabular-nums');
-    assert.equal(style.decorative, 'true');
     assert.ok(style.label.length > 0);
-    assert.equal(style.markerWidth, style.urgency ? '22px' : '6px');
-    assert.equal(style.markerHeight, style.urgency ? '6px' : '6px');
-    assert.equal(style.markerRadius, style.urgency ? '1px' : '3px');
+    if (style.dotless) {
+      // Queue risk: no marker at all, severity carried by a colour that is not the body text.
+      assert.equal(style.markerWidth, null, 'dotless risk must not render a marker');
+      assert.notEqual(style.color, 'rgb(231, 232, 234)');
+      assert.match(style.color, /^rgb\(/);
+    } else {
+      assert.equal(style.color, 'rgb(231, 232, 234)');
+      assert.equal(style.decorative, 'true');
+      assert.equal(style.markerWidth, style.urgency ? '22px' : '6px');
+      assert.equal(style.markerHeight, '6px');
+      assert.equal(style.markerRadius, style.urgency ? '1px' : '3px');
+    }
     // Squares encode urgency only, and never more than the three lifecycle steps.
     if (style.urgency) assert.ok(style.squares >= 1 && style.squares <= 3, `squares: ${style.squares}`);
     else assert.equal(style.squares, 0);
@@ -172,7 +184,9 @@ try {
     .getByRole('link', { name: 'Оперативный центр', exact: true })
     .focus();
   const visited = new Set();
-  for (let index = 0; index < 65; index++) {
+  // Each queue row now also exposes its object link, so the walk through the table is longer;
+  // the expected order of areas is what this check is about.
+  for (let index = 0; index < 160; index++) {
     await page.keyboard.press('Tab');
     const area = await page.evaluate(() =>
       document.activeElement?.closest('.queue-filters')

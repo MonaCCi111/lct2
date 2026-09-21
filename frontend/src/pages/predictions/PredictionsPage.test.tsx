@@ -95,7 +95,7 @@ describe('Predictions registry', () => {
   ] as const)('filters urgency %s', async (urgency, count) => {
     mount();
     await ready();
-    await userEvent.selectOptions(screen.getByLabelText('Срочность'), urgency);
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Срочность' }), urgency);
     expect(screen.getByText(`Показано ${count} из 24 загруженных прогнозов`)).toBeVisible();
   });
   it('builds unique object choices and filters by object ID', async () => {
@@ -137,7 +137,7 @@ describe('Predictions registry', () => {
     mount();
     await ready();
     await userEvent.selectOptions(screen.getByLabelText('Риск'), 'critical');
-    await userEvent.selectOptions(screen.getByLabelText('Срочность'), 'FLASH_1_6H');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Срочность' }), 'FLASH_1_6H');
     await userEvent.selectOptions(screen.getByLabelText('Объект'), '203');
     await userEvent.type(screen.getByRole('searchbox'), 'темп');
     expect(rows()).toHaveLength(1);
@@ -147,7 +147,7 @@ describe('Predictions registry', () => {
     await ready();
     expect(screen.getByRole('searchbox')).toHaveValue('');
     expect(screen.getByLabelText('Риск')).toHaveValue('all');
-    expect(screen.getByLabelText('Срочность')).toHaveValue('all');
+    expect(screen.getByRole('combobox', { name: 'Срочность' })).toHaveValue('all');
     expect(screen.getByLabelText('Объект')).toHaveValue('all');
   });
   it.each(['click', 'Enter'])('opens the correct prediction with %s', async (method) => {
@@ -260,15 +260,18 @@ describe('Predictions registry', () => {
   it('never displays fabricated ML numbers for an unsupported row', () => {
     const row = toPrediction(predictionFixtures.find((item) => !item.prediction_supported)!);
     render(
-      <MemoryRouter>
-        <PredictionsRegistryTable
-          rows={[row]}
-          onRetry={() => {}}
-          onReset={() => {}}
-          filtered={false}
-          onSort={() => {}}
-        />
-      </MemoryRouter>,
+      // The column hint uses the shared Tooltip, which the app always provides via AppProviders.
+      <TooltipProvider>
+        <MemoryRouter>
+          <PredictionsRegistryTable
+            rows={[row]}
+            onRetry={() => {}}
+            onReset={() => {}}
+            filtered={false}
+            onSort={() => {}}
+          />
+        </MemoryRouter>
+      </TooltipProvider>,
     );
     expect(screen.getByText('ML-анализ недоступен')).toBeVisible();
     expect(screen.queryByText('Низкий')).not.toBeInTheDocument();

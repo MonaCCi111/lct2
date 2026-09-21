@@ -89,9 +89,9 @@ try {
       }
       await page.screenshot({ path: `test-results/predictions-${theme}-${width}.png` });
     }
-    await page.getByLabel('Риск', { exact: true }).selectOption('critical');
-    await page.getByLabel('Срочность', { exact: true }).selectOption('FLASH_1_6H');
-    await page.getByLabel('Объект', { exact: true }).selectOption('203');
+    await page.getByRole('combobox', { name: 'Риск', exact: true }).selectOption('critical');
+    await page.getByRole('combobox', { name: 'Срочность', exact: true }).selectOption('FLASH_1_6H');
+    await page.getByRole('combobox', { name: 'Объект', exact: true }).selectOption('203');
     await page.getByRole('searchbox').fill('  ТеМп ');
     await page.getByText('Показано 1 из 24 загруженных прогнозов').waitFor();
     await temperature.focus();
@@ -111,7 +111,9 @@ try {
     for (const label of ['Срочность', 'Риск', 'Объект']) {
       await page.keyboard.press('Tab');
       assert.equal(
-        await page.getByLabel(label, { exact: true }).evaluate((el) => document.activeElement === el),
+        await page
+          .getByRole('combobox', { name: label, exact: true })
+          .evaluate((el) => document.activeElement === el),
         true,
       );
     }

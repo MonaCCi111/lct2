@@ -28,6 +28,8 @@ export function TruncatedText({ text }: { text: string }) {
 export interface Column<T> {
   id: string;
   header: string;
+  /** Optional affordance rendered next to the header, e.g. an explanation of the column notation. */
+  headerHint?: ReactNode;
   cell: (row: T) => ReactNode;
   align?: 'left' | 'right' | 'center';
   width?: string;
@@ -87,6 +89,9 @@ export function DataTable<T>({
                   key={column.id}
                   className={column.className}
                   style={{ width: column.width, textAlign: column.align }}
+                  // A hint button inside the cell would otherwise leak into the column name that
+                  // assistive tech announces for every cell below it.
+                  aria-label={column.headerHint ? column.header : undefined}
                   aria-sort={
                     column.sortable
                       ? active
@@ -113,6 +118,8 @@ export function DataTable<T>({
                   ) : (
                     column.header
                   )}
+                  {/* Keeps the hint on the same line as the label so headers stay one row tall. */}
+                  {column.headerHint && <span className="column-header-hint">{column.headerHint}</span>}
                 </TableHeader>
               );
             })}

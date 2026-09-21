@@ -33,10 +33,12 @@ export function SummaryStrip({ query }: { query: ReturnType<typeof useDashboardS
           </div>
           <div>
             <dt>Затронутые объекты</dt>
+            {/* Three levels in one line: the affected count leads, the total supports it, the
+                critical share is supporting metadata. */}
             <dd>
               {formatCount(summary.objects.affected)}
               <span className="summary-total">/ {formatCount(summary.objects.total)}</span>
-              <span>{summary.objects.critical} критических</span>
+              <span className="summary-note">{summary.objects.critical} критических</span>
             </dd>
           </div>
         </dl>

@@ -76,6 +76,16 @@ export function formatDateTime(value: string | number | null) {
   const instant = timestamp(value);
   return Number.isFinite(instant) ? `${dateTimeFormatter.format(instant)} МСК` : '—';
 }
+/**
+ * How old the displayed data is, in words. Anything under a minute — including a timestamp that
+ * sits slightly in the future because of clock drift — reads as "только что"; everything else
+ * delegates to formatRelativeTime so the wording stays in one place.
+ */
+export function formatDataAge(value: string | number | null, now = Date.now()) {
+  const instant = timestamp(value);
+  if (!Number.isFinite(instant) || !Number.isFinite(now)) return '—';
+  return now - instant < 60_000 ? 'только что' : formatRelativeTime(instant, now);
+}
 export function formatRelativeTime(value: string | number | null, now = Date.now()) {
   const instant = timestamp(value);
   if (!Number.isFinite(instant) || !Number.isFinite(now)) return '—';

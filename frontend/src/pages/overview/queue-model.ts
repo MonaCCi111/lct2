@@ -13,6 +13,7 @@ export interface QueueFilters {
 export const initialQueueFilters: QueueFilters = { urgency: 'all', objectId: 'all', search: '' };
 export interface RiskQueueRow {
   id: string;
+  objectId: number;
   objectName: string;
   piket: string;
   sensorName: string;
@@ -48,6 +49,7 @@ export function queueObjectOptions(predictions: readonly Prediction[]) {
 export function toRiskQueueRow(item: Prediction): RiskQueueRow {
   return {
     id: item.id,
+    objectId: item.objectId,
     objectName: item.objectName,
     piket: item.piket ?? '—',
     sensorName: item.sensorName,
