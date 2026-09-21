@@ -1,0 +1,112 @@
+.predictions-registry {
+  min-width: 0;
+}
+.predictions-registry-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.predictions-registry-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+.predictions-registry-search {
+  display: grid;
+  gap: var(--space-1);
+  flex: 1 1 300px;
+  max-width: 480px;
+  color: var(--text-secondary);
+}
+.predictions-registry-filters .field {
+  width: 160px;
+}
+.predictions-registry-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0 var(--space-4) var(--space-2);
+  min-height: 40px;
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.predictions-registry-context .button {
+  font-size: var(--font-xs);
+}
+.predictions-registry .table-scroll {
+  max-height: max(320px, calc(100dvh - 340px));
+}
+.predictions-registry .data-table {
+  min-width: 1260px;
+}
+.predictions-registry .data-table th,
+.predictions-registry .data-table td {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.predictions-registry .data-table td {
+  white-space: nowrap;
+}
+.predictions-registry .pr-urgency {
+  width: 112px;
+}
+.predictions-registry .pr-risk {
+  width: 120px;
+}
+.predictions-registry .pr-object {
+  width: 120px;
+}
+.predictions-registry .pr-piket {
+  width: 96px;
+}
+.predictions-registry .pr-type {
+  width: 112px;
+  color: var(--text-secondary);
+}
+.predictions-registry .pr-probability {
+  width: 126px;
+}
+.predictions-registry .pr-health {
+  width: 50px;
+}
+.predictions-registry .pr-status {
+  width: 160px;
+}
+.predictions-registry .pr-updated {
+  width: 106px;
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.predictions-review-status {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.predictions-registry-row {
+  cursor: pointer;
+}
+.predictions-registry-row:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  background: var(--bg-hover);
+}
+.predictions-registry-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+@media (max-width: 1500px) {
+  .predictions-registry .data-table {
+    min-width: 1040px;
+  }
+  .predictions-registry .pr-type,
+  .predictions-registry .pr-health {
+    display: none;
+  }
+}
