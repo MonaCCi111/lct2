@@ -1,0 +1,328 @@
+.overview-page .page-header {
+  margin-bottom: 20px;
+  align-items: center;
+}
+.overview-update {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.summary-strip {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.summary-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr 1.4fr;
+  margin: 0;
+  min-height: 72px;
+}
+.summary-metrics > div {
+  padding: 10px 16px;
+  border-right: 1px solid var(--border-subtle);
+  min-width: 0;
+}
+.summary-metrics > div:last-child {
+  border-right: 0;
+}
+.summary-metrics dt {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.summary-metrics dd {
+  margin: 2px 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 500;
+}
+.summary-metrics dd > span {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.summary-metrics dd > .summary-total {
+  font-size: 16px;
+}
+.summary-metrics .skeleton {
+  margin: 6px 0;
+}
+.operational-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 2.15fr) minmax(310px, 1fr);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.risk-queue {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.operational-side {
+  min-width: 0;
+  border-left: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+}
+.operational-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  min-height: 68px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.operational-heading h2 {
+  font-size: 14px;
+}
+.operational-heading p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 3px;
+}
+.queue-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+.queue-object-filter {
+  flex: 0 1 158px;
+  min-width: 130px;
+}
+.queue-object-filter label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.queue-filters .search-input {
+  flex: 1;
+  min-width: 168px;
+}
+.queue-context {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 16px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.risk-queue .table-scroll {
+  max-height: 620px;
+  flex: 1;
+  min-height: 410px;
+}
+.risk-queue .data-table {
+  min-width: 700px;
+}
+.risk-queue .data-table th,
+.risk-queue .data-table td {
+  padding: 8px;
+}
+.queue-urgency {
+  width: 82px;
+}
+.queue-risk {
+  width: 108px;
+}
+.queue-object {
+  width: 120px;
+}
+.queue-piket {
+  width: 88px;
+  font-size: 12px;
+}
+.queue-type {
+  width: 110px;
+}
+.queue-probability {
+  width: 92px;
+}
+.queue-health {
+  width: 46px;
+}
+.queue-updated {
+  width: 58px;
+}
+.queue-sensor {
+  min-width: 140px;
+}
+.ticket-summary a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+}
+.ticket-summary a:hover {
+  text-decoration: underline;
+}
+.object-status-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.object-status-list li + li {
+  border-top: 1px solid var(--border-subtle);
+}
+.object-status-list a {
+  display: block;
+  padding: 10px 16px;
+}
+.object-status-list a:hover {
+  background: var(--bg-hover);
+}
+.object-status-list a:focus-visible {
+  outline-offset: -3px;
+}
+.object-status-main,
+.object-status-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.object-name {
+  font-weight: 500;
+}
+.object-status-detail {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.object-status-detail > span:last-child {
+  color: var(--text-secondary);
+}
+.object-loading > div {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ticket-summary {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-default);
+  margin-top: auto;
+}
+.ticket-summary header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.ticket-summary a {
+  font-size: 12px;
+}
+.ticket-summary dl {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+.ticket-summary dl > div {
+  display: flex;
+  justify-content: space-between;
+}
+.ticket-summary dt {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.ticket-summary dd {
+  margin: 0;
+}
+.coverage-status {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.coverage-status strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.operational-side .error-state {
+  flex-wrap: wrap;
+}
+.operational-side .stale-state {
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+@media (max-width: 1600px) {
+  .queue-type {
+    display: none;
+  }
+  .queue-object {
+    width: 106px;
+  }
+  .queue-piket {
+    width: 80px;
+  }
+  .queue-urgency {
+    width: 76px;
+  }
+  .queue-risk {
+    width: 100px;
+  }
+  .queue-probability {
+    width: 86px;
+  }
+  .summary-metrics dd > span:not(.summary-total) {
+    display: none;
+  }
+  .summary-metrics > div:last-child dd > span:last-child {
+    display: inline;
+  }
+  .object-status-list a {
+    padding: 8px 12px;
+  }
+  .risk-queue .table-scroll {
+    max-height: 500px;
+  }
+}
+@media (max-width: 1200px) {
+  .operational-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .operational-side {
+    border-left: 0;
+    border-top: 1px solid var(--border-default);
+  }
+  .overview-update {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 700px) {
+  .summary-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+  .summary-metrics > div {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .summary-metrics dd > span:not(.summary-total) {
+    display: none !important;
+  }
+  .overview-update {
+    justify-content: flex-start;
+  }
+}
