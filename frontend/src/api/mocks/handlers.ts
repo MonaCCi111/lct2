@@ -1,4 +1,5 @@
 import { delay, http, HttpResponse } from 'msw';
+import { analyticsFixtures } from './analytics';
 import { apiConfig } from '../client/config';
 import { objectFixtures, predictionFixtures } from './fixtures';
 import { dashboardSummaryFixture } from './dashboard';
@@ -40,6 +41,13 @@ async function scenario(request: Request) {
   return null;
 }
 export const handlers = [
+  http.get(endpoint('/analytics/summary'), async ({ request }) => {
+    const range = new URL(request.url).searchParams.get('range') ?? '7d';
+    if (range !== '24h' && range !== '7d' && range !== '30d')
+      return HttpResponse.json({ message: 'Недопустимый период аналитики.' }, { status: 400 });
+    await delay(250);
+    return HttpResponse.json(analyticsFixtures[range]);
+  }),
   http.get(endpoint('/dashboard/summary'), async () => {
     await delay(250);
     return HttpResponse.json(dashboardSummaryFixture);

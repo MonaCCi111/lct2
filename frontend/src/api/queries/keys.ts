@@ -1,6 +1,11 @@
 import type { RiskLevel } from '../../domain/prediction/types';
+import type { AnalyticsRange } from '../../domain/analytics/types';
 import type { TelemetryRange } from '../../domain/telemetry/types';
 import type { TicketStatus } from '../../domain/ticket/types';
+export const analyticsKeys = {
+  all: ['analytics'] as const,
+  summary: (range: AnalyticsRange) => [...analyticsKeys.all, 'summary', range] as const,
+};
 export interface PredictionFilters {
   objectId?: number;
   riskLevel?: RiskLevel;

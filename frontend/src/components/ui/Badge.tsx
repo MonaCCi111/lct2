@@ -31,7 +31,7 @@ export function UrgencyBadge({ value }: { value: MaintenanceUrgency | null }) {
     </span>
   );
 }
-const ticketStatuses: Record<TicketStatus, { label: string; tone: Tone }> = {
+export const ticketStatuses: Record<TicketStatus, { label: string; tone: Tone }> = {
   draft: { label: 'Черновик', tone: 'neutral' },
   approved: { label: 'Согласован', tone: 'info' },
   rejected: { label: 'Отклонён', tone: 'error' },

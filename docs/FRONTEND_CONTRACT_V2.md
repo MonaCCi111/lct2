@@ -2,15 +2,15 @@
 
 Актуальная frontend-спецификация. Этот файл — **source of truth для последующих задач**: архитектура, визуальные ограничения, доменная семантика, API-контракты и правила времени. README описывает запуск и проверку, но не переопределяет этот контракт. Изменения требований нужно отражать здесь вместе с кодом и тестами.
 
-Состояние: реализованы Task 01 (Frontend Foundation), Task 02 (`/overview` — Operational Center), Task 03 (`/objects/:objectId` — Object Workspace), Objects Registry (`/objects`), Predictions Registry (`/predictions`), Task 04 (`/predictions/:predictionId` — Prediction Investigation) и Task 05 (`/tickets` — наряды). Основной рабочий цикл замкнут: риск → прогноз → расследование → создание наряда → обработка наряда. Реестры разрабатывались параллельно в отдельной ветке и внесены controlled integration поверх Task 03. `/analytics` остаётся shell screen; supervisor analytics в текущий объём не входит.
+Состояние: реализованы Task 01 (Frontend Foundation), Task 02 (`/overview` — Operational Center), Task 03 (`/objects/:objectId` — Object Workspace), Objects Registry (`/objects`), Predictions Registry (`/predictions`), Task 04 (`/predictions/:predictionId` — Prediction Investigation), Task 05 (`/tickets` — наряды) и Task 06 (`/analytics` — Analytics). Основной рабочий цикл замкнут: риск → прогноз → расследование → создание наряда → обработка наряда. Реестры разрабатывались параллельно в отдельной ветке и внесены controlled integration поверх Task 03. Analytics использует отдельные mock-агрегаты; production/backend integration не начата.
 
 ## 1. Назначение и границы текущего этапа
 
 Dolos — система предиктивного мониторинга инженерной инфраструктуры, рабочий инструмент диспетчера. На текущем этапе реализованы application shell, routing, design tokens, reusable primitives, domain types, API client, DTO adapters, TanStack Query и mock API.
 
-Единственная оставшаяся shell screen — `/analytics`: заголовок, breadcrumb и аккуратный placeholder. Analytics charts реализуются отдельной задачей.
+Маршрут `/analytics` реализован как operational analytics workspace: отдельный агрегат, три периода, динамика рисков, распределения срочности и статусов нарядов, приоритетные объекты и ML-покрытие.
 
-Task 02 разрешает подключить Dashboard Summary к `/overview` в рамках спецификации раздела 12. Task 03 добавляет Object Workspace в рамках раздела 13. Разделы 14 и 15 описывают Objects Registry и Predictions Registry, раздел 16 — Prediction Investigation, раздел 17 — наряды. Существующая архитектура сохраняется.
+Task 02 разрешает подключить Dashboard Summary к `/overview` в рамках спецификации раздела 12. Task 03 добавляет Object Workspace в рамках раздела 13. Разделы 14 и 15 описывают Objects Registry и Predictions Registry, раздел 16 — Prediction Investigation, раздел 17 — наряды, раздел 18 — Analytics. Существующая архитектура сохраняется.
 
 ## 2. Стек и архитектура
 
@@ -849,6 +849,101 @@ Browser (`scripts/check-tickets.mjs`, включён в `npm run test:browser`):
 - Reason при отклонении, история изменений статуса, вложения и бригадный справочник не реализованы — соответствующего backend-контракта нет.
 - Detail-route наряда (`/tickets/:ticketId`) не вводится: состояние выражено query-параметром.
 - Аналитика по нарядам (SLA, MTTR, дашборды) в Task 05 не реализуется.
+
+## 18. Task 06 — Analytics
+
+`/analytics` — аналитическое рабочее пространство инженера и руководителя смены. Реализация в `pages/analytics/`: отдельные компоненты summary strip, range control, Recharts timeline, горизонтальных распределений, top objects и ML coverage. Новых зависимостей нет. Завершённые Object Workspace, Prediction Investigation и Ticket lifecycle не переписаны.
+
+### API, DTO и domain
+
+`GET /analytics/summary?range=24h|7d|30d`. Default UI и mock endpoint — `7d`; неподдерживаемый range возвращает HTTP 400. Ответ — самостоятельный backend aggregate. Нельзя собирать его из `/predictions`, `/tickets`, `/objects` или вычислять open tickets / risk score в React.
+
+```ts
+type AnalyticsRange = '24h' | '7d' | '30d';
+interface AnalyticsSummaryDto {
+  generated_at: string;
+  range: AnalyticsRange;
+  totals: {
+    active_predictions: number;
+    critical_predictions: number;
+    high_predictions: number;
+    open_tickets: number;
+    completed_tickets: number;
+    ml_coverage_percent: number;
+  };
+  risk_timeline: AnalyticsRiskTimelinePointDto[];
+  urgency_distribution: AnalyticsUrgencyDistributionDto[];
+  top_objects: AnalyticsObjectRiskDto[];
+  ticket_status_distribution: AnalyticsTicketStatusDto[];
+  ml_domain_coverage: AnalyticsMlDomainCoverageDto[];
+}
+interface AnalyticsRiskTimelinePointDto {
+  timestamp: string;
+  critical: number;
+  high: number;
+  medium: number;
+}
+interface AnalyticsUrgencyDistributionDto {
+  urgency: MaintenanceUrgency;
+  count: number;
+}
+interface AnalyticsObjectRiskDto {
+  object_id: number;
+  object_name: string;
+  risk_level: RiskLevel;
+  active_predictions: number;
+  critical_predictions: number;
+  high_predictions: number;
+  open_tickets: number;
+}
+interface AnalyticsTicketStatusDto {
+  status: TicketStatus;
+  count: number;
+}
+interface AnalyticsMlDomainCoverageDto {
+  domain: ModelDomain;
+  channels_total: number;
+  channels_supported: number;
+  coverage_percent: number;
+}
+```
+
+DTO: `api/dto/analytics.ts`; `toAnalyticsSummary` явно переводит snake_case в camelCase. Domain: `AnalyticsSummary`, `AnalyticsRiskTimelinePoint`, `AnalyticsUrgencyDistribution`, `AnalyticsObjectRisk`, `AnalyticsTicketStatus`, `AnalyticsMlDomainCoverage` в `domain/analytics/types.ts`. Charts получают domain, не DTO. Adapter сохраняет backend order объектов без сортировки и weighted scoring.
+
+Pipeline: HTTP → DTO → adapter → domain → TanStack Query → UI. `useAnalyticsSummary(range)`, `analyticsKeys.all`, `analyticsKeys.summary(range)`; ключ содержит период, `apiGet` получает AbortSignal. `keepPreviousData` сохраняет предыдущую выборку при смене ключа; последняя успешная domain snapshot сохраняется на странице и при ошибке нового периода. Данные соседних диапазонов не смешиваются.
+
+### Семантика агрегирования
+
+- `generated_at` — момент среза; `range` — окно истории, оканчивающееся этим моментом. Все timestamps — абсолютные ISO-инстанты, отображение только Europe/Moscow.
+- `active_predictions`, `critical_predictions`, `high_predictions`, `open_tickets`, `ml_coverage_percent`, urgency, top objects, ticket status и domain coverage — текущий snapshot на `generated_at`, не суммы исторических точек. Поэтому эти показатели могут совпадать между периодами.
+- `completed_tickets` — число завершений внутри выбранного окна; эта вторичная метрика явно подписана «Выполнено за период». Она может отличаться от текущего количества нарядов в статусе completed, включающего более ранние завершения.
+- Timeline — исторические количества активных рисков, а не количество новых событий или будущих аварий. Последняя точка согласована с текущими critical/high; low в графике не обязателен. Точки упорядочены и находятся внутри окна.
+- Open tickets передаётся готовым числом, хотя семантически относится к draft + approved. Ticket distribution сохраняет canonical статусы draft, approved, rejected, completed и их порядок; labels берутся из общей карты, используемой `StatusBadge`.
+- Urgency относится ко всем активным рискам, использует существующие `MaintenanceUrgency` и текстовые обозначения. Нормальный режим не означает отсутствие прогноза.
+- Top objects — ограниченный ранжированный список; суммы по нему не обязаны равняться общим totals. Object ID/name согласованы с каталогом; клик/Enter ведёт к `/objects/:objectId`.
+- Coverage — готовый процент 0..100 и supported/total по домену, не risk score. Общий процент взвешен по числу каналов; frontend не усредняет проценты доменов. Поддержано ≤ всего; при нулевом знаменателе backend должен возвращать 0. Human labels собраны в едином `getModelDomainLabel`.
+
+### Mock и состояния
+
+Фикстуры `api/mocks/analytics.ts` независимы от list endpoints и session-scoped ticket store. Snapshot — 20.09.2026 18:42 МСК: 137 активных, 8 critical, 24 high, 9 открытых нарядов, 80% ML. Для 24h/7d/30d заданы 13/8/16 исторических срезов с интервалами 2 часа / 1 день / 2 дня. История авторская, детерминированная, не реконструируется из текущих прогнозов, runtime random отсутствует. Изменения mock-нарядов не пересчитывают этот демонстрационный исторический snapshot.
+
+Отсутствие агрегата: HTTP 200 с правильным range/generated_at, нулевыми totals и всеми массивами пустыми (`emptyAnalytics`). Такой ответ показывает «Аналитические данные отсутствуют» / «За выбранный период агрегаты пока не сформированы». Нулевой риск при наличии исторических точек или coverage не считается отсутствием аналитики.
+
+Initial loading повторяет summary, timeline, urgency и lower sections skeleton. Initial error использует общий ErrorState с retry. При failed refresh сохраняются charts и общий StaleState. При смене периода сохраняются предыдущие данные и явная подпись «Показаны данные за …», включая неудавшийся запрос; метрики и график никогда не переименовываются в ещё не загруженный диапазон. Обновление повторяет запрос выбранного периода. Browser-only `setAnalyticsScenario` позволяет проверить loading/error/empty без изменения production UI.
+
+### Представление и доступность
+
+Одна компактная summary strip; semantic-red допустим только для critical. Timeline — три тонкие Recharts LineChart линии в существующих risk tokens, без gradient/area/glow. Ось 24h использует московские часы, 7d/30d — даты с прореживанием. Tooltip — полный московский timestamp и значения всех серий. Диаграммы срочности и статусов — нейтральные горизонтальные полосы; semantic marker дополняет urgency label. Donut/pie отсутствуют.
+
+У каждого chart есть meaningful aria-label и текстовый summary. Timeline дополнительно предоставляет доступную с клавиатуры таблицу всех точек. Приоритетные строки объектов фокусируемы и открываются по Enter. Risk — dot + label; coverage — нейтральный процент/полоса и поддержано/всего. Операционные числа tabular. Dark/light используют общие tokens, page-level горизонтальный overflow запрещён.
+
+### Проверки и ограничения
+
+Unit tests проверяют DTO/domain, keys/ranges, границы и порядок timeline, положительность counts, уникальность dimensions, coverage consistency, независимый open-tickets aggregate, все состояния, навигацию, доступность, московское время и отсутствие вымышленных метрик.
+
+`scripts/check-analytics.mjs` — девятый browser script в `test:browser`, существующие восемь сохранены. Матрица: dark/light 1920×1080 и 1366×768, 24h/30d, реальное изменение линий, keyboard select, tooltip, object navigation, loading/error/empty/stale и сохранение предыдущего периода. Screenshots: `analytics-{dark,light}-{1920,1366}.png`, `analytics-{24h,30d}.png`, дополнительные tooltip/loading/coverage. Требуется визуальный просмотр.
+
+Ограничения: Analytics пока использует mock aggregates; lifecycle history отсутствует, MTTR/SLA и model-quality metrics (accuracy, precision, recall, F1, ROC-AUC) не считаются; arbitrary date picker отсутствует. Analytics не предсказывает количество будущих аварий. Backend integration, auth, realtime/WebSocket, pagination overhaul и production hardening в Task 06 не входят.
 
 ## Theme System (Task 02.2)
 

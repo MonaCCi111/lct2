@@ -1,4 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AnalyticsRange, AnalyticsSummaryDto } from '../dto/analytics';
+import { toAnalyticsSummary } from '../adapters/analytics';
 import { apiGet, apiSend } from '../client/http';
 import type { PredictionDto } from '../dto/prediction';
 import type { DashboardSummaryDto } from '../dto/dashboard';
@@ -20,6 +22,7 @@ import { toTelemetrySeries } from '../adapters/telemetry';
 import { toOperationalQueue } from '../adapters/operational-queue';
 import { toObject } from '../adapters/resources';
 import {
+  analyticsKeys,
   dashboardKeys,
   objectKeys,
   predictionKeys,
@@ -30,6 +33,14 @@ import {
   type TelemetryParams,
   type TicketFilters,
 } from './keys';
+
+export const useAnalyticsSummary = (range: AnalyticsRange) =>
+  useQuery({
+    queryKey: analyticsKeys.summary(range),
+    queryFn: async ({ signal }) =>
+      toAnalyticsSummary(await apiGet<AnalyticsSummaryDto>(`/analytics/summary?range=${range}`, signal)),
+    placeholderData: keepPreviousData,
+  });
 
 export const useDashboardSummary = () =>
   useQuery({
