@@ -1,0 +1,25 @@
+{"domain": "POWER_PHASE", "split": "train", "rows": 650854, "positives": 58524}
+{"domain": "POWER_PHASE", "split": "validation_2024", "method": "fixed_lightgbm", "rows": 164240, "positives": 18683, "roc_auc": 0.9496277454485835, "average_precision": 0.5940817017090751}
+{"domain": "POWER_PHASE", "split": "validation_2024", "method": "alarm_ratio_24h", "rows": 164240, "positives": 18683, "roc_auc": 0.49480677876014906, "average_precision": 0.11365469365558555}
+{"domain": "POWER_PHASE", "split": "diagnostic_2025_2026", "method": "fixed_lightgbm", "rows": 297059, "positives": 35165, "roc_auc": 0.9319310680116204, "average_precision": 0.5674201218723471}
+{"domain": "POWER_PHASE", "split": "diagnostic_2025_2026", "method": "alarm_ratio_24h", "rows": 297059, "positives": 35165, "roc_auc": 0.4929912635422041, "average_precision": 0.11774429113140575}
+{"domain": "ANALOG_TEMP", "split": "train", "rows": 360115, "positives": 1658}
+{"domain": "ANALOG_TEMP", "split": "validation_2024", "method": "fixed_lightgbm", "rows": 112881, "positives": 563, "roc_auc": 0.3659046265397754, "average_precision": 0.005184531492403128}
+{"domain": "ANALOG_TEMP", "split": "validation_2024", "method": "alarm_ratio_24h", "rows": 112881, "positives": 563, "roc_auc": 0.49561823592915294, "average_precision": 0.005001278400702236}
+{"domain": "ANALOG_TEMP", "split": "diagnostic_2025_2026", "method": "fixed_lightgbm", "rows": 200831, "positives": 1169, "roc_auc": 0.5870725953722356, "average_precision": 0.007645187022551835}
+{"domain": "ANALOG_TEMP", "split": "diagnostic_2025_2026", "method": "alarm_ratio_24h", "rows": 200831, "positives": 1169, "roc_auc": 0.5019121387000318, "average_precision": 0.006105352824646625}
+{"domain": "ANALOG_GAS", "split": "train", "rows": 2091029, "positives": 5902}
+{"domain": "ANALOG_GAS", "split": "validation_2024", "method": "fixed_lightgbm", "rows": 924643, "positives": 2007, "roc_auc": 0.5730708148444923, "average_precision": 0.004273779048326414}
+{"domain": "ANALOG_GAS", "split": "validation_2024", "method": "alarm_ratio_24h", "rows": 924643, "positives": 2007, "roc_auc": 0.49801438487117344, "average_precision": 0.0021705674514380146}
+{"domain": "ANALOG_GAS", "split": "diagnostic_2025_2026", "method": "fixed_lightgbm", "rows": 1447150, "positives": 5679, "roc_auc": 0.6440889284611704, "average_precision": 0.005743119387754365}
+{"domain": "ANALOG_GAS", "split": "diagnostic_2025_2026", "method": "alarm_ratio_24h", "rows": 1447150, "positives": 5679, "roc_auc": 0.5013367562136714, "average_precision": 0.003969786235138406}
+{"domain": "FIRE_SAFETY", "split": "train", "rows": 333560, "positives": 5719}
+{"domain": "FIRE_SAFETY", "split": "validation_2024", "method": "fixed_lightgbm", "rows": 49619, "positives": 836, "roc_auc": 0.7345223162394696, "average_precision": 0.04416299490442829}
+{"domain": "FIRE_SAFETY", "split": "validation_2024", "method": "alarm_ratio_24h", "rows": 49619, "positives": 836, "roc_auc": 0.5490247700808002, "average_precision": 0.023632904119446144}
+{"domain": "FIRE_SAFETY", "split": "diagnostic_2025_2026", "method": "fixed_lightgbm", "rows": 218983, "positives": 3330, "roc_auc": 0.5566112993862665, "average_precision": 0.02487761319158895}
+{"domain": "FIRE_SAFETY", "split": "diagnostic_2025_2026", "method": "alarm_ratio_24h", "rows": 218983, "positives": 3330, "roc_auc": 0.5044379387479181, "average_precision": 0.015082416563231813}
+{"domain": "HYDRO_MECHANICS", "split": "train", "rows": 568955, "positives": 27728}
+{"domain": "HYDRO_MECHANICS", "split": "validation_2024", "method": "fixed_lightgbm", "rows": 148802, "positives": 9956, "roc_auc": 0.6708232545601001, "average_precision": 0.10133263295913322}
+{"domain": "HYDRO_MECHANICS", "split": "validation_2024", "method": "alarm_ratio_24h", "rows": 148802, "positives": 9956, "roc_auc": 0.526802345427265, "average_precision": 0.07073598558390198}
+{"domain": "HYDRO_MECHANICS", "split": "diagnostic_2025_2026", "method": "fixed_lightgbm", "rows": 284367, "positives": 19517, "roc_auc": 0.6620857580688795, "average_precision": 0.1054123656041632}
+{"domain": "HYDRO_MECHANICS", "split": "diagnostic_2025_2026", "method": "alarm_ratio_24h", "rows": 284367, "positives": 19517, "roc_auc": 0.4990220225854809, "average_precision": 0.06698156734116525}

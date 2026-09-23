@@ -1,0 +1,10 @@
+{"domain": "POWER_PHASE", "method": "saved_model", "rows": 305861, "positives": 36958, "roc_auc": 0.9396003690608165, "average_precision": 0.6399847817041253}
+{"domain": "POWER_PHASE", "method": "alarm_ratio_24h", "rows": 305861, "positives": 36958, "roc_auc": 0.49294658314265705, "average_precision": 0.12020380785519301}
+{"domain": "ANALOG_TEMP", "method": "saved_model", "rows": 206374, "positives": 1212, "roc_auc": 0.6319010626167656, "average_precision": 0.01721494118513414}
+{"domain": "ANALOG_TEMP", "method": "alarm_ratio_24h", "rows": 206374, "positives": 1212, "roc_auc": 0.5019740839590242, "average_precision": 0.006154844538782637}
+{"domain": "ANALOG_GAS", "method": "saved_model", "rows": 1529753, "positives": 5679, "roc_auc": 0.6625453481477348, "average_precision": 0.008459100464130738}
+{"domain": "ANALOG_GAS", "method": "alarm_ratio_24h", "rows": 1529753, "positives": 5679, "roc_auc": 0.5014907241059359, "average_precision": 0.00375886889841526}
+{"domain": "FIRE_SAFETY", "method": "saved_model", "rows": 221345, "positives": 3375, "roc_auc": 0.7569381386157457, "average_precision": 0.04788137796824333}
+{"domain": "FIRE_SAFETY", "method": "alarm_ratio_24h", "rows": 221345, "positives": 3375, "roc_auc": 0.5049515465091187, "average_precision": 0.015130219893384077}
+{"domain": "HYDRO_MECHANICS", "method": "saved_model", "rows": 292399, "positives": 19882, "roc_auc": 0.7372281969662836, "average_precision": 0.1290512711863156}
+{"domain": "HYDRO_MECHANICS", "method": "alarm_ratio_24h", "rows": 292399, "positives": 19882, "roc_auc": 0.4972179272060961, "average_precision": 0.06618724810639326}

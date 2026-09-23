@@ -15,6 +15,14 @@ journal_2024.parquet, journal_2025.parquet, journal_2026.parquet
 - production_ml/data/v6_matched_test_18m.parquet – 438 714 строк, 29 МиБ;
 - production_ml/data/v6_stream_full_18m.parquet – 3 254 280 строк, 157 МиБ.
 
+Проверенная пересборка production_ml/scripts/build_v6_2_pit_dataset.py
+создала локально, без добавления в Git:
+- production_ml/data/v6_2_train_full_multihorizon.parquet – 7 141 031 строк, 359 МиБ;
+- production_ml/data/v6_2_stream_18m.parquet – 3 105 258 строк, 152 МиБ;
+- production_ml/data/v6_2_matched_18m.parquet – 407 460 строк, 27 МиБ.
+Для повторения использовались LCT2_SOURCE_ROOT и LCT2_CACHE_DIR,
+указывающие на локальные исходные журналы и почасовые кэши.
+
 Скрипт также использует временные витрины в production_ml/data/cache_v6/
 и каталог duckdb_temp/. Эти файлы не включены в Git: они тяжёлые,
 а часть журналов получена от организаторов. Модели лежат в

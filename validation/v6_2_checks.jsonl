@@ -1,0 +1,15 @@
+{"check": "train_summary", "rows": [{"n_rows": 7141031, "channels": 10377, "first_obs": "2020-01-01 01:00:00", "last_obs": "2024-12-29 23:00:00", "positives": 146516}]}
+{"check": "train_duplicates", "rows": [{"extra_rows": 0}]}
+{"check": "train_inside_episode", "rows": [{"n_rows": 0}]}
+{"check": "train_target_consistency", "rows": [{"n_rows": 0}]}
+{"check": "stream_summary", "rows": [{"n_rows": 3105258, "channels": 11441, "first_obs": "2025-01-01 01:00:00", "last_obs": "2026-07-01 00:00:00", "positives": 67910}]}
+{"check": "stream_duplicates", "rows": [{"extra_rows": 0}]}
+{"check": "stream_inside_episode", "rows": [{"n_rows": 0}]}
+{"check": "stream_target_consistency", "rows": [{"n_rows": 0}]}
+{"check": "matched_summary", "rows": [{"n_rows": 407460, "channels": 10837, "first_obs": "2025-01-01 01:00:00", "last_obs": "2026-07-01 00:00:00", "positives": 67910}]}
+{"check": "matched_duplicates", "rows": [{"extra_rows": 0}]}
+{"check": "matched_inside_episode", "rows": [{"n_rows": 0}]}
+{"check": "matched_target_consistency", "rows": [{"n_rows": 0}]}
+{"check": "positive_lead_range", "rows": [{"positive_rows": 67910, "min_hours": 1.0005555555555556, "max_hours": 47.998333333333335}]}
+{"check": "train_years", "rows": [{"yr": 2020, "n_rows": 1711343, "positives": 43023}, {"yr": 2022, "n_rows": 1876301, "positives": 35447}, {"yr": 2023, "n_rows": 1695588, "positives": 33469}, {"yr": 2024, "n_rows": 1857799, "positives": 34577}]}
+{"check": "stream_years", "rows": [{"yr": 2025, "n_rows": 2000722, "positives": 38353}, {"yr": 2026, "n_rows": 1104536, "positives": 29557}]}
