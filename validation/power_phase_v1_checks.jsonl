@@ -1,0 +1,16 @@
+{"check": "feature_counts", "rows": [{"yr": 2020, "n": 169572, "channels": 611}, {"yr": 2021, "n": 10, "channels": 10}, {"yr": 2022, "n": 156912, "channels": 821}, {"yr": 2023, "n": 152034, "channels": 845}, {"yr": 2024, "n": 149284, "channels": 850}, {"yr": 2025, "n": 146145, "channels": 952}, {"yr": 2026, "n": 96829, "channels": 948}]}
+{"check": "duplicate_feature_keys", "rows": [{"n": 0}]}
+{"check": "duplicate_label_keys", "rows": [{"n": 0}]}
+{"check": "eligibility", "rows": [{"n": 870786, "eligible_rows": 244549, "positives": 126069, "eligible_positives": 108282}]}
+{"check": "eligibility_violations", "rows": [{"n": 0}]}
+{"check": "lead_bounds", "rows": [{"min_hours": 1.0, "max_hours": 48.0, "n": 126069}]}
+{"check": "invalid_feature_values", "rows": [{"fast_fraction": 0, "alarm_fraction": 0, "undefined_fraction": 0, "observed_hours": 0}]}
+{"check": "null_features", "rows": [{"sensor_type": 0, "event_count_1h": 0, "event_count_24h": 0, "status_changes_1h": 0, "status_changes_24h": 0, "status_changes_72h": 0, "rapid_status_changes_24h": 0, "fast_change_fraction_24h": 0, "alarm_events_24h": 0, "alarm_event_fraction_24h": 0, "undefined_events_24h": 0, "undefined_event_fraction_24h": 0, "observed_hours_72h": 0}]}
+{"check": "failure_reasons", "rows": [{"fail_reason": "TEXT_FAIL", "n": 649220}]}
+{"check": "episode_reasons", "rows": [{"first_reason": "TEXT_FAIL", "n": 160095}]}
+{"check": "episode_first_status", "rows": [{"first_status": "Обесточен", "n": 155140}, {"first_status": "Неисправен", "n": 4955}]}
+{"check": "episodes_by_sensor", "rows": [{"sensor_type": "Состояние фазы", "first_status": "Неисправен", "n": 4955}, {"sensor_type": "Состояние фазы", "first_status": "Обесточен", "n": 155140}]}
+{"check": "split_episode_overlap", "rows": []}
+{"check": "old_episode_comparison", "rows": [{"old_count": 160557, "new_count": 160095, "matching_starts": 160095}]}
+{"check": "train_inference_parity", "rows": [20757, 0, 0.0]}
+{"check": "bundle", "hashes_match": true, "feature_contract_match": true, "version_match": true}

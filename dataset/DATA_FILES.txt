@@ -31,3 +31,13 @@ production_ml/models/. Их можно открыть без сырых журн
 В этих витринах метки выделены автоматически из SCADA. Они не
 подтверждают фактический ремонт. Проверенные ограничения перечислены
 в validation/ML_FINDINGS.txt.
+
+Для power_phase_scada_v1 отдельно собираются четыре локальных файла:
+production_ml/data/power_phase_v1/failure_events.parquet – сырые признаки
+аварийного статуса; episodes.parquet – сгруппированные эпизоды;
+features.parquet – почасовые признаки; labels.parquet – будущие эпизоды
+на горизонте 1–48 часов и признак допуска. Это производные файлы от
+указанных выше журналов и кэшей. Они не загружаются в Git. Код сборки и
+контракт лежат в production_ml/pipeline/, итоговая проверка –
+validation/POWER_PHASE_V1.txt. В Git находится только небольшой пакет
+модели production_ml/models/power_phase_scada_v1/.
