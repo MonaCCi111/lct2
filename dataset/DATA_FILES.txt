@@ -1,0 +1,25 @@
+Локальные данные для ML
+
+В репозитории оставлены два справочника:
+- справочник_каналов_датчиков.csv – 11 485 каналов;
+- справочник_объектов_диспетчер.csv – 95 записей дерева объектов.
+
+Для повторной сборки витрин нужны файлы journal_2019.parquet,
+journal_2020.parquet, journal_2022.parquet, journal_2023.parquet,
+journal_2024.parquet, journal_2025.parquet, journal_2026.parquet
+в каталоге ml_research/data/parquet_by_year/. Исходные архивы лежат
+локально в dataset/ext-journal-YYYY.7z. 2021 год в v6.1 не используется.
+
+Локальные выходные файлы скрипта production_ml/scripts/build_final_v6_dataset.py:
+- production_ml/data/v6_train_full_multihorizon.parquet – 925 440 строк, 54 МиБ;
+- production_ml/data/v6_matched_test_18m.parquet – 438 714 строк, 29 МиБ;
+- production_ml/data/v6_stream_full_18m.parquet – 3 254 280 строк, 157 МиБ.
+
+Скрипт также использует временные витрины в production_ml/data/cache_v6/
+и каталог duckdb_temp/. Эти файлы не включены в Git: они тяжёлые,
+а часть журналов получена от организаторов. Модели лежат в
+production_ml/models/. Их можно открыть без сырых журналов.
+
+В этих витринах метки выделены автоматически из SCADA. Они не
+подтверждают фактический ремонт. Проверенные ограничения перечислены
+в validation/ML_FINDINGS.txt.
