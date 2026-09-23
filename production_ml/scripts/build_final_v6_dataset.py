@@ -4,6 +4,7 @@ import time
 import duckdb
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 sys.stdout.reconfigure(encoding='utf-8')
 t_global_start = time.time()
@@ -20,18 +21,19 @@ print("6. 49 физических признаков (включая 6 тяже�
 print("7. P-F цензурирование в Train и балансировка классов строго 1 к 5")
 print("=" * 95)
 
-base_dir = "g:/lct2/production_ml"
+project_dir = Path(__file__).resolve().parents[2]
+base_dir = str(project_dir / "production_ml")
 data_dir = os.path.join(base_dir, "data")
 cache_dir = os.path.join(data_dir, "cache_v6")
-parquet_dir = "g:/lct2/ml_research/data/parquet_by_year"
-temp_dir = "g:/lct2/duckdb_temp"
+parquet_dir = str(project_dir / "ml_research" / "data" / "parquet_by_year")
+temp_dir = str(project_dir / "duckdb_temp")
 
 os.makedirs(data_dir, exist_ok=True)
 os.makedirs(cache_dir, exist_ok=True)
 os.makedirs(temp_dir, exist_ok=True)
 
-ch_csv = "g:/lct2/справочник_каналов_датчиков.csv"
-obj_csv = "g:/lct2/dataset/справочник_объектов_диспетчер.csv"
+ch_csv = str(project_dir / "dataset" / "справочник_каналов_датчиков.csv")
+obj_csv = str(project_dir / "dataset" / "справочник_объектов_диспетчер.csv")
 
 # Выходные артефакты
 train_out_file = os.path.join(data_dir, "v6_train_full_multihorizon.parquet")
@@ -738,7 +740,7 @@ con.execute("DROP TABLE IF EXISTS persistent_failure_episodes;")
 # 7. ЭКСПОРТ В PARQUET И ВАЛИДАЦИЯ КАЧЕСТВА
 # -----------------------------------------------------------------------------
 print("\n" + "=" * 90)
-print("7. ЭКСПОРТ ПАРКЕТ-АРТЕФАКТОВ В g:/lct2/production_ml/data/...")
+print(f"7. ЭКСПОРТ ПАРКЕТ-АРТЕФАКТОВ В {data_dir}/...")
 print("=" * 90)
 
 t_exp = time.time()
