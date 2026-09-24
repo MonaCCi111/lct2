@@ -1,0 +1,39 @@
+Газовая исследовательская ветка
+
+Из каталога G:\lct2\tmp\publish_ml запустить:
+
+.venv\Scripts\python.exe -m research.probe_gas_source
+.venv\Scripts\python.exe -m production_ml.pipeline.build_gas_status
+.venv\Scripts\python.exe -m production_ml.pipeline.build_gas_hourly
+.venv\Scripts\python.exe -m production_ml.pipeline.build_gas_features
+.venv\Scripts\python.exe -m research.probe_gas_targets
+.venv\Scripts\python.exe -m production_ml.pipeline.build_gas_alarm_cards
+.venv\Scripts\python.exe -m validation.check_gas
+
+Источник – очищенные journal_2019.parquet – journal_2026.parquet и
+справочник каналов. Все выходные Parquet сохраняются локально в
+production_ml/data/gas_v1 и не входят в Git. Часовой факт obs_time
+относится к замерам в предшествующий час. Признаки содержат 6 часов
+недавних наблюдений и предшествующие часы 6–72. Пустые часы не
+заполняются нулями.
+
+build_gas_alarm_cards группирует уже наблюдавшиеся сообщения
+«Обнаружен газ» с is_alarm=true по объекту, если разрыв между ними
+не превышает один час. Карточка типа OBSERVED_GAS_STATUS содержит
+время, число записей и каналов, доступность числовой истории за
+24 часа и ссылочный card_id для alarm_evidence.parquet с показаниями.
+Это исследовательский выход для просмотра человеком, а не прогноз
+физической утечки и не автоматический черновик наряда.
+
+gas_live_features.aggregate_hour и build_hour_features повторяют
+исторический расчёт по ограниченной истории. Сверка на трёх
+реальных часах, включая границу 2024/2025, дала ноль расхождений.
+Порядок поступления событий источник не содержит. Для живого
+расчёта используйте только уже полученные записи; поздние события
+могут потребовать пересчёта часа и карточки.
+
+Модель по статусу «Обнаружен газ» не обучалась. Повторяющиеся
+массовые кампании тревог, отсутствие числовой истории у части каналов
+и неподтверждённая шкала значений не позволяют считать этот статус
+надёжной целевой меткой физической утечки. Активный реестр моделей
+и действующие пороги фазы и насоса не менялись.
