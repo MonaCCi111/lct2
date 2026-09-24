@@ -1,11 +1,19 @@
-"""CLI действующей модели. Версия выбирается только в active.py."""
+"""CLI действующих моделей. Без --model сохраняет прежний маршрут фазы."""
 
-from .active import MODEL_VERSION
-from .score_power_phase_v2 import main
+import argparse
+import importlib
+import sys
+
+from .active import ACTIVE_MODELS, MODEL_VERSION
 
 
-if MODEL_VERSION != "power_phase_scada_v2":
-    raise RuntimeError(f"Для {MODEL_VERSION} не зарегистрирован scorer")
+def main():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--model", choices=tuple(ACTIVE_MODELS), default=MODEL_VERSION)
+    known, remaining = parser.parse_known_args()
+    module = importlib.import_module(ACTIVE_MODELS[known.model]["scorer"])
+    sys.argv = [sys.argv[0], *remaining]
+    module.main()
 
 
 if __name__ == "__main__":

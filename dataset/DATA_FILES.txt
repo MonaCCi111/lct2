@@ -46,3 +46,7 @@ validation/POWER_PHASE_V1.txt. В Git находится только небол
 локальные production_ml/data/source_v2/journal_YYYY.parquet, затем
 production_ml/data/power_phase_v2/. Эти файлы также не входят в Git.
 Правила и команды перечислены в production_ml/pipeline/USAGE_V2.txt.
+
+Ветки pump_scada_v1 и temperature_scada_v1 создают локальные каталоги
+production_ml/data/pump_v1/ и production_ml/data/temperature_v1/.
+Насосная ветка активна, температурная оставлена исследовательской.

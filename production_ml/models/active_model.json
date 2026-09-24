@@ -2,9 +2,33 @@
   "version": "power_phase_scada_v2",
   "bundle": "power_phase_scada_v2",
   "scorer_module": "production_ml.pipeline.score_active",
-  "ticket_module": "production_ml.pipeline.create_tickets",
-  "supported_sensor_types": ["Состояние фазы"],
-  "target_kind": "SCADA_STATUS_EPISODE",
+  "ticket_module": "production_ml.pipeline.create_combined_tickets",
+  "supported_sensor_types": ["Состояние фазы", "Состояние насоса"],
+  "target_kind": "MODEL_SPECIFIC_SCADA_EPISODE",
   "forecast_horizon_hours": 48,
-  "status": "diagnostic"
+  "status": "diagnostic",
+  "active_models": [
+    {
+      "version": "power_phase_scada_v2",
+      "bundle": "power_phase_scada_v2",
+      "sensor_type": "Состояние фазы",
+      "scorer_module": "production_ml.pipeline.score_power_phase_v2",
+      "target_kind": "SCADA_STATUS_EPISODE"
+    },
+    {
+      "version": "pump_scada_v1",
+      "bundle": "pump_scada_v1",
+      "sensor_type": "Состояние насоса",
+      "scorer_module": "production_ml.pipeline.score_pump",
+      "target_kind": "SCADA_PUMP_ALARM"
+    }
+  ],
+  "research_candidates": [
+    {
+      "version": "temperature_scada_v1",
+      "bundle": "temperature_scada_v1",
+      "sensor_type": "Датчик температуры",
+      "reason_not_active": "В периоде политики доступно только 11 уникальных будущих эпизодов"
+    }
+  ]
 }
