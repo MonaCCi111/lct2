@@ -1,0 +1,23 @@
+{
+  "version": "fan_scada_v1",
+  "supported_sensor_types": ["Состояние вентилятора"],
+  "target": "Начало автоматической тревоги вентилятора SCADA через 1–48 часов",
+  "episode_rule": "Новый эпизод начинается при is_alarm=true после явно наблюдавшегося is_alarm=false с более ранней временной меткой; временные метки с обоими состояниями полностью исключаются",
+  "recovery_rule": "Первая последующая однозначная временная метка is_alarm=false",
+  "operational_eligibility": "Есть не менее 72 часов истории; последнее состояние не тревожное; после предыдущей тревоги прошло 48 часов от явного восстановления",
+  "training_eligibility": "Operational eligibility и последнее событие канала находится не раньше чем через 48 часов после observation_time",
+  "observation_time": "Конец часа; используются события с event_time строго раньше observation_time",
+  "late_events": "В журнале нет времени поступления. Историческая доступность по event_time не доказывает отсутствие задержки доставки",
+  "model_inputs": [
+    "event_count_1h", "event_count_24h", "event_count_72h",
+    "on_events_24h", "off_events_24h", "normal_events_24h",
+    "undefined_events_24h", "on_fraction_24h", "off_fraction_24h",
+    "undefined_fraction_24h", "observed_hours_72h"
+  ],
+  "input_key": ["channel_id", "obs_time"],
+  "output": ["channel_id", "obs_time", "score"],
+  "coverage": "Строка создаётся только для часа с однозначными событиями канала",
+  "missing_hour_semantics": "Отсутствие строки не считается нормальным состоянием; observed_hours_72h показывает число часов с событиями",
+  "unsupported_input": "Каналы других типов не оцениваются",
+  "score_meaning": "Калиброванный по истории балл автоматической тревоги вентилятора SCADA. Он не является вероятностью подтверждённого физического отказа или ремонта"
+}
