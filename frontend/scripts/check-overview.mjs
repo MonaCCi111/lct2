@@ -67,9 +67,11 @@ try {
         // Three shapes now: urgency squares, a risk dot, or risk rendered as coloured text
         // (the queue, where the squares already mark the row).
         const dotless = element.classList.contains('risk-indicator-text');
-        const marker = element.querySelector(urgency ? '.urgency-squares' : '.semantic-marker');
+        const marker = element.querySelector(urgency ? '.urgency-meter' : '.semantic-marker');
         const markerStyle = marker ? getComputedStyle(marker) : null;
-        const square = element.querySelector('.urgency-square');
+        // Urgency is a single bar whose length encodes the maintenance window.
+        const bar = element.querySelector('.urgency-bar');
+        const barStyle = bar ? getComputedStyle(bar) : null;
         return {
           dotless,
           background: style.backgroundColor,
@@ -80,9 +82,10 @@ try {
           fontWeight: style.fontWeight,
           numeric: style.fontVariantNumeric,
           markerWidth: markerStyle?.width ?? null,
-          markerHeight: square ? getComputedStyle(square).height : (markerStyle?.height ?? null),
-          markerRadius: square ? getComputedStyle(square).borderRadius : (markerStyle?.borderRadius ?? null),
-          squares: element.querySelectorAll('.urgency-square').length,
+          markerHeight: barStyle ? barStyle.height : (markerStyle?.height ?? null),
+          markerRadius: barStyle ? barStyle.borderRadius : (markerStyle?.borderRadius ?? null),
+          barWidth: barStyle ? Math.round(parseFloat(barStyle.width)) : null,
+          barColor: markerStyle?.color ?? null,
           decorative: marker?.getAttribute('aria-hidden') ?? null,
           urgency,
           label: element.textContent.trim(),
@@ -105,13 +108,16 @@ try {
     } else {
       assert.equal(style.color, 'rgb(231, 232, 234)');
       assert.equal(style.decorative, 'true');
-      assert.equal(style.markerWidth, style.urgency ? '22px' : '6px');
-      assert.equal(style.markerHeight, '6px');
-      assert.equal(style.markerRadius, style.urgency ? '1px' : '3px');
+      assert.equal(style.markerWidth, style.urgency ? '24px' : '6px');
+      assert.equal(style.markerHeight, style.urgency ? '4px' : '6px');
+      assert.equal(style.markerRadius, style.urgency ? '2px' : '3px');
     }
-    // Squares encode urgency only, and never more than the three lifecycle steps.
-    if (style.urgency) assert.ok(style.squares >= 1 && style.squares <= 3, `squares: ${style.squares}`);
-    else assert.equal(style.squares, 0);
+    // Urgency reads as one bar of 8, 16 or 24px — shorter window, longer bar — and it is the
+    // only indicator that carries the urgency accent colour.
+    if (style.urgency) {
+      assert.ok([8, 16, 24].includes(style.barWidth), `urgency bar: ${style.barWidth}`);
+      assert.match(style.barColor, /^rgb\(/);
+    } else assert.equal(style.barWidth, null);
   }
   assert.equal(
     await page
@@ -150,6 +156,18 @@ try {
     assert.equal(queueScroll, 0, `queue overflows by ${queueScroll}px at ${width}`);
     assert.equal(await queue.getByRole('columnheader', { name: 'Вероятность' }).isVisible(), true);
     assert.ok((await queue.locator('tbody tr').count()) >= 10);
+    // Fixed-height operational workspace: the page itself never scrolls, the queue does.
+    const scrolling = await page.evaluate(() => ({
+      page: document.documentElement.scrollHeight - document.documentElement.clientHeight,
+      queue: (() => {
+        const element = document.querySelector('.risk-queue .table-scroll');
+        return element.scrollHeight - element.clientHeight;
+      })(),
+      footer: document.querySelector('.workspace-footer').getBoundingClientRect().bottom,
+    }));
+    assert.equal(scrolling.page, 0, `page scrolls by ${scrolling.page}px at ${width}`);
+    assert.ok(scrolling.queue > 0, 'the queue must keep its own scroll');
+    assert.ok(scrolling.footer <= height, 'the shell footer must stay inside the viewport');
     if (width === 1920) {
       const tenth = await queue.locator('tbody tr').nth(9).boundingBox();
       const coverage = await page.locator('.coverage-status').boundingBox();
@@ -172,10 +190,10 @@ try {
   await ready();
   await page
     .getByRole('region', { name: 'Состояние объектов' })
-    .getByRole('link', { name: /объект Фита/ })
+    .getByRole('link', { name: /объект θ/ })
     .click();
   await page.waitForURL('**/objects/203');
-  await page.getByRole('heading', { name: 'объект Фита', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'объект θ', exact: true }).waitFor();
   await page.goBack();
   await ready();
   // Verify tab order through the main workflow, without mouse activation.

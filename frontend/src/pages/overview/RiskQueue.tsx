@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowDownWideNarrow, ArrowUpRight, RefreshCw } from 'lucide-react';
 import { usePredictions } from '../../api/queries/hooks';
 import { DataTable, type Column } from '../../components/data-display/DataTable';
+import { MetricValue } from '../../components/data-display/MetricValue';
 import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
 import { UrgencyColumnHint } from '../../components/data-display/UrgencyColumnHint';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
@@ -38,7 +39,8 @@ const columns: Column<RiskQueueRow>[] = [
     header: 'Объект',
     className: 'queue-object',
     cell: (row) => (
-      <Link className="table-entity-link" to={`/objects/${row.objectId}`} title={row.objectName}>
+      // The letter is the display form; the full Russian name stays one hover away.
+      <Link className="table-entity-link" to={`/objects/${row.objectId}`} title={row.objectFullName}>
         {row.objectName}
       </Link>
     ),
@@ -75,14 +77,16 @@ const columns: Column<RiskQueueRow>[] = [
     header: 'Вероятность',
     className: 'queue-probability cell-secondary',
     align: 'right',
-    cell: (row) => row.probability,
+    // Colour follows the value's own scale, so a column of numbers can be scanned; the risk
+    // column keeps the backend verdict.
+    cell: (row) => <MetricValue value={row.probability} tone={row.probabilityTone} />,
   },
   {
     id: 'health',
     header: 'ИТС',
     className: 'queue-health cell-secondary',
     align: 'right',
-    cell: (row) => row.health,
+    cell: (row) => <MetricValue value={row.health} tone={row.healthTone} />,
   },
   {
     id: 'updated',
@@ -163,8 +167,8 @@ export function RiskQueue() {
         }
         rowProps={(row) => ({
           tabIndex: 0,
-          className: `queue-row ${row.risk === 'critical' ? 'queue-row-critical' : ''}`,
-          'aria-label': `Открыть прогноз: ${row.sensorName}, ${row.objectName}`,
+          className: `queue-row ${row.risk ? `queue-row-${row.risk}` : ''}`,
+          'aria-label': `Открыть прогноз: ${row.sensorName}, ${row.objectFullName}`,
           onClick: (event) => {
             if (!(event.target instanceof Element && event.target.closest('a,button')))
               void navigate(`/predictions/${row.id}`);

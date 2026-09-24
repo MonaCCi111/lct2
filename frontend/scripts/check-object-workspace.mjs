@@ -56,13 +56,13 @@ async function scenario(page, endpoint, state) {
   await navigate(page, 'Оперативный центр');
   await page
     .getByRole('region', { name: 'Состояние объектов' })
-    .getByRole('link', { name: /объект Фита/ })
+    .getByRole('link', { name: /объект θ/ })
     .click();
   await page.waitForURL('**/objects/203');
 }
 
 async function ready(page) {
-  await page.getByRole('heading', { name: 'объект Фита', exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'объект θ', exact: true }).waitFor();
   await page.getByText('Показано 24 из 24 загруженных').waitFor();
   await page.getByRole('button', { name: CRITICAL_SEGMENT }).waitFor();
 }
@@ -203,7 +203,7 @@ try {
       await scenario(page, 'topology', 'error');
       await page.getByRole('region', { name: 'Топология объекта' }).getByRole('alert').waitFor();
       await page.getByText('Показано 24 из 24 загруженных').waitFor();
-      await page.getByRole('heading', { name: 'объект Фита', exact: true }).waitFor();
+      await page.getByRole('heading', { name: 'объект θ', exact: true }).waitFor();
       await page.screenshot({ path: 'test-results/object-workspace-topology-error.png' });
 
       await scenario(page, 'predictions', 'error');

@@ -49,11 +49,19 @@ try {
           '--risk-medium',
           '--risk-low',
           '--focus',
+          // Markers, stripes and bars are shapes: the non-text threshold applies to them.
+          '--risk-critical-accent',
+          '--risk-high-accent',
+          '--risk-medium-accent',
+          '--risk-low-accent',
         ].map((token) => ({ token, ratio: ratio(token, bg) })),
       );
     });
     for (const item of contrast)
-      assert.ok(item.ratio >= (item.token === '--focus' ? 3 : 4.5), `${theme} ${item.token}: ${item.ratio}`);
+      assert.ok(
+        item.ratio >= (item.token === '--focus' || item.token.endsWith('-accent') ? 3 : 4.5),
+        `${theme} ${item.token}: ${item.ratio}`,
+      );
     assert.equal(
       await page
         .locator('.semantic-indicator')
@@ -154,7 +162,7 @@ try {
     assert.equal(await page.locator('html').evaluate((el) => getComputedStyle(el).colorScheme), expected);
     assert.equal(
       await page.locator('html').evaluate((el) => getComputedStyle(el).backgroundColor),
-      expected === 'dark' ? 'rgb(24, 25, 29)' : 'rgb(244, 245, 246)',
+      expected === 'dark' ? 'rgb(24, 25, 29)' : 'rgb(238, 240, 243)',
     );
     assert.equal(await page.locator('#root').innerHTML(), '');
     await page.close();

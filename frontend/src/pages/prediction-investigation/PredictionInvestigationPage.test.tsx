@@ -60,7 +60,7 @@ describe('Prediction Investigation', () => {
     mount('OW-004');
     await ready();
     expect(screen.getByText('Температура')).toBeVisible();
-    expect(screen.getByRole('link', { name: 'объект Фита' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'объект θ' })).toHaveAttribute('title', 'объект Фита');
     expect(screen.getByText('ПК 89+40')).toBeVisible();
     // Freshness reads as a relative age; the exact Moscow timestamp stays in the title.
     expect(screen.getByTitle('20.09.2026, 18:38 МСК')).toHaveTextContent(/^Обновлено /);
@@ -209,7 +209,7 @@ describe('Prediction Investigation', () => {
   it('navigates to the object workspace from the prediction context', async () => {
     mount('OW-004');
     await ready();
-    await userEvent.click(screen.getByRole('link', { name: 'объект Фита' }));
+    await userEvent.click(screen.getByRole('link', { name: 'объект θ' }));
     expect(screen.getByRole('heading', { name: 'Рабочее пространство объекта' })).toBeVisible();
   });
   it('hands the prediction over to the tickets flow without creating anything', async () => {

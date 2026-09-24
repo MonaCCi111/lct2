@@ -44,7 +44,9 @@ try {
     assert.equal(await page.locator('html').getAttribute('data-theme'), theme);
     assert.equal(await page.locator('.objects-registry-row').count(), 8);
     const first = page.locator('.objects-registry-row').first();
-    assert.match(await first.innerText(), /Фита/);
+    // Objects display their Greek letter; the Russian name stays in the cell's title.
+    assert.match(await first.innerText(), /объект θ/);
+    assert.equal(await first.locator('.objects-registry-name').getAttribute('title'), 'объект Фита');
     assert.match(await first.innerText(), /Критический/);
     assert.match(await first.innerText(), /84%/);
     assert.match(await first.innerText(), /722 \/ 860/);

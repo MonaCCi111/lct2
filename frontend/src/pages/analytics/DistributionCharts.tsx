@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { AnalyticsTicketStatus, AnalyticsUrgencyDistribution } from '../../domain/analytics/types';
+import type { MaintenanceUrgency } from '../../domain/prediction/types';
 import { ticketStatuses, UrgencyBadge } from '../../components/ui/Badge';
 import { formatCount, getUrgencyLabel } from '../../utils/formatters';
 function Distribution({
@@ -7,7 +8,7 @@ function Distribution({
   items,
 }: {
   title: string;
-  items: { key: string; label: string; content: ReactNode; count: number }[];
+  items: { key: string; label: string; content: ReactNode; count: number; tone?: string }[];
 }) {
   const maximum = Math.max(1, ...items.map((item) => item.count));
   const summary = items.map((item) => `${item.label}: ${formatCount(item.count)}`).join('; ');
@@ -26,7 +27,8 @@ function Distribution({
                 {item.content}
                 <span>{formatCount(item.count)}</span>
               </div>
-              <div className="analytics-bar" aria-hidden="true">
+              {/* The bar repeats the severity of its own row, so the block reads as one scale. */}
+              <div className={`analytics-bar ${item.tone ? `tone-${item.tone}` : ''}`} aria-hidden="true">
                 <span style={{ width: `${(100 * item.count) / maximum}%` }} />
               </div>
             </li>
@@ -36,6 +38,13 @@ function Distribution({
     </figure>
   );
 }
+/** Same scale as the registries: shorter window, louder colour; the normal regime reads green. */
+const urgencyBarTones: Record<MaintenanceUrgency, string> = {
+  FLASH_1_6H: 'critical',
+  URGENT_6_24H: 'high',
+  PLANNED_24_48H: 'medium',
+  NORMAL: 'low',
+};
 export function UrgencyDistributionChart({ items }: { items: AnalyticsUrgencyDistribution[] }) {
   return (
     <Distribution
@@ -45,6 +54,7 @@ export function UrgencyDistributionChart({ items }: { items: AnalyticsUrgencyDis
         label: getUrgencyLabel(item.urgency),
         content: <UrgencyBadge value={item.urgency} />,
         count: item.count,
+        tone: urgencyBarTones[item.urgency],
       }))}
     />
   );

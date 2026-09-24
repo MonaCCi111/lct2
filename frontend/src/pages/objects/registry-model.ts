@@ -1,6 +1,7 @@
 import type { ObjectStatusSummary } from '../../domain/object/status';
 import type { RiskLevel } from '../../domain/prediction/types';
 import { formatCoverage } from '../../utils/formatters';
+import { objectSearchText } from '../../utils/object-name';
 
 export type RegistryRiskFilter = RiskLevel | 'all';
 const priority: Record<RiskLevel, number> = { critical: 0, high: 1, medium: 2, low: 3 };
@@ -16,7 +17,8 @@ export function selectObjects(
   return rows
     .filter(
       (row) =>
-        (risk === 'all' || row.riskLevel === risk) && row.objectName.toLocaleLowerCase('ru').includes(term),
+        (risk === 'all' || row.riskLevel === risk) &&
+        objectSearchText(row.objectName).toLocaleLowerCase('ru').includes(term),
     )
     .sort(
       (a, b) =>

@@ -4,6 +4,7 @@ import type { Prediction } from '../../domain/prediction/types';
 import { Skeleton } from '../../components/feedback/States';
 import { UpdatedAtLabel } from '../../components/feedback/UpdatedAtLabel';
 import { reviewStatusLabels } from '../../utils/formatters';
+import { formatObjectName } from '../../utils/object-name';
 
 export function PredictionHeader({
   prediction,
@@ -31,7 +32,9 @@ export function PredictionHeader({
             <p className="investigation-eyebrow">{prediction.sensorType}</p>
             <h1>{prediction.sensorName}</h1>
             <p className="investigation-context-line">
-              <Link to={`/objects/${prediction.objectId}`}>{prediction.objectName}</Link>
+              <Link to={`/objects/${prediction.objectId}`} title={prediction.objectName}>
+                {formatObjectName(prediction.objectName)}
+              </Link>
               <span aria-hidden="true">·</span>
               <span>{prediction.piket ?? 'Пикет не указан'}</span>
               <span aria-hidden="true">·</span>

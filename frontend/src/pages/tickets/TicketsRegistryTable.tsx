@@ -3,6 +3,7 @@ import { RiskBadge, StatusBadge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import type { Ticket } from '../../domain/ticket/types';
 import { formatDateTime } from '../../utils/formatters';
+import { formatObjectName } from '../../utils/object-name';
 import { ticketSourceLabel } from './ticket-registry-model';
 
 // Tickets span several days, so the registry shows the full Moscow date, not only the time.
@@ -38,7 +39,7 @@ const columns: readonly Column<Ticket>[] = [
     className: 'tk-object',
     cell: (row) => (
       <span className="truncate" title={row.objectName}>
-        {row.objectName}
+        {formatObjectName(row.objectName)}
       </span>
     ),
   },

@@ -3,8 +3,8 @@ import type { AnalyticsRange, AnalyticsRiskTimelinePoint } from '../../domain/an
 import { formatCount, formatDateTime, formatOperationalTime } from '../../utils/formatters';
 import { analyticsRangeLabels, formatAnalyticsDay } from './analytics-model';
 /**
- * Critical carries the most weight, and the medium line is dashed: the risk tokens for high and
- * medium are close in hue by design, so the stroke pattern — not a louder colour — separates them.
+ * Critical carries the most weight, and the medium line stays dashed: orange and yellow are now
+ * clearly different hues, but the stroke pattern keeps the series separable without colour.
  */
 const series = [
   { key: 'critical', label: 'Критические', width: 1.9, dash: undefined },

@@ -53,7 +53,7 @@ describe('Object Workspace', () => {
   it('renders object detail, Moscow timestamp and backend aggregates without KPI cards', async () => {
     mount();
     await ready();
-    expect(screen.getByRole('heading', { name: 'объект Фита' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'объект θ' })).toBeVisible();
     expect(screen.getByText('Инженерный объект · 860 каналов · ML-покрытие 84%')).toBeVisible();
     // Freshness reads as a relative age; the exact Moscow timestamp stays in the title.
     expect(screen.getByTitle('20.09.2026, 18:42 МСК')).toHaveTextContent(/^Обновлено /);

@@ -10,14 +10,20 @@
   --text-primary: #e7e8ea;
   --text-secondary: #a5a9b0;
   --text-muted: #9a9fa8;
-  --risk-critical: #e29395;
-  --risk-high: #e6a263;
-  --risk-medium: #bdb491;
-  --risk-low: #91b7a0;
+  /* Severity reads as text first: these four stay inside AA on every surface. */
+  --risk-critical: #ef8b8e;
+  --risk-high: #ffa24d;
+  --risk-medium: #efc75c;
+  --risk-low: #83c79d;
+  /* Markers, stripes and bars are shapes, not text, so they can be a shade louder. */
+  --risk-critical-accent: #ee6a70;
+  --risk-high-accent: #ff9330;
+  --risk-medium-accent: #f2c633;
+  --risk-low-accent: #4fc184;
   --status-info: #9eb9d5;
-  --status-success: #91b7a0;
-  --status-warning: #c9ba80;
-  --status-error: #e29395;
+  --status-success: #83c79d;
+  --status-warning: #efc75c;
+  --status-error: #ef8b8e;
   --accent: #b5c9dd;
   --focus: #a9c6e5;
   --accent-hover: #c7d6e5;
@@ -37,39 +43,47 @@
 }
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg-app: #f4f5f6;
+  /* A slightly deeper page background so white cards, tables and panels read as surfaces
+     instead of dissolving into the page. */
+  --bg-app: #eef0f3;
   --bg-surface: #ffffff;
-  --bg-surface-elevated: #fafafa;
-  --bg-hover: #f0f1f2;
-  --border-subtle: #e2e4e7;
-  --border-default: #d4d7dc;
-  --text-primary: #202227;
-  --text-secondary: #5e636b;
-  --text-muted: #686e77;
-  --risk-critical: #aa343e;
-  --risk-high: #9c530d;
-  --risk-medium: #756a49;
-  --risk-low: #386b4c;
-  --status-info: #426888;
-  --status-success: #386b4c;
-  --status-warning: #776516;
-  --status-error: #aa343e;
-  --accent: #40576b;
-  --accent-hover: #33495c;
+  --bg-surface-elevated: #f7f8fa;
+  --bg-hover: #eceff3;
+  --border-subtle: #dde1e6;
+  --border-default: #c8cdd5;
+  --text-primary: #1c1e23;
+  --text-secondary: #575c65;
+  --text-muted: #626873;
+  /* Text severity: saturated but dark enough to stay readable on white. */
+  --risk-critical: #b3232f;
+  --risk-high: #a85400;
+  --risk-medium: #7d6200;
+  --risk-low: #1d7a4c;
+  /* Shapes carry the "bright orange / bright yellow" reading that text cannot on white. */
+  --risk-critical-accent: #d8313c;
+  --risk-high-accent: #d96800;
+  --risk-medium-accent: #a87e00;
+  --risk-low-accent: #149257;
+  --status-info: #2f5e86;
+  --status-success: #1d7a4c;
+  --status-warning: #7d6200;
+  --status-error: #b3232f;
+  --accent: #2f5e86;
+  --accent-hover: #244c6e;
   --on-accent: #ffffff;
-  --focus: #426888;
-  --danger-bg: #f8eded;
-  --danger-border: #d4adb0;
-  --danger-text: #922d36;
-  --danger-hover: #f1dfe0;
-  --shadow-popover: 0 4px 12px #20222714;
-  --overlay: #20222755;
-  --brand-border: #7a8590;
-  --nav-active-bg: #e6e9ec;
-  --nav-active-border: #c9ced4;
-  --avatar-bg: #e6e9ec;
-  --avatar-border: #c9ced4;
-  --bg-skeleton: #dfe2e6;
+  --focus: #2f5e86;
+  --danger-bg: #fbecec;
+  --danger-border: #dda7ab;
+  --danger-text: #96222d;
+  --danger-hover: #f5dcde;
+  --shadow-popover: 0 4px 12px #20222720;
+  --overlay: #20222766;
+  --brand-border: #737e8a;
+  --nav-active-bg: #e3e7ec;
+  --nav-active-border: #c2c9d2;
+  --avatar-bg: #e3e7ec;
+  --avatar-border: #c2c9d2;
+  --bg-skeleton: #dce0e6;
 }
 :root {
   background: var(--bg-app);

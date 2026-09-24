@@ -5,6 +5,7 @@ import { EmptyState, ErrorState, Skeleton, StaleState } from '../../components/f
 import { RiskBadge } from '../../components/ui/Badge';
 import { IconButton } from '../../components/ui/Button';
 import { formatDateTime } from '../../utils/formatters';
+import { formatObjectName } from '../../utils/object-name';
 export function ObjectStatusPanel() {
   const query = useObjectStatusSummary();
   return (
@@ -45,10 +46,10 @@ export function ObjectStatusPanel() {
             <li key={item.objectId}>
               <Link
                 to={`/objects/${item.objectId}`}
-                title={`Обновлено ${formatDateTime(item.updatedAt)} · ML: ${item.mlSupportedChannels} / ${item.channelsTotal} каналов`}
+                title={`${item.objectName} · Обновлено ${formatDateTime(item.updatedAt)} · ML: ${item.mlSupportedChannels} / ${item.channelsTotal} каналов`}
               >
                 <span className="object-status-main">
-                  <span className="object-name">{item.objectName}</span>
+                  <span className="object-name">{formatObjectName(item.objectName)}</span>
                   <RiskBadge value={item.riskLevel} />
                 </span>
                 <span className="object-status-detail">

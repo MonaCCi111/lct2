@@ -7,6 +7,7 @@ import {
   formatOperationalTime,
   formatProbability,
 } from '../../utils/formatters';
+import { healthIndexTone, probabilityTone, type MetricTone } from '../../utils/metric-tone';
 
 export const TOPOLOGY_FALLBACK_WIDTH = 1200;
 export const TOPOLOGY_HEIGHT = 100;
@@ -148,7 +149,9 @@ export interface ObjectPredictionRow {
   urgency: Prediction['maintenanceUrgency'];
   risk: Prediction['riskLevel'];
   probability: string;
+  probabilityTone: MetricTone;
   health: string;
+  healthTone: MetricTone;
   updated: string;
   fullUpdated: string;
 }
@@ -161,7 +164,9 @@ export function toObjectPredictionRow(item: Prediction): ObjectPredictionRow {
     urgency: item.maintenanceUrgency,
     risk: item.riskLevel,
     probability: formatProbability(item.failureProbability),
+    probabilityTone: probabilityTone(item.failureProbability),
     health: formatHealthIndex(item.healthIndex),
+    healthTone: healthIndexTone(item.healthIndex),
     updated: formatOperationalTime(item.generatedAt),
     fullUpdated: formatDateTime(item.generatedAt),
   };

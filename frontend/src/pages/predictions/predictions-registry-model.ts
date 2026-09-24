@@ -2,6 +2,7 @@ import type { Prediction, RiskLevel, MaintenanceUrgency, ReviewStatus } from '..
 import type { SortState } from '../../components/data-display/DataTable';
 import { compareByUrgency } from '../../api/adapters/operational-queue';
 import { reviewStatusLabels } from '../../utils/formatters';
+import { formatObjectName, objectSearchText } from '../../utils/object-name';
 
 export interface RegistryFilters {
   search: string;
@@ -30,10 +31,14 @@ export const hasFilters = (filters: RegistryFilters) =>
 export function objectOptions(rows: readonly Prediction[]) {
   return [
     { value: 'all', label: 'Все объекты' },
-    ...Array.from(new Map(rows.map((row) => [String(row.objectId), row.objectName])), ([value, label]) => ({
+    // Ordered by the raw Russian name; shown as the Greek letter the objects are marked with.
+    ...Array.from(new Map(rows.map((row) => [String(row.objectId), row.objectName])), ([value, name]) => ({
       value,
-      label,
-    })).sort((a, b) => a.label.localeCompare(b.label, 'ru')),
+      label: formatObjectName(name),
+      name,
+    }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
+      .map(({ value, label }) => ({ value, label })),
   ];
 }
 function compareNullable(a: number | null, b: number | null, direction: number) {
@@ -53,7 +58,7 @@ export function selectPredictions(rows: readonly Prediction[], filters: Registry
         (filters.risk === 'all' || row.riskLevel === filters.risk) &&
         (filters.urgency === 'all' || row.maintenanceUrgency === filters.urgency) &&
         (filters.objectId === 'all' || String(row.objectId) === filters.objectId) &&
-        `${row.sensorName} ${row.sensorType} ${row.objectName} ${row.piket ?? ''}`
+        `${row.sensorName} ${row.sensorType} ${objectSearchText(row.objectName)} ${row.piket ?? ''}`
           .toLocaleLowerCase('ru')
           .includes(term),
     )

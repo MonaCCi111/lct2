@@ -132,7 +132,7 @@ try {
       await page.keyboard.press('Enter');
     } else await row.click();
     await page.waitForURL('**/objects/203');
-    await page.getByRole('heading', { name: 'объект Фита', exact: true }).waitFor();
+    await page.getByRole('heading', { name: 'объект θ', exact: true }).waitFor();
     await page
       .getByRole('navigation', { name: 'Основная навигация' })
       .getByRole('link', { name: 'Аналитика', exact: true })

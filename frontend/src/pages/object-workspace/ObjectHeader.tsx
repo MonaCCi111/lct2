@@ -5,6 +5,7 @@ import { PageHeader } from '../../components/feedback/PageShell';
 import { UpdatedAtLabel } from '../../components/feedback/UpdatedAtLabel';
 import { Button } from '../../components/ui/Button';
 import { formatCount } from '../../utils/formatters';
+import { formatObjectName } from '../../utils/object-name';
 import { mlCoveragePercent } from './object-workspace-model';
 
 export function ObjectHeader({ query, objectId }: { query: UseQueryResult<ObjectDetail>; objectId: number }) {
@@ -16,7 +17,7 @@ export function ObjectHeader({ query, objectId }: { query: UseQueryResult<Object
       : 'Данные объекта недоступны';
   return (
     <PageHeader
-      title={detail ? detail.objectName : `Объект ${objectId}`}
+      title={detail ? formatObjectName(detail.objectName) : `Объект ${objectId}`}
       description={description}
       action={
         <div className="object-header-meta">

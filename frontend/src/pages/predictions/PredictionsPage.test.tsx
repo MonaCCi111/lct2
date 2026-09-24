@@ -104,22 +104,22 @@ describe('Predictions registry', () => {
     expect(within(screen.getByLabelText('Объект')).getAllByRole('option')).toHaveLength(9);
     await userEvent.selectOptions(screen.getByLabelText('Объект'), '203');
     expect(rows()).toHaveLength(3);
-    expect(rows().every((row) => row.textContent?.includes('объект Фита'))).toBe(true);
+    // Objects are displayed by their Greek letter; the Russian name stays in the cell's title.
+    expect(rows().every((row) => row.textContent?.includes('объект θ'))).toBe(true);
+    expect(rows().every((row) => within(row).getByTitle('объект Фита'))).toBe(true);
   });
-  it.each(['  тЕмПеРаТуРа ВШ-3  ', 'Фита', 'ПК 88+50'])(
-    'searches sensor/type/object/piket: %s',
-    async (term) => {
-      mount();
-      await ready();
-      await userEvent.type(screen.getByRole('searchbox'), term);
-      expect(rows().length).toBeGreaterThan(0);
-      expect(
-        rows().every((row) =>
-          row.textContent?.toLocaleLowerCase('ru').includes(term.trim().toLocaleLowerCase('ru')),
-        ),
-      ).toBe(true);
-    },
-  );
+  it.each([
+    ['  тЕмПеРаТуРа ВШ-3  ', 'температура вш-3'],
+    ['Фита', 'объект θ'],
+    ['θ', 'объект θ'],
+    ['ПК 88+50', 'пк 88+50'],
+  ])('searches sensor/type/object/piket: %s', async (term, visible) => {
+    mount();
+    await ready();
+    await userEvent.type(screen.getByRole('searchbox'), term);
+    expect(rows().length).toBeGreaterThan(0);
+    expect(rows().every((row) => row.textContent?.toLocaleLowerCase('ru').includes(visible))).toBe(true);
+  });
   it('searches the full sensor type while the column shows its short label', async () => {
     mount();
     await ready();

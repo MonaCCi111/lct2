@@ -81,7 +81,7 @@ describe('Operational Center', () => {
     await ready();
     await userEvent.click(
       within(screen.getByRole('region', { name: 'Состояние объектов' })).getByRole('link', {
-        name: /объект Фита/,
+        name: /объект θ/,
       }),
     );
     expect(screen.getByText('Объект shell')).toBeVisible();
@@ -160,7 +160,7 @@ describe('Operational Center', () => {
   it.each([
     ['/dashboard/summary', 'Обновить сводку', 'Сводка инфраструктуры', '137'],
     ['/predictions', 'Обновить очередь рисков', 'Очередь рисков', 'Температура ВШ-3'],
-    ['/objects/status-summary', 'Обновить состояние объектов', 'Состояние объектов', 'объект Фита'],
+    ['/objects/status-summary', 'Обновить состояние объектов', 'Состояние объектов', 'объект θ'],
   ])('retains cached data after failed refresh of %s', async (path, button, region, text) => {
     mount();
     await ready();
@@ -195,9 +195,21 @@ describe('Operational Center', () => {
   it('opens the object workspace from the object cell without opening the prediction', async () => {
     mount();
     await ready();
-    await userEvent.click(queue().getAllByRole('link', { name: 'объект Фита' })[0]!);
+    const link = queue().getAllByRole('link', { name: 'объект θ' })[0]!;
+    // Display shows the letter; the full Russian name stays reachable as the cell's tooltip.
+    expect(link).toHaveAttribute('title', 'объект Фита');
+    await userEvent.click(link);
     expect(screen.getByRole('heading', { name: 'Объект shell' })).toBeVisible();
     expect(screen.queryByText('Расследование shell')).not.toBeInTheDocument();
+  });
+  it('finds an object by its Russian name and by its Greek letter', async () => {
+    mount();
+    await ready();
+    for (const term of ['Фита', 'θ']) {
+      await userEvent.clear(queue().getByRole('searchbox'));
+      await userEvent.type(queue().getByRole('searchbox'), term);
+      await waitFor(() => expect(queue().getAllByRole('link', { name: 'объект θ' }).length).toBe(3));
+    }
   });
   it('explains the urgency squares from a keyboard-reachable header hint', async () => {
     mount();

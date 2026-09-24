@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Check } from 'lucide-react';
 import type { MaintenanceUrgency, RiskLevel } from '../../domain/prediction/types';
 import type { TicketStatus } from '../../domain/ticket/types';
 import { getRiskLabel, getUrgencyLabel } from '../../utils/formatters';
@@ -27,25 +28,31 @@ const urgencyTones: Record<MaintenanceUrgency, Tone> = {
   FLASH_1_6H: 'critical',
 };
 /**
- * Squares encode urgency only, never risk: three for 1–6 h, two for 6–24 h, one for 24–48 h and a
- * single neutral square for the normal regime. The count is what the eye reads while scanning a
- * table; the label stays the accessible source of truth.
+ * Urgency is encoded by length, never by risk: the marker grows as the window shortens, so a
+ * column of them reads as a rising scale while scanning. The label stays the source of truth.
  */
-const urgencySquares: Record<MaintenanceUrgency, number> = {
+const urgencyLengths: Record<MaintenanceUrgency, number> = {
   FLASH_1_6H: 3,
   URGENT_6_24H: 2,
   PLANNED_24_48H: 1,
-  NORMAL: 1,
+  NORMAL: 0,
 };
 export function UrgencyIndicator({ value }: { value: MaintenanceUrgency | null }) {
   const tone = value === null ? 'neutral' : urgencyTones[value];
-  const count = value === null ? 1 : urgencySquares[value];
+  // The normal regime is not a shorter deadline but the absence of one, so it reads as a check.
+  if (value === 'NORMAL')
+    return (
+      <span className="semantic-indicator urgency-indicator urgency-normal">
+        <span className="urgency-meter urgency-check tone-low" aria-hidden="true">
+          <Check size={13} strokeWidth={3} />
+        </span>
+        {getUrgencyLabel(value)}
+      </span>
+    );
   return (
     <span className="semantic-indicator urgency-indicator">
-      <span className={`urgency-squares tone-${tone}`} aria-hidden="true">
-        {Array.from({ length: count }, (_, index) => (
-          <span key={index} className="urgency-square" />
-        ))}
+      <span className={`urgency-meter tone-${tone}`} aria-hidden="true">
+        <span className={`urgency-bar urgency-bar-${value === null ? 1 : urgencyLengths[value]}`} />
       </span>
       {getUrgencyLabel(value)}
     </span>

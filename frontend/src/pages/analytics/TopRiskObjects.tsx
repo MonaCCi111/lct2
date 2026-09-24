@@ -3,8 +3,13 @@ import { DataTable, type Column } from '../../components/data-display/DataTable'
 import { RiskBadge } from '../../components/ui/Badge';
 import type { AnalyticsObjectRisk } from '../../domain/analytics/types';
 import { formatCount } from '../../utils/formatters';
+import { formatObjectName } from '../../utils/object-name';
 const columns: Column<AnalyticsObjectRisk>[] = [
-  { id: 'object', header: 'Объект', cell: (item) => item.objectName },
+  {
+    id: 'object',
+    header: 'Объект',
+    cell: (item) => <span title={item.objectName}>{formatObjectName(item.objectName)}</span>,
+  },
   { id: 'risk', header: 'Риск', cell: (item) => <RiskBadge value={item.riskLevel} /> },
   ...(
     [

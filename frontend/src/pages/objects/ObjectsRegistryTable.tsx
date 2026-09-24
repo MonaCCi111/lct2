@@ -4,6 +4,7 @@ import { RiskBadge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import type { ObjectStatusSummary } from '../../domain/object/status';
 import { formatCount, formatDateTime } from '../../utils/formatters';
+import { formatObjectName } from '../../utils/object-name';
 import { registryCoverage } from './registry-model';
 
 const columns: readonly Column<ObjectStatusSummary>[] = [
@@ -13,7 +14,7 @@ const columns: readonly Column<ObjectStatusSummary>[] = [
     width: '24%',
     cell: (row) => (
       <span className="objects-registry-name" title={row.objectName}>
-        {row.objectName}
+        {formatObjectName(row.objectName)}
       </span>
     ),
   },

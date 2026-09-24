@@ -208,8 +208,16 @@
   outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
+/* A severity stripe on the leading cell: the eye finds the critical and high rows in the column
+   of urgency markers without the row itself being tinted. */
 .queue-row-critical td:first-child {
-  box-shadow: inset 2px 0 var(--risk-critical);
+  box-shadow: inset 2px 0 var(--risk-critical-accent);
+}
+.queue-row-high td:first-child {
+  box-shadow: inset 2px 0 var(--risk-high-accent);
+}
+.queue-row-medium td:first-child {
+  box-shadow: inset 2px 0 var(--risk-medium-accent);
 }
 .queue-sensor-link {
   color: var(--text-primary);
@@ -331,6 +339,33 @@
   height: 6px;
   border-radius: 3px;
 }
+/* The dot is a shape, so it takes the louder accent while the label keeps the readable text tone. */
+.risk-marker.tone-critical {
+  background: var(--risk-critical-accent);
+}
+.risk-marker.tone-high {
+  background: var(--risk-high-accent);
+}
+.risk-marker.tone-medium {
+  background: var(--risk-medium-accent);
+}
+.risk-marker.tone-low {
+  background: var(--risk-low-accent);
+}
+/* Numeric metrics: colour assists scanning, the value stays plain text with no fill or badge. */
+.metric-value {
+  font-variant-numeric: tabular-nums;
+}
+.metric-value.tone-critical {
+  color: var(--risk-critical);
+  font-weight: 500;
+}
+.metric-value.tone-high {
+  color: var(--risk-high);
+}
+.metric-value.tone-medium {
+  color: var(--risk-medium);
+}
 /* Dotless risk: the label carries the severity colour. Two classes outrank the neutral text
    colour that `.semantic-indicator` sets. */
 .risk-indicator-text.tone-critical {
@@ -348,24 +383,48 @@
 .risk-indicator-text.tone-neutral {
   color: var(--text-secondary);
 }
-/* Urgency squares: fixed slot width keeps the labels aligned down the column, while only the
-   filled squares are drawn so the indicator never reads as a rating control. */
-.urgency-squares {
+/* Urgency marker: one bar whose length grows as the maintenance window shortens. The slot has a
+   fixed width so the labels stay aligned down the column, and there is no track behind the bar —
+   this is a severity mark, not a progress bar. */
+.urgency-meter {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
   flex-shrink: 0;
-  width: 22px;
+  width: 24px;
 }
-.urgency-square {
-  width: 6px;
-  height: 6px;
-  border-radius: 1px;
+.urgency-bar {
+  height: 4px;
+  border-radius: 2px;
   background: currentColor;
 }
-.urgency-squares.tone-low .urgency-square,
-.urgency-squares.tone-neutral .urgency-square {
-  background: var(--text-muted);
+.urgency-bar-1 {
+  width: 8px;
+}
+.urgency-bar-2 {
+  width: 16px;
+}
+.urgency-bar-3 {
+  width: 24px;
+}
+.urgency-meter.tone-critical {
+  color: var(--risk-critical-accent);
+}
+.urgency-meter.tone-high {
+  color: var(--risk-high-accent);
+}
+.urgency-meter.tone-medium {
+  color: var(--risk-medium-accent);
+}
+.urgency-meter.tone-neutral {
+  color: var(--text-muted);
+}
+/* The normal regime reads as a green check: an absence of a deadline, not a shorter one. */
+.urgency-check {
+  color: var(--risk-low-accent);
+  margin-left: -2px;
+}
+.urgency-normal {
+  color: var(--risk-low);
 }
 .workflow-status {
   color: var(--text-secondary);
@@ -880,14 +939,24 @@
 .skip-link:focus {
   top: 8px;
 }
+/* Rows pair a label with a value of any height — plain text or a 32px control — so the label is
+   centred against its value instead of sticking to the top of the row. */
 .definition-list {
   display: grid;
   grid-template-columns: 130px 1fr;
+  align-items: center;
   gap: var(--space-3);
   margin: 0;
 }
 .definition-list dt {
   color: var(--text-secondary);
+}
+.definition-list dt label {
+  display: block;
+}
+/* A preference control does not need the full width of the panel. */
+.definition-list dd .input {
+  max-width: 208px;
 }
 .definition-list dd {
   margin: 0;

@@ -1,4 +1,5 @@
 import type { Ticket, TicketStatus } from '../../domain/ticket/types';
+import { objectSearchText } from '../../utils/object-name';
 
 export type TicketStatusFilter = TicketStatus | 'all';
 export interface TicketFilterState {
@@ -32,7 +33,7 @@ export function selectTickets(rows: readonly Ticket[], filters: TicketFilterStat
       (row) =>
         (filters.status === 'all' || row.status === filters.status) &&
         (term === '' ||
-          `${row.id} ${row.title} ${row.objectName} ${row.predictionId ?? ''} ${row.assignee ?? ''}`
+          `${row.id} ${row.title} ${objectSearchText(row.objectName)} ${row.predictionId ?? ''} ${row.assignee ?? ''}`
             .toLocaleLowerCase('ru')
             .includes(term)),
     )

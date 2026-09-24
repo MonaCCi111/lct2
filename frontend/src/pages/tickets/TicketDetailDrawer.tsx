@@ -6,6 +6,7 @@ import { Drawer } from '../../components/ui/Drawer';
 import { RiskBadge, StatusBadge } from '../../components/ui/Badge';
 import { ErrorState, Skeleton } from '../../components/feedback/States';
 import { formatDateTime } from '../../utils/formatters';
+import { formatObjectName } from '../../utils/object-name';
 import { TicketStatusActions } from './TicketStatusActions';
 
 export function TicketDetailDrawer({ ticketId, onClose }: { ticketId: string | null; onClose: () => void }) {
@@ -45,7 +46,9 @@ export function TicketDetailDrawer({ ticketId, onClose }: { ticketId: string | n
             <div>
               <dt>Объект</dt>
               <dd>
-                <Link to={`/objects/${ticket.objectId}`}>{ticket.objectName}</Link>
+                <Link to={`/objects/${ticket.objectId}`} title={ticket.objectName}>
+                  {formatObjectName(ticket.objectName)}
+                </Link>
               </dd>
             </div>
             <div>

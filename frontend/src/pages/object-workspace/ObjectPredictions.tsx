@@ -5,6 +5,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import type { Prediction } from '../../domain/prediction/types';
 import type { TopologySegment } from '../../domain/object/topology';
 import { DataTable, type Column } from '../../components/data-display/DataTable';
+import { MetricValue } from '../../components/data-display/MetricValue';
 import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
 import { UrgencyColumnHint } from '../../components/data-display/UrgencyColumnHint';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
@@ -66,14 +67,19 @@ const columns: Column<ObjectPredictionRow>[] = [
     header: 'Вероятность',
     className: 'object-col-probability cell-secondary',
     align: 'right',
-    cell: (row) => (row.risk === null ? <UnsupportedMlState /> : row.probability),
+    cell: (row) =>
+      row.risk === null ? (
+        <UnsupportedMlState />
+      ) : (
+        <MetricValue value={row.probability} tone={row.probabilityTone} />
+      ),
   },
   {
     id: 'health',
     header: 'ИТС',
     className: 'object-col-health cell-secondary',
     align: 'right',
-    cell: (row) => row.health,
+    cell: (row) => <MetricValue value={row.health} tone={row.healthTone} />,
   },
   {
     id: 'updated',

@@ -191,6 +191,19 @@
   height: 100%;
   background: var(--text-muted);
 }
+/* Severity-coloured distribution bars; the neutral bar stays for counts without a severity. */
+.analytics-bar.tone-critical > span {
+  background: var(--risk-critical-accent);
+}
+.analytics-bar.tone-high > span {
+  background: var(--risk-high-accent);
+}
+.analytics-bar.tone-medium > span {
+  background: var(--risk-medium-accent);
+}
+.analytics-bar.tone-low > span {
+  background: var(--risk-low-accent);
+}
 .analytics-domain {
   display: flex;
   align-items: baseline;

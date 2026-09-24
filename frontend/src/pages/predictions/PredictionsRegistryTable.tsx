@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { DataTable, type Column, type SortState } from '../../components/data-display/DataTable';
+import { MetricValue } from '../../components/data-display/MetricValue';
 import { SensorTypeCell } from '../../components/data-display/SensorTypeCell';
 import { UrgencyColumnHint } from '../../components/data-display/UrgencyColumnHint';
 import { RiskBadge, UrgencyBadge } from '../../components/ui/Badge';
@@ -12,6 +13,8 @@ import {
   formatProbability,
   formatHealthIndex,
 } from '../../utils/formatters';
+import { healthIndexTone, probabilityTone } from '../../utils/metric-tone';
+import { formatObjectName } from '../../utils/object-name';
 import { reviewLabels, reviewShortLabels } from './predictions-registry-model';
 
 const columns: readonly Column<Prediction>[] = [
@@ -35,7 +38,7 @@ const columns: readonly Column<Prediction>[] = [
     sortable: true,
     cell: (row) => (
       <Link className="table-entity-link" to={`/objects/${row.objectId}`} title={row.objectName}>
-        {row.objectName}
+        {formatObjectName(row.objectName)}
       </Link>
     ),
   },
@@ -61,14 +64,24 @@ const columns: readonly Column<Prediction>[] = [
     className: 'pr-probability cell-secondary',
     align: 'right',
     sortable: true,
-    cell: (row) => formatProbability(row.predictionSupported ? row.failureProbability : null),
+    cell: (row) => (
+      <MetricValue
+        value={formatProbability(row.predictionSupported ? row.failureProbability : null)}
+        tone={probabilityTone(row.predictionSupported ? row.failureProbability : null)}
+      />
+    ),
   },
   {
     id: 'health',
     header: 'ИТС',
     className: 'pr-health cell-secondary',
     align: 'right',
-    cell: (row) => formatHealthIndex(row.predictionSupported ? row.healthIndex : null),
+    cell: (row) => (
+      <MetricValue
+        value={formatHealthIndex(row.predictionSupported ? row.healthIndex : null)}
+        tone={healthIndexTone(row.predictionSupported ? row.healthIndex : null)}
+      />
+    ),
   },
   {
     id: 'status',
