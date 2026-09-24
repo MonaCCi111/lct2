@@ -1,0 +1,6 @@
+{"check":"counts","events":1407576,"episodes":34092,"features":853141,"labels":853141}
+{"check":"integrity","event_duplicates":0,"feature_duplicates":0,"future_event_violations":0,"count_mismatches":0,"bad_recovery":0,"episode_overlap":0,"split_episode_overlap":0}
+{"check":"labels","censored_rows":1327,"censored_with_target":0,"min_lead_hours":1.0019444444444445,"max_lead_hours":47.985}
+{"check":"parity","common":61353,"differences":0,"max_difference":0.0,"hashes_match":true,"schema_match":true,"version_match":true}
+{"check":"policy_2024","threshold":0.03,"tickets":49,"positive_tickets":3,"available_episodes":11,"covered_episodes":3,"status":"research_candidate"}
+{"check":"diagnostic_2025_2026","threshold":0.03,"tickets":349,"positive_tickets":29,"available_episodes":107,"covered_episodes":29}
