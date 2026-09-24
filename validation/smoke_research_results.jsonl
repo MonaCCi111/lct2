@@ -1,0 +1,9 @@
+{"check":"source","smoke_events":3959526,"channels":4337,"conflicting_times":245343,"removed_events":492674}
+{"check":"fault_2020_origin","alarm_status_events":17803,"object_id":5332,"object_events":17076}
+{"check":"fault_2021_origin","alarm_status_events":1036997,"object_id":5343,"object_events":1035645,"channels":77,"first_event":"2021-04-21 16:34:20","last_event":"2021-06-08 09:57:38"}
+{"check":"fault_2026_origin","alarm_status_events":59879,"object_id":5962,"object_share_approx":0.962}
+{"check":"fault_vitrine","features":813201,"episodes":878458,"feature_duplicates":0,"label_duplicates":0,"future_events":0,"count_mismatches":0,"episode_overlap":0,"censored_rows":6995,"censored_with_target":0}
+{"check":"fault_splits","train_rows":151711,"train_positive_rows":861,"train_target_episodes":402,"calibration_rows":36310,"calibration_positive_rows":175,"calibration_target_episodes":13,"policy_rows":20127,"policy_positive_rows":100,"policy_target_episodes":58,"diagnostic_2025_target_episodes":444,"model_trained":false}
+{"check":"smoke_evidence","signals":41811,"duplicate_keys":0,"bad_delta":0,"temp_without_piket":0,"max_location_join":"same object and exact decimal piket"}
+{"check":"smoke_temp_2022_2025","signals_after_24h_quiet":8582,"comparable_temperature":91,"median_temperature_delta":0.0,"confirmed_fires":null}
+{"check":"review_queue_policy_2024","daily_limit":null,"drafts":292,"matched_drafts":146,"max_daily":18,"cooldown_violations":0,"old_capped_tickets":267,"old_capped_matches":141}
