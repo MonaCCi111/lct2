@@ -3,6 +3,12 @@
 python -m production_ml.pipeline.create_review_queue --phase-scores production_ml/data/power_phase_v2/policy_2024_scores.parquet --pump-scores production_ml/data/pump_v1/policy_2024_scores.parquet --output production_ml/data/review_queue/policy_2024.parquet
 python -m validation.check_review_queue
 
+Диагностическая проверка 2025–2026:
+
+python -m production_ml.pipeline.create_review_queue --phase-scores production_ml/data/power_phase_v2/diagnostic_scores.parquet --pump-scores production_ml/data/pump_v1/diagnostic_2025_2026_scores.parquet --output production_ml/data/review_queue/diagnostic_2025_2026.parquet
+python -m production_ml.pipeline.create_combined_tickets --phase-scores production_ml/data/power_phase_v2/diagnostic_scores.parquet --pump-scores production_ml/data/pump_v1/diagnostic_2025_2026_scores.parquet --output production_ml/data/review_queue/diagnostic_2025_2026_legacy_cap.parquet
+python -m validation.report_review_workload
+
 Сохраняются пороги действующих моделей и пауза 48 часов на пару
 модель/канал. Суточного потолка нет. Каждая строка имеет стабильный
 draft_id и review_status=draft. Это отдельный ML-выход для будущего
@@ -18,3 +24,10 @@ draft_id и review_status=draft. Это отдельный ML-выход для 
 черновика, утверждения и отклонения. Текущая форма фронтенда создаёт
 утверждённый наряд сразу после нажатия кнопки; ML-очередь не меняет
 этот интерфейс автоматически.
+
+На уже просмотренном диагностическом периоде очередь дала 1 030 черновиков,
+455 совпадений с последующими эпизодами SCADA, максимум 33 черновика в день.
+В 11 дней поток превысил 10 черновиков. Старый маршрут с лимитом дал 932
+заявки и 384 совпадения. Четыре черновика очереди не имеют полного будущего
+горизонта и не входят в оценку качества. Эти метки не являются журналом
+подтверждённых ремонтов.
