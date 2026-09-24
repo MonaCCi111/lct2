@@ -7,40 +7,40 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from pathlib import Path
 
 
 SCHEMA_VERSION = "sensor_coverage_v1"
 RECENT_HOURS = 72
 
-# Это версии уже проверенных веток, а не вывод о любом канале данного типа.
-TYPE_CAPABILITIES = {
-    "Состояние фазы": ("active", "power_phase_scada_v2", "not_assessed", "categorical"),
-    "Состояние насоса": ("active", "pump_scada_v1", "not_assessed", "categorical"),
-    "Датчик температуры": ("research", "temperature_scada_v1", "not_assessed", "numeric_and_status"),
-    "Состояние вентилятора": ("research", "fan_scada_v1", "not_assessed", "categorical"),
-    "Датчик дыма": ("not_released", None, "research", "categorical"),
-    "Газовый датчик": ("not_released", None, "research", "numeric_and_status"),
+# Исследовательское решение относится к типу, никогда к фиксированному ID.
+DECISIONS = {
+    item["sensor_type"]: item for item in json.loads(
+        Path(__file__).with_name("model_type_decisions.json").read_text(encoding="utf-8")
+    )["types"]
 }
-
-FORECAST_REASONS = {
-    "Состояние фазы": "active_package_available",
-    "Состояние насоса": "active_package_available",
-    "Датчик температуры": "too_few_policy_target_episodes",
-    "Состояние вентилятора": "weak_policy_quality",
-    "Датчик дыма": "fire_prediction_out_of_scope_smoke_fault_model_not_released",
-    "Газовый датчик": "gas_prediction_not_validated",
+PRESENTATION = {
+    "Состояние фазы": ("not_assessed", "categorical"),
+    "Состояние насоса": ("not_assessed", "categorical"),
+    "Датчик температуры": ("not_assessed", "numeric_and_status"),
+    "Состояние вентилятора": ("not_assessed", "categorical"),
+    "Датчик дыма": ("research", "categorical"),
+    "Газовый датчик": ("research", "numeric_and_status"),
 }
 
 
 def describe_type(sensor_type: str | None) -> dict:
-    forecast, version, observed, chart = TYPE_CAPABILITIES.get(
-        sensor_type, ("not_assessed", None, "not_assessed", "raw_event_timeline")
-    )
+    decision = DECISIONS.get(sensor_type, {})
+    forecast = decision.get("forecast_capability", "not_assessed")
+    version = decision.get("forecast_model_version")
+    observed, chart = PRESENTATION.get(sensor_type, ("not_assessed", "raw_event_timeline"))
     return {
         "sensor_type": sensor_type,
         "forecast_capability": forecast,
         "forecast_model_version": version,
-        "forecast_reason": FORECAST_REASONS.get(sensor_type, "type_not_studied_yet"),
+        "forecast_target_kind": decision.get("forecast_target_kind"),
+        "forecast_reason": decision.get("forecast_reason", "type_not_studied_yet"),
+        "forecast_reason_text": decision.get("forecast_reason_text", "Тип ещё не исследован."),
         "observed_event_capability": observed,
         "observed_event_reason": (
             "historical_evidence_only" if observed == "research"

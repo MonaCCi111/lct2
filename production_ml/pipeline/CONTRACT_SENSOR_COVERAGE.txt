@@ -20,6 +20,10 @@ forecast_capability: active, research, not_released, not_assessed.
 forecast_model_version заполнен только при существующем пакете.
 forecast_reason сообщает, почему тип активен, исследовательский или
 ещё не допущен. Типовые причины не превращаются в постоянную метку ID.
+forecast_target_kind указывает именно цель SCADA, если она определена.
+forecast_reason_text содержит краткое объяснение для человека. Источник
+решений по 19 типам: model_type_decisions.json. Новый неизвестный тип
+получает not_assessed и остаётся видимым.
 observed_event_capability: research, not_assessed. Исследовательская
 карточка дыма или газа пока не является рабочим нарядом.
 observed_event_reason объясняет отсутствие рабочего сценария.
