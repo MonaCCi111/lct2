@@ -1,4 +1,8 @@
 {
+  "status": "research_archive",
+  "use_for_active_inference": false,
+  "active_model_manifest": "power_phase_scada_v2/contract.json",
+  "archive_reason": "Формулы признаков и протокол разметки старых моделей не прошли аудит v2",
   "version": "7.2_production_champion",
   "date_created": "2026-09-20",
   "train_dataset": "v6_train_full_multihorizon.parquet",

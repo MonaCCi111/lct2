@@ -2,12 +2,13 @@
 
 import json
 from datetime import timedelta
-from pathlib import Path
+
+from .active import BUNDLE
 
 
 def load_policy(path=None):
     if path is None:
-        path = Path(__file__).resolve().parents[1] / "models" / "power_phase_scada_v1" / "policy.json"
+        path = BUNDLE / "policy.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 

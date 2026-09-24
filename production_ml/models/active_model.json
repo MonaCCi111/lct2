@@ -1,0 +1,10 @@
+{
+  "version": "power_phase_scada_v2",
+  "bundle": "power_phase_scada_v2",
+  "scorer_module": "production_ml.pipeline.score_active",
+  "ticket_module": "production_ml.pipeline.create_tickets",
+  "supported_sensor_types": ["Состояние фазы"],
+  "target_kind": "SCADA_STATUS_EPISODE",
+  "forecast_horizon_hours": 48,
+  "status": "diagnostic"
+}

@@ -23,7 +23,7 @@ def main():
     episodes = (data / "episodes.parquet").as_posix()
     labels = (data / "labels.parquet").as_posix()
     features = (data / "features.parquet").as_posix()
-    policy = load_policy()
+    policy = load_policy(root / "production_ml" / "models" / "power_phase_scada_v1" / "policy.json")
     if args.threshold is not None:
         policy["score_threshold"] = args.threshold
     con = duckdb.connect()

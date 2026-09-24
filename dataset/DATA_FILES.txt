@@ -41,3 +41,8 @@ features.parquet – почасовые признаки; labels.parquet – б�
 контракт лежат в production_ml/pipeline/, итоговая проверка –
 validation/POWER_PHASE_V1.txt. В Git находится только небольшой пакет
 модели production_ml/models/power_phase_scada_v1/.
+
+Исправленный путь power_phase_scada_v2 читает исходные CSV и создаёт
+локальные production_ml/data/source_v2/journal_YYYY.parquet, затем
+production_ml/data/power_phase_v2/. Эти файлы также не входят в Git.
+Правила и команды перечислены в production_ml/pipeline/USAGE_V2.txt.
