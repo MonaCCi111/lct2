@@ -8,6 +8,7 @@ from pathlib import Path
 
 import duckdb
 
+from production_ml.pipeline.gas_live_cards import build_observed_cards
 from production_ml.pipeline.gas_live_features import aggregate_hour, build_hour_features
 
 
@@ -52,6 +53,21 @@ def main():
             or any(facts[key] for key in
                    ("duplicate_hours", "invalid_hours", "duplicate_cards", "invalid_cards"))):
         raise AssertionError(facts)
+
+    actual_cards = build_observed_cards(rows(con.execute("SELECT * FROM evidence")))
+    expected_cards = {row["card_id"]: row for row in rows(con.execute("SELECT * FROM cards"))}
+    mismatches = []
+    for card in actual_cards:
+        expected = expected_cards.get(card["card_id"])
+        differences = ({key: [expected[key], value] for key, value in card.items()
+                        if not equal(expected[key], value)} if expected else {"missing": card["card_id"]})
+        if differences:
+            mismatches.append({"card_id": card["card_id"], "differences": differences})
+    print(json.dumps({"check": "card_parity", "historical": len(expected_cards),
+                      "streamed": len(actual_cards), "mismatches": len(mismatches),
+                      "examples": mismatches[:3]}, ensure_ascii=False, default=str), flush=True)
+    if len(actual_cards) != len(expected_cards) or mismatches:
+        raise AssertionError(mismatches[:3])
 
     cases = ((196723, "2024-06-01 12:00:00"),
              (196723, "2025-01-01 00:00:00"),
