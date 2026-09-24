@@ -18,6 +18,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-year", type=int, default=2019)
     parser.add_argument("--end-year", type=int, default=2026)
+    parser.add_argument("--catalog-only", action="store_true")
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
     root = Path(__file__).resolve().parents[1]
@@ -44,6 +45,12 @@ def main():
         WHERE lower("тип_датчика") LIKE '%газ%';
     """)
     emit(con, "catalog", "SELECT count(*) channels,count(DISTINCT object_id) objects FROM gas_channels")
+    emit(con, "catalog_names", """
+        SELECT sensor_name,count(*) channels FROM gas_channels
+        GROUP BY 1 ORDER BY channels DESC LIMIT 25
+    """)
+    if args.catalog_only:
+        return
     sources = ",".join(f"'{path.as_posix()}'" for path in paths)
     con.execute(f"""
         CREATE VIEW gas AS
