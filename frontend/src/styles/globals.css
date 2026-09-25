@@ -389,14 +389,20 @@
 .urgency-meter {
   display: inline-flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 3px;
   flex-shrink: 0;
-  width: 16px;
+  width: 17px;
   height: 11px;
 }
+/* Every step is drawn: the unreached ones stay a faint grey, and a hairline of the same grey
+   holds the lit and unlit columns together as one scale. */
 .urgency-column {
   width: 3px;
   border-radius: 1.5px 1.5px 0 0;
+  background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-muted) 20%, transparent);
+}
+.urgency-column-on {
   background: currentColor;
 }
 .urgency-column-sm {

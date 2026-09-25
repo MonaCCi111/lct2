@@ -28,15 +28,17 @@ const urgencyTones: Record<MaintenanceUrgency, Tone> = {
   FLASH_1_6H: 'critical',
 };
 /**
- * Urgency reads as a compact mini-chart, never as risk: the number of columns grows as the
- * maintenance window shortens, and their heights give each level its own silhouette. The label
- * stays the source of truth.
+ * Urgency reads as a compact mini-chart, never as risk: three columns rise from left to right and
+ * the shorter the maintenance window, the more of them are lit. The steps that are not reached
+ * stay as faint placeholders, so every level keeps the same footprint and the scale itself is
+ * visible. The label stays the source of truth.
  */
-const urgencyColumns: Record<MaintenanceUrgency, readonly ('sm' | 'md' | 'lg')[]> = {
-  FLASH_1_6H: ['sm', 'lg', 'md'],
-  URGENT_6_24H: ['sm', 'md'],
-  PLANNED_24_48H: ['sm'],
-  NORMAL: [],
+const urgencyColumns = ['sm', 'md', 'lg'] as const;
+const urgencyLevels: Record<MaintenanceUrgency, number> = {
+  FLASH_1_6H: 3,
+  URGENT_6_24H: 2,
+  PLANNED_24_48H: 1,
+  NORMAL: 0,
 };
 export function UrgencyIndicator({ value }: { value: MaintenanceUrgency | null }) {
   const tone = value === null ? 'neutral' : urgencyTones[value];
@@ -50,11 +52,16 @@ export function UrgencyIndicator({ value }: { value: MaintenanceUrgency | null }
         {getUrgencyLabel(value)}
       </span>
     );
+  // Without a value there is no step to light up: the bare scale says "no data" on its own.
+  const level = value === null ? 0 : urgencyLevels[value];
   return (
     <span className="semantic-indicator urgency-indicator">
       <span className={`urgency-meter tone-${tone}`} aria-hidden="true">
-        {(value === null ? urgencyColumns.PLANNED_24_48H : urgencyColumns[value]).map((size, index) => (
-          <span key={index} className={`urgency-column urgency-column-${size}`} />
+        {urgencyColumns.map((size, index) => (
+          <span
+            key={size}
+            className={`urgency-column urgency-column-${size} ${index < level ? 'urgency-column-on' : ''}`}
+          />
         ))}
       </span>
       {getUrgencyLabel(value)}

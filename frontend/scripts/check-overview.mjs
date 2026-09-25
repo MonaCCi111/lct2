@@ -69,7 +69,7 @@ try {
         const dotless = element.classList.contains('risk-indicator-text');
         const marker = element.querySelector(urgency ? '.urgency-meter' : '.semantic-marker');
         const markerStyle = marker ? getComputedStyle(marker) : null;
-        // Urgency is a mini-chart: one column per step, heights giving the level its silhouette.
+        // Urgency is a mini-chart: three rising columns, lit up to the level that was reached.
         const columns = [...element.querySelectorAll('.urgency-column')].map((column) => {
           const columnStyle = getComputedStyle(column);
           return {
@@ -77,6 +77,9 @@ try {
             width: Math.round(parseFloat(columnStyle.width)),
             radius: columnStyle.borderTopLeftRadius,
             flatBottom: columnStyle.borderBottomLeftRadius,
+            lit: column.classList.contains('urgency-column-on'),
+            background: columnStyle.backgroundColor,
+            outline: columnStyle.boxShadow,
           };
         });
         return {
@@ -116,24 +119,39 @@ try {
     } else {
       assert.equal(style.color, 'rgb(231, 232, 234)');
       assert.equal(style.decorative, 'true');
-      assert.equal(style.markerWidth, style.urgency ? '16px' : '6px');
+      assert.equal(style.markerWidth, style.urgency ? '17px' : '6px');
       assert.equal(style.markerHeight, style.urgency ? '11px' : '6px');
       if (!style.urgency) assert.equal(style.markerRadius, '3px');
     }
     // Urgency reads as a mini-chart standing on a shared baseline: the column pattern is what
     // separates the three lifecycle steps, and only this indicator carries the urgency accent.
     if (style.urgency) {
-      const expected = { '1–6 ч': [5, 11, 8], '6–24 ч': [5, 8], '24–48 ч': [5] }[style.label];
-      assert.ok(expected, `unexpected urgency label: ${style.label}`);
+      const lit = { '1–6 ч': 3, '6–24 ч': 2, '24–48 ч': 1, 'Штатный режим': 0 }[style.label];
+      assert.ok(lit !== undefined, `unexpected urgency label: ${style.label}`);
+      // The scale is always three rising columns; only how many of them are lit changes.
       assert.deepEqual(
         style.columns.map((column) => column.height),
-        expected,
+        [5, 8, 11],
         `columns for ${style.label}`,
+      );
+      assert.deepEqual(
+        style.columns.map((column) => column.lit),
+        [0, 1, 2].map((index) => index < lit),
+        `lit columns for ${style.label}`,
       );
       assert.equal(style.markerAlign, 'flex-end');
       assert.ok(
         style.columns.every((column) => column.width === 3 && column.radius !== column.flatBottom),
         'columns are narrow with rounded tops only',
+      );
+      // Unlit steps stay visible as a translucent grey, and every column carries the same hairline.
+      // `color-mix` resolves to `color(srgb … / a)`, so both notations are accepted.
+      const translucent = (value) => /rgba\(|color\(srgb[^)]*\/\s*0?\.\d/.test(value);
+      assert.ok(
+        style.columns.every(
+          (column) => translucent(column.outline) && (column.lit || translucent(column.background)),
+        ),
+        `the unlit scale and the outline must stay translucent: ${JSON.stringify(style.columns[2])}`,
       );
       assert.match(style.barColor, /^rgb\(/);
     } else assert.equal(style.columns.length, 0);
