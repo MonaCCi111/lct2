@@ -30,7 +30,9 @@ def main():
         FROM read_csv('{catalog.as_posix()}',header=true)
         WHERE "тип_датчика"='Датчик температуры'
     """)
-    cases = ((98194, "2025-09-09 14:14:33"), (212526, "2024-04-05 10:35:22"))
+    cases = ((98194, "2025-09-09 14:14:33"),
+             (212526, "2024-04-05 10:35:22"),
+             (212285, "2025-10-29 00:24:16"))
     for channel_id, timestamp in cases:
         result = con.execute("SELECT * FROM evidence WHERE channel_id=? AND event_time=?",
                              [channel_id, timestamp])

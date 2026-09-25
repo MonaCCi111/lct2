@@ -9,6 +9,8 @@ def build_signal_evidence(signal, smoke_history, temperature_history):
 
     smoke_history содержит однозначные сигналы «Обнаружен дым»,
     temperature_history содержит числовые значения в поле numeric_value.
+    mixed_alarm_flags_at_time передаётся во входном сигнале после проверки
+    всех уже полученных состояний канала на ту же временную метку.
     Историю передают за последние 30 часов, включая события с той же меткой
     времени, которые уже поступили. Текущий сигнал добавляется функцией.
     """
@@ -55,6 +57,7 @@ def build_signal_evidence(signal, smoke_history, temperature_history):
         "event_time": event_time,
         "object_id": object_id,
         "piket": piket,
+        "mixed_alarm_flags_at_time": bool(signal.get("mixed_alarm_flags_at_time", False)),
         "object_smoke_channels_15m": len(object_channels),
         "location_smoke_channels_15m": len(location_channels),
         "recent_numeric_count": len(recent),

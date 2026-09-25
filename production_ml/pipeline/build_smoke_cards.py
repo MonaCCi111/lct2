@@ -57,6 +57,7 @@ def main():
                object_id,piket,location_key,min(event_time) first_signal_time,
                max(event_time) last_signal_time,count(*) signal_records,
                count(DISTINCT channel_id) smoke_channels,
+               count(*) FILTER(WHERE mixed_alarm_flags_at_time) mixed_status_signal_records,
                max(object_smoke_channels_15m) max_object_smoke_channels_15m,
                max(location_smoke_channels_15m) max_location_smoke_channels_15m,
                count(*) FILTER(WHERE recent_numeric_count>0) signals_with_recent_temperature,
@@ -65,6 +66,8 @@ def main():
                min(temperature_delta) minimum_temperature_delta,
                median(temperature_delta) median_temperature_delta,
                max(temperature_delta) maximum_temperature_delta,
+               min(recent_min) minimum_recent_numeric_temperature,
+               max(recent_max) maximum_recent_numeric_temperature,
                max(recent_temp_channels) recent_temperature_channels
         FROM numbered
         GROUP BY object_id,piket,location_key,incident_number;

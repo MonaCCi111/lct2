@@ -39,7 +39,13 @@ def main():
                (SELECT count(*) FROM s WHERE affected_channels<1) empty_channel_count,
                (SELECT count(*) FROM e WHERE channel_name IS NULL) missing_channel_name,
                (SELECT count(*) FROM e WHERE evidence_kind='GAS_NUMERIC_HOURLY'
-                AND (hour_numeric_count IS NULL OR numeric_value<1)) bad_hourly_measurement;
+                AND (hour_numeric_count IS NULL OR numeric_value<1)) bad_hourly_measurement,
+               (SELECT count(*) FROM e WHERE evidence_kind='SMOKE_TEXT'
+                AND channel_id=212285 AND event_time=TIMESTAMP '2025-10-29 00:24:16'
+                AND mixed_alarm_flags_at_time) notebook_smoke_evidence,
+               (SELECT count(*) FROM s WHERE situation_kind LIKE 'OBSERVED_SMOKE%'
+                AND object_id=5113 AND first_seen=TIMESTAMP '2025-10-29 00:24:16'
+                AND mixed_status_signal_records>0) notebook_smoke_cards;
     """)
     by_kind = con.execute("""
         WITH evidence_counts AS (
@@ -54,7 +60,12 @@ def main():
         SELECT (SELECT count(*) FROM original_smoke) smoke_signals,
                (SELECT count(*) FROM original_gas) gas_status_signals,
                (SELECT count(*) FROM original_hourly WHERE numeric_max>=1) gas_threshold_hours,
+               (SELECT count(*) FROM original_smoke WHERE mixed_alarm_flags_at_time) smoke_mixed_source,
                (SELECT count(*) FROM e WHERE evidence_kind='SMOKE_TEXT') output_smoke,
+               (SELECT count(*) FROM e WHERE evidence_kind='SMOKE_TEXT'
+                AND mixed_alarm_flags_at_time) smoke_mixed_output,
+               (SELECT sum(mixed_status_signal_records) FROM s
+                WHERE situation_kind LIKE 'OBSERVED_SMOKE%') smoke_mixed_cards,
                (SELECT count(*) FROM e WHERE evidence_kind='GAS_TEXT') output_gas_status,
                (SELECT count(*) FROM e WHERE evidence_kind='GAS_NUMERIC_HOURLY') output_gas_threshold;
     """)
@@ -75,10 +86,22 @@ def main():
     manifest = json.loads((out / "fire_history_manifest.json").read_text(encoding="utf-8"))
     with (out / "confirmed_fires.csv").open(encoding="utf-8", newline="") as file:
         fire_rows = list(csv.reader(file))
+    with (out / "smoke_temperature_candidates.csv").open(encoding="utf-8", newline="") as file:
+        candidates = list(csv.DictReader(file))
     assert len(fire_rows) == 1 and len(fire_rows[0]) == 8
     assert manifest["confirmed_fire_register_available"] is False
     assert manifest["confirmed_fire_count"] == 0
+    assert len(candidates) == manifest["telemetry_candidate_count"]
+    assert all(c["evidence_state"] == "UNCONFIRMED_TELEMETRY_COINCIDENCE"
+               for c in candidates)
+    notebook_cases = [c for c in candidates if c["object_id"] == "5113"
+                      and c["piket"] == "108"
+                      and c["first_smoke_time"] == "2025-10-29 00:24:16"]
+    assert len(notebook_cases) == 1
+    assert notebook_cases[0]["any_smoke_mixed_status"] == "true"
+    assert notebook_cases[0]["any_temperature_undefined_status"] == "true"
     assert counts["situations"] == counts["unique_situations"]
+    assert counts["notebook_smoke_evidence"] == counts["notebook_smoke_cards"] == 1
     assert not any(counts[k] for k in ("orphan_evidence", "bad_time", "bad_gas_unit",
                                          "missing_gas_event_id", "missing_other_event_id",
                                          "future_numeric", "empty_channel_count",
@@ -87,6 +110,8 @@ def main():
                            ("gas_status_signals", "output_gas_status"),
                            ("gas_threshold_hours", "output_gas_threshold")):
         assert source_counts[source] == source_counts[output], (source, source_counts)
+    assert (source_counts["smoke_mixed_source"] == source_counts["smoke_mixed_output"]
+            == source_counts["smoke_mixed_cards"]), source_counts
     assert sum(r[2] for r in by_kind) == counts["evidence"], (by_kind, counts)
     assert all(r[2] == r[3] for r in by_kind), by_kind
     print(json.dumps({"checks": counts, "source_coverage": source_counts,

@@ -31,6 +31,44 @@ def main():
          "temp_without_piket","bad_delta","bad_context")
     if any(row[field]!=0 for field in bad):
         raise AssertionError(row)
+    source = root / "production_ml" / "data" / "source_v2" / "journal_20??.parquet"
+    catalog = root / "dataset" / "справочник_каналов_датчиков.csv"
+    con.execute(f"""
+        CREATE TABLE expected_smoke AS
+        WITH smoke_channels AS (
+            SELECT "ид_канала_данных" channel_id
+            FROM read_csv('{catalog.as_posix()}')
+            WHERE "тип_датчика"='Датчик дыма'
+        ), times AS (
+            SELECT j.channel_id,j.event_time,
+                   bool_or(j.is_alarm) FILTER(WHERE j.sensor_value='Обнаружен дым') smoke_any,
+                   bool_and(j.is_alarm) FILTER(WHERE j.sensor_value='Обнаружен дым') smoke_all,
+                   bool_or(j.is_alarm) any_alarm,bool_and(j.is_alarm) all_alarm
+            FROM read_parquet('{source.as_posix()}') j
+            JOIN smoke_channels c USING(channel_id)
+            GROUP BY 1,2
+        )
+        SELECT channel_id,event_time,any_alarm!=all_alarm mixed_alarm_flags_at_time
+        FROM times WHERE smoke_any AND smoke_any=smoke_all;
+    """)
+    selection = con.execute("""
+        SELECT (SELECT count(*) FROM expected_smoke) expected,
+               (SELECT count(*) FROM evidence) produced,
+               (SELECT count(*) FROM (SELECT channel_id,event_time,mixed_alarm_flags_at_time
+                    FROM expected_smoke EXCEPT ALL
+                    SELECT channel_id,event_time,mixed_alarm_flags_at_time FROM evidence)) missing,
+               (SELECT count(*) FROM (SELECT channel_id,event_time,mixed_alarm_flags_at_time
+                    FROM evidence EXCEPT ALL
+                    SELECT channel_id,event_time,mixed_alarm_flags_at_time FROM expected_smoke)) extra,
+               (SELECT count(*) FROM evidence WHERE mixed_alarm_flags_at_time) mixed,
+               (SELECT count(*) FROM evidence WHERE channel_id=212285
+                    AND event_time=TIMESTAMP '2025-10-29 00:24:16'
+                    AND mixed_alarm_flags_at_time) notebook_case
+    """)
+    selected = dict(zip((d[0] for d in selection.description), selection.fetchone()))
+    print(json.dumps({"check":"source_selection",**selected},ensure_ascii=False),flush=True)
+    if selected["missing"] or selected["extra"] or selected["notebook_case"]!=1:
+        raise AssertionError(selected)
     result=con.execute("""
         WITH x AS (
           SELECT channel_id,event_time,year(event_time) yr,

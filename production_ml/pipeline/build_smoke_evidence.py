@@ -41,16 +41,20 @@ def main():
     JOIN locations l USING(channel_id);
 
     CREATE TABLE smoke_times AS
-    SELECT channel_id,event_time,bool_and(is_alarm) all_alarm,bool_or(is_alarm) any_alarm
+    SELECT channel_id,event_time,
+           bool_and(is_alarm) FILTER(WHERE sensor_value='Обнаружен дым') smoke_all_alarm,
+           bool_or(is_alarm) FILTER(WHERE sensor_value='Обнаружен дым') smoke_any_alarm,
+           bool_and(is_alarm) all_alarm,bool_or(is_alarm) any_alarm
     FROM source_events WHERE sensor_type='Датчик дыма' GROUP BY 1,2;
 
     CREATE TABLE smoke_signals AS
-    SELECT DISTINCT e.channel_id,e.event_time,e.object_id,e.piket
+    SELECT DISTINCT e.channel_id,e.event_time,e.object_id,e.piket,
+           t.all_alarm!=t.any_alarm mixed_alarm_flags_at_time
     FROM source_events e
     JOIN smoke_times t USING(channel_id,event_time)
     WHERE e.sensor_type='Датчик дыма'
       AND e.sensor_value='Обнаружен дым' AND e.is_alarm
-      AND t.all_alarm=t.any_alarm;
+      AND t.smoke_all_alarm=t.smoke_any_alarm;
 
     CREATE TABLE temperature_events AS
     SELECT channel_id,event_time,object_id,piket,
@@ -85,7 +89,7 @@ def main():
     GROUP BY 1,2;
 
     CREATE TABLE evidence AS
-    SELECT s.channel_id,s.event_time,s.object_id,s.piket,
+    SELECT s.channel_id,s.event_time,s.object_id,s.piket,s.mixed_alarm_flags_at_time,
            c.object_smoke_channels_15m,c.location_smoke_channels_15m,
            t.recent_numeric_count,t.baseline_numeric_count,t.recent_temp_channels,
            t.recent_median,t.baseline_median,

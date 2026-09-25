@@ -85,9 +85,11 @@ def main():
                max(c.max_location_smoke_channels_15m) local_channels_15m,
                sum(c.signals_with_comparable_temperature) comparable_temperature_signals,
                max(c.maximum_temperature_delta) max_temperature_delta,
+               max(c.maximum_recent_numeric_temperature) max_recent_numeric_temperature,
                CAST(NULL AS DOUBLE) numeric_max,
                CAST(NULL AS BIGINT) numeric_channels,
                CAST(NULL AS BIGINT) recent_text_alarm_channels,
+               sum(c.mixed_status_signal_records) mixed_status_signal_records,
                'smoke_status_not_confirmed_fire;temperature_unit_unverified;location_from_name' limitations
         FROM smoke_cards c JOIN smoke_mapping m USING(card_id)
         GROUP BY 1,3;
@@ -101,8 +103,10 @@ def main():
                CAST(NULL AS BIGINT) local_channels_15m,
                CAST(NULL AS BIGINT) comparable_temperature_signals,
                CAST(NULL AS DOUBLE) max_temperature_delta,
+               CAST(NULL AS DOUBLE) max_recent_numeric_temperature,
                maximum_recent_numeric numeric_max,alarm_channels numeric_channels,
                alarm_channels recent_text_alarm_channels,
+               CAST(NULL AS BIGINT) mixed_status_signal_records,
                'status_not_confirmed_leak;maintenance_schedule_unavailable;numeric_context_may_be_old' limitations
         FROM gas_cards;
 
@@ -134,9 +138,11 @@ def main():
                CAST(NULL AS BIGINT) local_channels_15m,
                CAST(NULL AS BIGINT) comparable_temperature_signals,
                CAST(NULL AS DOUBLE) max_temperature_delta,
+               CAST(NULL AS DOUBLE) max_recent_numeric_temperature,
                max(h.numeric_max) numeric_max,
                count(DISTINCT h.channel_id) numeric_channels,
                count(DISTINCT a.channel_id) recent_text_alarm_channels,
+               CAST(NULL AS BIGINT) mixed_status_signal_records,
                'threshold_is_observation_not_leak;hourly_max_not_instant_time;maintenance_schedule_unavailable;extreme_values_unverified' limitations
         FROM gas_threshold_numbered h
         JOIN gas_threshold_ids i USING(object_id,group_number)
@@ -197,8 +203,10 @@ def main():
                CAST(NULL AS BIGINT) local_channels_15m,
                CAST(NULL AS BIGINT) comparable_temperature_signals,
                CAST(NULL AS DOUBLE) max_temperature_delta,
+               CAST(NULL AS DOUBLE) max_recent_numeric_temperature,
                CAST(NULL AS DOUBLE) numeric_max,count(DISTINCT n.channel_id) numeric_channels,
                CAST(NULL AS BIGINT) recent_text_alarm_channels,
+               CAST(NULL AS BIGINT) mixed_status_signal_records,
                'observed_text_status_not_confirmed_physical_incident;maintenance_context_unavailable' limitations
         FROM other_numbered n JOIN other_ids i USING(situation_kind,object_id,group_number)
         GROUP BY 1,2,3;
@@ -228,6 +236,7 @@ def main():
                    s.object_smoke_channels_15m,s.location_smoke_channels_15m,
                    s.recent_numeric_count,s.baseline_numeric_count,
                    s.recent_median,s.baseline_median,s.temperature_delta,
+                   s.mixed_alarm_flags_at_time,
                    'source_v2/journal_YEAR.parquet:channel_id+event_time+sensor_value+is_alarm' source_ref
             FROM smoke_signals s JOIN smoke_cards c
               ON s.object_id=c.object_id
@@ -245,6 +254,7 @@ def main():
                    CAST(NULL AS BIGINT),CAST(NULL AS BIGINT),
                    CAST(NULL AS BIGINT),CAST(NULL AS BIGINT),
                    CAST(NULL AS DOUBLE),CAST(NULL AS DOUBLE),CAST(NULL AS DOUBLE),
+                   CAST(NULL AS BOOLEAN),
                    'gas_v1/status_events.parquet:channel_id+event_time+sensor_value+is_alarm'
             FROM gas_evidence a
         ), gas_numeric AS (
@@ -254,6 +264,7 @@ def main():
                    CAST(NULL AS BIGINT),CAST(NULL AS BIGINT),
                    CAST(NULL AS BIGINT),CAST(NULL AS BIGINT),
                    CAST(NULL AS DOUBLE),CAST(NULL AS DOUBLE),CAST(NULL AS DOUBLE),
+                   CAST(NULL AS BOOLEAN),
                    'gas_v1/hourly_YEAR.parquet:channel_id+obs_time;source_v2/journal_YEAR.parquet:hour_before_obs_time'
             FROM gas_threshold_numbered h JOIN gas_threshold_ids i USING(object_id,group_number)
         ), other_status AS (
@@ -262,6 +273,7 @@ def main():
                    CAST(NULL AS TIMESTAMP),CAST(NULL AS BIGINT),CAST(NULL AS BIGINT),
                    CAST(NULL AS BIGINT),CAST(NULL AS BIGINT),
                    CAST(NULL AS DOUBLE),CAST(NULL AS DOUBLE),CAST(NULL AS DOUBLE),
+                   CAST(NULL AS BOOLEAN),
                    'source_v2/journal_YEAR.parquet:event_id'
             FROM other_numbered n JOIN other_ids i USING(situation_kind,object_id,group_number)
         )
