@@ -24,11 +24,11 @@ def main():
                      "forecast_evidence"):
             con.execute(f"CREATE OR REPLACE VIEW {name} AS SELECT * FROM "
                         f"read_parquet('{(folder / (name + '.parquet')).as_posix()}')")
-        con.execute(f"CREATE OR REPLACE VIEW source AS SELECT * FROM read_parquet(" 
+        con.execute(f"CREATE OR REPLACE VIEW source AS SELECT * FROM read_parquet("
                     f"'{(root / 'review_queue' / (period + '.parquet')).as_posix()}')")
-        con.execute(f"CREATE OR REPLACE VIEW situations AS SELECT * FROM read_parquet(" 
+        con.execute(f"CREATE OR REPLACE VIEW situations AS SELECT * FROM read_parquet("
                     f"'{(root / 'observed_v1' / 'situations.parquet').as_posix()}')")
-        con.execute(f"CREATE OR REPLACE VIEW evidence AS SELECT * FROM read_parquet(" 
+        con.execute(f"CREATE OR REPLACE VIEW evidence AS SELECT * FROM read_parquet("
                     f"'{(root / 'observed_v1' / 'evidence.parquet').as_posix()}')")
         result = con.execute(f"""
             SELECT (SELECT count(*) FROM source) source_forecasts,
