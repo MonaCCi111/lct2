@@ -23,9 +23,11 @@ def main():
         type=Path,
         default=Path(__file__).resolve().parents[1] / "models" / "pump_scada_v1",
     )
+    parser.add_argument("--data-root", type=Path,
+                        default=Path(__file__).resolve().parents[1] / "data")
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
-    data = Path(__file__).resolve().parents[1] / "data" / "pump_v1"
+    data = args.data_root / "pump_v1"
     verify_bundle(args.bundle)
     contract = json.loads((args.bundle / "contract.json").read_text(encoding="utf-8"))
     meta = json.loads((args.bundle / "model_meta.json").read_text(encoding="utf-8"))

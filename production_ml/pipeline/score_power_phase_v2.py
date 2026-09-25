@@ -18,8 +18,9 @@ def main():
     parser.add_argument("--start",required=True);parser.add_argument("--end",required=True)
     parser.add_argument("--output",type=Path,required=True)
     parser.add_argument("--bundle",type=Path,default=Path(__file__).resolve().parents[1]/"models"/"power_phase_scada_v2")
+    parser.add_argument("--data-root",type=Path,default=Path(__file__).resolve().parents[1]/"data")
     args=parser.parse_args();sys.stdout.reconfigure(encoding="utf-8")
-    data=Path(__file__).resolve().parents[1]/"data"/"power_phase_v2"
+    data=args.data_root/"power_phase_v2"
     verify_bundle(args.bundle)
     contract=json.loads((args.bundle/"contract.json").read_text(encoding="utf-8"))
     meta=json.loads((args.bundle/"model_meta.json").read_text(encoding="utf-8"))

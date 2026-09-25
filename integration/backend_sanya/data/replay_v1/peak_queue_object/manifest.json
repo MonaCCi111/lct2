@@ -1,0 +1,27 @@
+{
+  "schema_version": "replay_v1",
+  "object_id": 5675,
+  "start": "2026-03-13 00:00:00",
+  "end_exclusive": "2026-03-14 00:00:00",
+  "catalog_channels": 187,
+  "event_counts": {
+    "coverage_baseline": 187,
+    "coverage_restored": 1,
+    "draft_created": 4,
+    "observed_signal": 6,
+    "reading": 8316,
+    "situation_ready": 5
+  },
+  "source_clock": "event_time_without_timezone_or_delivery_time",
+  "delivery_time_available": false,
+  "historical_feedback_available": false,
+  "feedback_state": "NO_REAL_DISPATCHER_DECISIONS",
+  "coverage_window_hours": 72,
+  "coverage_meaning": "record_recency_not_physical_health",
+  "catalog_metadata_time": "current_snapshot_not_proven_historical_at_replay_time",
+  "situation_release_rule": "signals at source time or gas hour close; final batch card one hour and one second after last evidence",
+  "batch_revision_possible": true,
+  "confirmed_fire_register_available": false,
+  "real_fire_count": null,
+  "source_limits": "Current catalog cannot assign unknown historical channels to an object. Names and types come from the current catalog snapshot. Batch situation grouping may change after late data; delivery order unknown."
+}

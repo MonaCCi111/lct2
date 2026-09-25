@@ -1,0 +1,15 @@
+{
+  "version": "dispatcher_runtime_policy_v1",
+  "forecast_models": {
+    "power_phase_scada_v2": {"sensor_type": "Состояние фазы", "score_threshold": 0.8, "channel_cooldown_hours": 48, "target_kind": "SCADA_STATUS_EPISODE"},
+    "pump_scada_v1": {"sensor_type": "Состояние насоса", "score_threshold": 0.11, "channel_cooldown_hours": 48, "target_kind": "SCADA_PUMP_ALARM"}
+  },
+  "observed_draft_situation_kinds": ["OBSERVED_PUMP_FLOODED_STATUS", "OBSERVED_UPS_BATTERY_LOW_STATUS"],
+  "observed_same_channel_repeat_window_hours": 48,
+  "mass_campaign_min_channels": 10,
+  "group_max_gap_hours": 1,
+  "daily_draft_limit": null,
+  "research_models_create_drafts": false,
+  "smoke_gas_and_fire_predictions_create_drafts": false,
+  "source": "dispatch_review_v2 and create_review_queue; supersedes legacy create_combined_tickets and obsolete daily_ticket_limit metadata"
+}

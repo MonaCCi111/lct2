@@ -1,0 +1,1396 @@
+{
+  "schema_version": "ml_handoff_v1",
+  "clock": "event_time_without_source_timezone_or_delivery_time",
+  "data_cutoff": "2026-06-30 23:59:59",
+  "resources": {
+    "channel_current": {
+      "path": "handoff_v1/channel_current.parquet",
+      "format": "parquet",
+      "key": [
+        "channel_id"
+      ],
+      "availability_field": "available_at",
+      "rows": 12627,
+      "bytes": 168431,
+      "sha256": "6c35ac1f07fa8b78010edae0ab64493d3027c20b9f963f50d0762bcb89e2980a",
+      "fields": [
+        {
+          "name": "schema_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "channel_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "available_at",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "in_catalog",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "channel_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "forecast_capability",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "forecast_model_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "forecast_target_kind",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "forecast_reason",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "forecast_reason_text",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "observed_event_capability",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "observed_event_reason",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "chart_capability",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "chart_reason",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "recent_input_context",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "coverage_observation_state",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "detailed_observation_state",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_state",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "last_text_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "last_text_alarm",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "last_text_source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "its_value",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "its_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "its_reason",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "last_event_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "last_recorded_value",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "last_recorded_is_alarm",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "last_source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "calculation_version",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    "observation_snapshots": {
+      "path": "handoff_v1/observation_snapshots.parquet",
+      "format": "parquet",
+      "key": [
+        "channel_id",
+        "snapshot_date"
+      ],
+      "availability_field": "available_at",
+      "rows": 378810,
+      "bytes": 4421169,
+      "sha256": "c9b80c3c3017f9596025a38eb099463c480255f8d848ab0d8a833920091adc77",
+      "fields": [
+        {
+          "name": "schema_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "channel_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "channel_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "in_catalog",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "snapshot_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "available_at",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "first_known_event_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "last_event_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "last_event_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "last_value",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "last_is_alarm",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "last_source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "last_text_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "last_text_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "last_text_alarm",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "last_text_source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "observation_state",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_state",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_alarm_variants",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_state_sets",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "event_count_72h",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "fault_reports_72h",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "service_reports_72h",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "conflicting_status_keys_72h",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "mixed_alarm_timestamps_72h",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "hours_since_last_event",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "its_value",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "its_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "its_reason",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "calculation_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    "state_dictionary": {
+      "path": "handoff_v1/state_dictionary.parquet",
+      "format": "parquet",
+      "key": [],
+      "availability_field": null,
+      "rows": 62,
+      "bytes": 2586,
+      "sha256": "fad56c3e072405d9c2fe6f2d3044241422862c3856fa246f9cc0166775c0484f",
+      "fields": [
+        {
+          "name": "schema_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "state_set_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "state_text",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_alarm",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "source_file",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    "situations": {
+      "path": "handoff_v1/situation_cards.parquet",
+      "format": "parquet",
+      "key": [
+        "situation_id"
+      ],
+      "availability_field": "available_at",
+      "rows": 11704,
+      "bytes": 408031,
+      "sha256": "aa63ba90b3f28aa4f296518d33f234d44a6ce97cd353ef325102ada423726b70",
+      "fields": [
+        {
+          "name": "schema_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "situation_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "object_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "situation_kind",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "source_first_seen",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "source_last_seen",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "available_at",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "location_key",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "affected_channels",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "signal_records",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "evidence_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "multi_channel_campaign",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "numeric_unit",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "stated_threshold",
+          "type": "DECIMAL(2,1)",
+          "nullable": true
+        },
+        {
+          "name": "numeric_max",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "limitations",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "review_link_state",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "draft_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "group_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "calculation_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "confirmed_physical_incident",
+          "type": "BOOLEAN",
+          "nullable": true
+        }
+      ]
+    },
+    "situation_evidence": {
+      "path": "handoff_v1/situation_evidence.parquet",
+      "format": "parquet",
+      "key": [],
+      "availability_field": "available_at",
+      "rows": 120593,
+      "bytes": 1755318,
+      "sha256": "c0fb966c36b287c7fc1c6e6bc1efe4a0dd73cfc118a542812651643e6dd1aad6",
+      "fields": [
+        {
+          "name": "schema_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "situation_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "channel_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "evidence_kind",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "source_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "available_at",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "event_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "observed_value",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "numeric_value",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "numeric_unit",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "source_alarm",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "channel_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "piket",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_state",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_alarm_variants",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_state_sets",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "dictionary_source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "calculation_version",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    "drafts": {
+      "path": "handoff_v1/draft_cards.parquet",
+      "format": "parquet",
+      "key": [
+        "draft_id"
+      ],
+      "availability_field": "available_at",
+      "rows": 2191,
+      "bytes": 76378,
+      "sha256": "cf05e8a6257cbad47e919f4b8415710b5f4170aa892cf5ecd2313fab1ea00404",
+      "fields": [
+        {
+          "name": "schema_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "draft_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "group_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "channel_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "basis_kind",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "model_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "score",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "forecast_horizon_hours",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "target_kind",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "source_obs_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "available_at",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "review_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "situation_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "location_key",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "limitations",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "affected_channels",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "channel_observation_state",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "fault_reports_72h",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "service_reports_72h",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "mixed_alarm_timestamps_72h",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "last_source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "its_value",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "its_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "calculation_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    "groups": {
+      "path": "handoff_v1/group_cards.parquet",
+      "format": "parquet",
+      "key": [
+        "group_id"
+      ],
+      "availability_field": "available_at",
+      "rows": 1621,
+      "bytes": 46879,
+      "sha256": "6ce4b0f85d985de9e8df215cfee69a165164aa3aa57fa5754ad99457ea5b1455",
+      "fields": [
+        {
+          "name": "schema_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "group_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "source_first_obs_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "source_last_obs_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "available_at",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "draft_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "forecast_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "observed_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "primary_channel_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "known_location_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "review_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "calculation_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    "overview_object_day": {
+      "path": "visualization_v1/object_day.parquet",
+      "format": "parquet",
+      "key": [
+        "object_id",
+        "activity_date"
+      ],
+      "availability_field": null,
+      "rows": 213486,
+      "bytes": 84041,
+      "sha256": "9c0eaae722e65c18f2cb34e75056dbe7e2161fa7a42fd83f02c5ff2d93eb2881",
+      "fields": [
+        {
+          "name": "activity_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "object_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "draft_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "forecast_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "observed_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "pending_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "review_groups",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "multi_draft_groups",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "observed_situations",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "smoke_situations",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "gas_situations",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "mass_situations",
+          "type": "BIGINT",
+          "nullable": true
+        }
+      ],
+      "usage": "historical_aggregate_not_live_as_of"
+    },
+    "overview_object_type_day": {
+      "path": "visualization_v1/object_type_day.parquet",
+      "format": "parquet",
+      "key": [
+        "object_id",
+        "sensor_type",
+        "activity_date"
+      ],
+      "availability_field": null,
+      "rows": 7402,
+      "bytes": 26669,
+      "sha256": "346bde6fa6ea0c5f74c76f176f49fbca2bf565ebe02744317d687ea0315c2bd3",
+      "fields": [
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "activity_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "draft_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "forecast_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "observed_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "observed_situations",
+          "type": "BIGINT",
+          "nullable": true
+        }
+      ],
+      "usage": "historical_aggregate_not_live_as_of"
+    },
+    "coverage_object_type_month": {
+      "path": "visualization_v1/coverage_monthly.parquet",
+      "format": "parquet",
+      "key": [
+        "snapshot_date",
+        "object_id",
+        "sensor_type"
+      ],
+      "availability_field": null,
+      "rows": 12030,
+      "bytes": 43111,
+      "sha256": "bd2d078508077e0b472fbaf2c73610a84c8418d63cf95eb9e07535b904f5d245",
+      "fields": [
+        {
+          "name": "snapshot_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "catalog_channels",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "recently_observed_channels",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "no_recent_observation_channels",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "conflicting_channels",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "ambiguous_simultaneous_channels",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "channels_with_fault_report_72h",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "fault_report_records_72h",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "its_value",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "its_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "object_name",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ],
+      "usage": "historical_aggregate_not_live_as_of"
+    },
+    "forecast_quality_daily": {
+      "path": "visualization_v1/forecast_quality_daily.parquet",
+      "format": "parquet",
+      "key": [],
+      "availability_field": null,
+      "rows": 746,
+      "bytes": 5249,
+      "sha256": "7d04d4c69353783cfe443625c79910d7ce589bbd702354686d469be5000fb805",
+      "fields": [
+        {
+          "name": "activity_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "model_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "forecast_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "evaluable_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "matched_scada_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "unevaluable_drafts",
+          "type": "BIGINT",
+          "nullable": true
+        }
+      ],
+      "usage": "retrospective_only"
+    },
+    "gas_daily": {
+      "path": "visualization_v1/gas_daily.parquet",
+      "format": "parquet",
+      "key": [
+        "channel_id",
+        "activity_date"
+      ],
+      "availability_field": null,
+      "rows": 443824,
+      "bytes": 3675604,
+      "sha256": "2e2a50a83b954c6eb5984585223ef878c2f7f916914d593c207f8af49188ad79",
+      "fields": [
+        {
+          "name": "channel_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "activity_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "recorded_hours",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "source_measurements",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "numeric_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "numeric_max",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "mean_of_hourly_medians",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "hours_at_or_above_stated_threshold",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "negative_measurements",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "numeric_unit",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "stated_device_threshold",
+          "type": "DECIMAL(2,1)",
+          "nullable": true
+        },
+        {
+          "name": "maintenance_context",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ],
+      "usage": "historical_aggregate_not_live_as_of"
+    },
+    "chart_examples": {
+      "path": "handoff_v1/chart_examples.parquet",
+      "format": "parquet",
+      "key": [],
+      "availability_field": "view_at",
+      "rows": 977,
+      "bytes": 18593,
+      "sha256": "6c68a50cf62a518d57d4e7d664251b5112b81ee920eca83e165236ef0671f7a9",
+      "fields": [
+        {
+          "name": "schema_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "case_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "view_at",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "calculation_version",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "channel_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sensor_type",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "channel_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "event_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "event_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sensor_value",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_alarm",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "numeric_value",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "value_kind",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "previous_event_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "gap_hours",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "time_relation",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "numeric_unit",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "stated_device_threshold",
+          "type": "DECIMAL(2,1)",
+          "nullable": true
+        },
+        {
+          "name": "source_ref",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ],
+      "usage": "examples_only_generate_per_case"
+    },
+    "replay_timeline_example": {
+      "path": "replay_v1/observed_draft/timeline.parquet",
+      "format": "parquet",
+      "key": [
+        "seq"
+      ],
+      "availability_field": "event_time",
+      "rows": 261,
+      "bytes": 7730,
+      "sha256": "99d4c0712923be49ca54ae6d2b4e85ed2db349805b877e1a9da89b8c29ec9d74",
+      "fields": [
+        {
+          "name": "seq",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "event_time",
+          "type": "TIMESTAMP",
+          "nullable": true
+        },
+        {
+          "name": "sort_order",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "event_kind",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "object_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "channel_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "source_id",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "payload",
+          "type": "JSON",
+          "nullable": true
+        },
+        {
+          "name": "availability_basis",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ],
+      "usage": "scenario_example"
+    }
+  },
+  "json_resources": {
+    "fire_history": "handoff_v1/fire_history_view.json",
+    "feedback_availability": "handoff_v1/feedback_availability.json",
+    "chart_example_index": "handoff_v1/chart_example_index.json",
+    "replay_scenarios": "../pipeline/replay_scenarios_v1.json"
+  }
+}

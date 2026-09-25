@@ -1,0 +1,35 @@
+Саня – бэкенд. Пакет dispatcher_integration_v1.
+
+После получения ветки запусти git lfs pull: Parquet лежат в GitHub LFS,
+обычный git clone без LFS оставит только файлы-указатели.
+
+Начни с ARCHITECTURE_V1.txt и api_contract_v1.json. В data лежат
+исторические таблицы для экранов и шесть входных таблиц действующих
+scorers. data/package_manifest.json перечисляет все файлы, размеры
+и SHA256; data/handoff_v1/schema_manifest.json задаёт 14 основных
+ресурсов, типы полей и ключи. models/ содержит только два действующих
+пакета. runtime_policy_v1.json – актуальные правила очереди. Старые
+USAGE_ACTIVE.txt и create_combined_tickets с лимитом 10 не применять.
+
+Базовый маршрут API – /api/v2 из api_contract_v1.json. Импортируй
+исторический пакет без изменения draft_id, situation_id, channel_id и
+source_ref. Реальные решения храни отдельно, с автором, причиной и
+idempotency_key. Временная отсечка обязательна на всех страницах и
+деталях. Для графика доступных в пакете случаев используй сохранённые
+свидетельства; chart_examples – лишь пять примерных разборов.
+
+Команды проверки из корня ML-репозитория:
+  .venv\Scripts\python.exe -m validation.check_integration_packages_v1
+  .venv\Scripts\python.exe -m validation.check_handoff_v1
+  .venv\Scripts\python.exe -m validation.check_final_product_v1
+
+Для воспроизведения исторического скоринга используй код
+production_ml.pipeline.score_power_phase_v2 и score_pump и таблицы
+data/power_phase_v2 и data/pump_v1. Укажи --data-root на эту папку data
+и --bundle на нужный пакет из models. Для нового потока нужен
+описанный в архитектуре инкрементальный расчёт; он не содержится в
+этом историческом пакете. Не называй этот пакет готовым live API.
+
+Если импорт не сходится с манифестом или API требует выдумывать смысл
+поля, останавливай выпуск и сообщай конкретное расхождение. Не
+подставляй 0 вместо null и не превращай score в общий риск.

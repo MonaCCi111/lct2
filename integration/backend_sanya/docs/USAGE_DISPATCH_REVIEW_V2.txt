@@ -1,0 +1,71 @@
+Единая ML-очередь черновиков, пункт 4 утверждённого плана
+
+Рабочие прогнозы: только power_phase_scada_v2 и pump_scada_v1 из
+review_queue. Наблюдаемые поводы: только однозначные тревожные текстовые
+статусы «Затоплен» на датчике насоса и «Батарея разряжена» на ИБП.
+Массовые ситуации с 10 и более каналами остаются в observed_v1, но не
+порождают индивидуальные черновики. Дым, газ, высокая температура и
+ручной рычаг остаются в информационных карточках. Ни один статус не
+считается подтверждением физической аварии.
+
+Запуск из G:\lct2\tmp\publish_ml:
+
+.venv\Scripts\python.exe -m production_ml.pipeline.build_dispatch_review_v2 --predictive production_ml/data/review_queue/policy_2024.parquet --observed production_ml/data/observed_v1/situations.parquet --evidence production_ml/data/observed_v1/evidence.parquet --phase-features production_ml/data/power_phase_v2/features.parquet --pump-features production_ml/data/pump_v1/features.parquet --journals production_ml/data/source_v2 --start 2024-07-01 --end 2025-01-01 --output production_ml/data/dispatch_review_v2/policy_2024
+
+.venv\Scripts\python.exe -m production_ml.pipeline.build_dispatch_review_v2 --predictive production_ml/data/review_queue/diagnostic_2025_2026.parquet --observed production_ml/data/observed_v1/situations.parquet --evidence production_ml/data/observed_v1/evidence.parquet --phase-features production_ml/data/power_phase_v2/features.parquet --pump-features production_ml/data/pump_v1/features.parquet --journals production_ml/data/source_v2 --start 2025-01-01 --end 2026-07-01 --output production_ml/data/dispatch_review_v2/diagnostic_2025_2026
+
+.venv\Scripts\python.exe -m validation.check_dispatch_review_v2
+.venv\Scripts\python.exe -m validation.report_dispatch_review_v2
+
+Файлы локального выпуска:
+
+members.parquet – каждый черновик с group_id, draft_id, объектом,
+основным каналом, временем, видом основания, названием цели, баллом
+только для прогнозов, ограничениями и status=draft.
+groups.parquet – контекст обзора по объекту при разрыве не более часа.
+Группа не означает одну общую физическую неисправность, решения
+принимаются по каждому draft_id.
+observed_mapping.parquet – для каждой наблюдаемой ситуации показывает,
+создан ли черновик или событие присоединено к предыдущему черновику.
+Повторы того же основного канала и вида состояния в пределах 48 часов
+добавляются к первому черновику. Они не исчезают из evidence и остаются
+отдельными ситуациями в observed_v1.
+observed_evidence.parquet – все исходные наблюдаемые сигналы, включая
+присоединённые повторы. source_situation_id позволяет открыть исходную
+ситуацию; event_time и available_at определяют, когда факт стал доступен.
+initial_at_draft показывает, что было известно в момент черновика.
+forecast_features.parquet – снимок признаков модели на момент прогноза.
+forecast_evidence.parquet – исходные записи прогнозного канала за
+предыдущий час, включая event_id, значение и флаг тревоги. Все события
+имеют event_time не позже obs_time. Снимок признаков использует более
+длинные окна; показанный час не равен всей истории модели.
+workload.json – нагрузка по всем календарным дням и 12-часовым сменам,
+в том числе нулевым, плюс список групп в трёх самых загруженных сменах.
+
+Экран диспетчера: список групп с объектом, первым/последним временем,
+числом прогнозов и наблюдаемых статусов. Раскрытие группы показывает
+отдельные черновики и связь каждого с каналом. Прогноз получает балл
+своей модели и снимок признаков; наблюдаемый статус получает текст
+«зафиксирован датчиком», исходные строки и ограничения. Баллы разных
+моделей не сравниваются как общий риск. Сортировка по времени не
+называется срочностью. Карточка показывает хронологию сигналов и
+позволяет открыть записи из source_ref. После решения карточка остаётся
+в истории вместе с причиной, автором и временем решения.
+
+Бэкенд: читать файлы как контракт данных; фильтровать evidence по
+available_at <= времени просмотра при воспроизведении прошлого.
+Исторический group_id зависит от первого события группы. В рабочем
+потоке нужно хранить стабильный серверный ключ группы, назначенный при
+первом событии, и присоединять новые черновики транзакционно. Сохранять
+полный журнал feedback JSONL или эквивалент событий без перезаписи.
+Для v2 запускать apply_dispatch_feedback с --require-reason: причина
+нужна и при approved, и при rejected; work_order_id можно добавить позже.
+Решение человека не используется как целевая метка физической аварии.
+Время поступления организаторы не передали. При запоздалом событии
+пересчитать отображение группы и пометить обновление, не менять
+сохранённый draft_id или принятое решение. Между отдельными пакетными
+выгрузками переносить состояние 48-часового объединения повторов.
+
+ML-часть не включает фронтенд, бэкенд и реальный журнал решений.
+Историческая нагрузка – техническая оценка, а не измеренное время
+разбора диспетчером. Parquet и workload.json в Git не добавлять.

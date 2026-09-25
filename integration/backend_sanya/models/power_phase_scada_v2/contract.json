@@ -1,0 +1,24 @@
+{
+  "version": "power_phase_scada_v2",
+  "supported_sensor_types": ["Состояние фазы"],
+  "target": "Начало нового автоматического эпизода SCADA через 1–48 часов",
+  "failure_statuses": ["Обесточен", "Неисправен", "Отключено устройство"],
+  "recovery_statuses": ["Есть питание", "Норма", "Включен"],
+  "episode_rule": "Новый эпизод начинается при переходе из последнего явного состояния восстановления в аварийный статус",
+  "operational_eligibility": "Есть не менее 72 часов истории; после предыдущего эпизода получен явный статус восстановления и прошло 48 часов",
+  "training_eligibility": "Operational eligibility и последнее событие канала находится не раньше чем через 48 часов после observation_time",
+  "observation_time": "Конец часа; используются события с event_time строго раньше или равным observation_time",
+  "late_events": "В журнале нет времени поступления. Историческая доступность по event_time не доказывает отсутствие задержки доставки",
+  "model_inputs": [
+    "sensor_type", "event_count_1h", "event_count_24h", "status_changes_1h",
+    "status_changes_24h", "status_changes_72h", "rapid_status_changes_24h",
+    "fast_change_fraction_24h", "alarm_events_24h", "alarm_event_fraction_24h",
+    "undefined_events_24h", "undefined_event_fraction_24h", "observed_hours_72h"
+  ],
+  "input_key": ["channel_id", "obs_time"],
+  "output": ["channel_id", "obs_time", "score"],
+  "coverage": "Строка создаётся только для часа, в котором у канала есть хотя бы одно событие",
+  "missing_hour_semantics": "Отсутствие строки не считается нормальным состоянием; observed_hours_72h показывает число часов с событиями",
+  "unsupported_input": "Каналы других типов не оцениваются",
+  "score_meaning": "Калиброванный по истории балл автоматического эпизода SCADA. Он не является вероятностью подтверждённой поломки или ремонта"
+}
