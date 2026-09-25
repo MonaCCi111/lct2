@@ -58,5 +58,12 @@
     "end": "2025-04-07T15:00:00",
     "expected_situation_id": "GAS_NUMERIC:5578:20250407T100000",
     "expected_drafts": 0
+  },
+  {
+    "id": "peak_queue_object",
+    "title": "Объект в наиболее загруженный по доступным группам день",
+    "object_id": 5675,
+    "start": "2026-03-13T00:00:00",
+    "end": "2026-03-14T00:00:00"
   }
 ]
