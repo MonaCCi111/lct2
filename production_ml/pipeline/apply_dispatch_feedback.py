@@ -16,7 +16,7 @@ FEEDBACK_FIELDS = ("feedback_id", "draft_id", "reviewed_at_utc", "decision",
                    "reviewer_id", "reason_code", "work_order_id")
 
 
-def read_feedback(path):
+def read_feedback(path, require_reason=False):
     events = []
     with path.open("r", encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, 1):
@@ -30,8 +30,8 @@ def read_feedback(path):
                 raise ValueError(f"Пустое обязательное поле, строка {line_number}")
             if event["decision"] not in DECISIONS:
                 raise ValueError(f"Неизвестное решение, строка {line_number}")
-            if event["decision"] == "rejected" and not event.get("reason_code"):
-                raise ValueError(f"Причина отклонения обязательна, строка {line_number}")
+            if (event["decision"] == "rejected" or require_reason) and not event.get("reason_code"):
+                raise ValueError(f"Причина решения обязательна, строка {line_number}")
             reviewed_at = datetime.fromisoformat(event["reviewed_at"].replace("Z", "+00:00"))
             if reviewed_at.utcoffset() is None:
                 raise ValueError(f"Время решения должно иметь часовой пояс, строка {line_number}")
@@ -75,6 +75,7 @@ def main():
     parser.add_argument("--members", type=Path, required=True)
     parser.add_argument("--feedback", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--require-reason", action="store_true")
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
     for path in (args.members, args.feedback):
@@ -82,7 +83,7 @@ def main():
             raise FileNotFoundError(path)
     con = duckdb.connect()
     drafts = con.execute(f"SELECT * FROM read_parquet('{args.members.as_posix()}')").df()
-    feedback = read_feedback(args.feedback)
+    feedback = read_feedback(args.feedback, require_reason=args.require_reason)
     reviewed = apply_feedback(drafts, feedback)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     con.register("reviewed", reviewed)
