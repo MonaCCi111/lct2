@@ -49,7 +49,12 @@ def verify_contents():
     assert api["base_path"] == "/api/v2"
     paths = {(item["method"], item["path"]) for item in api["endpoints"]}
     assert ("POST", "/drafts/{draft_id}/decisions") in paths
+    assert ("POST", "/drafts/{draft_id}/decision-corrections") in paths
+    assert ("GET", "/drafts") in paths
+    assert ("GET", "/objects") in paths
+    assert ("POST", "/work-orders") in paths
     assert ("GET", "/replays/{scenario_id}/events") in paths
+    assert (DATA / "catalog" / "справочник_объектов_диспетчер.csv").is_file()
     policy = json.loads((BACKEND / "runtime_policy_v1.json").read_text(encoding="utf-8"))
     assert policy["daily_draft_limit"] is None
     assert set(policy["forecast_models"]) == {"power_phase_scada_v2", "pump_scada_v1"}
@@ -62,6 +67,11 @@ def verify_contents():
     fixtures = json.loads((FRONTEND / "fixtures_v1.json").read_text(encoding="utf-8"))
     assert fixtures["GET /api/v2/meta"]["live_ingestion_available"] is False
     assert fixtures["GET /api/v2/fire-history"]["real_fire_count"] is None
+    forecast = fixtures["GET /api/v2/drafts?basis_kind=forecast"]["items"][0]
+    assert forecast["score"] is not None
+    assert forecast["model_version"] == "power_phase_scada_v2"
+    assert forecast["forecast_horizon_hours"] == 48
+    assert fixtures["GET /api/v2/objects/{object_id}"]["object_name"]
     print(f"OK файлы и SHA256: {len(package['files'])}, ресурсы: 14, replay: 8")
 
 

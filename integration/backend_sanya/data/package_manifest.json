@@ -2,12 +2,17 @@
   "package_version": "dispatcher_integration_v1",
   "data_cutoff": "2026-06-30 23:59:59",
   "handoff_schema_version": "ml_handoff_v1",
-  "api_contract_sha256": "2bb931ba99963fdc13bf115f18d7f6aa1ad78530ce80102dc525e1a16cb279d4",
+  "api_contract_sha256": "e35edb6982144c1e7f8b5bf86741907333653818224002aebc8a72323041e179",
   "files": [
     {
       "path": "data/catalog/справочник_каналов_датчиков.csv",
       "bytes": 1321317,
       "sha256": "87b3230e93ae00e3f03d915336acde6b3990c8b58d7378175cf02c000f67a45f"
+    },
+    {
+      "path": "data/catalog/справочник_объектов_диспетчер.csv",
+      "bytes": 5266,
+      "sha256": "219b4dbe34a78581640d839837649d3ef481c62c089fef18db1b364cff007084"
     },
     {
       "path": "data/catalog/справочник_состояний.csv",

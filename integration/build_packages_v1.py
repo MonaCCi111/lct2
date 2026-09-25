@@ -57,6 +57,8 @@ def main():
         ROOT.parents[1] / "dataset" / "справочник_каналов_датчиков.csv")
     sources["data/catalog/справочник_состояний.csv"] = (
         ROOT.parents[1] / "dataset" / "справочник_состояний.csv")
+    sources["data/catalog/справочник_объектов_диспетчер.csv"] = (
+        ROOT.parents[1] / "dataset" / "справочник_объектов_диспетчер.csv")
     for model in ("power_phase_scada_v2", "pump_scada_v1"):
         for source in (ROOT / "production_ml" / "models" / model).iterdir():
             if source.is_file():

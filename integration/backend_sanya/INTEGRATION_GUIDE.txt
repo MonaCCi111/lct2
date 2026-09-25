@@ -11,7 +11,9 @@ scorers. data/package_manifest.json перечисляет все файлы, р
 пакета. runtime_policy_v1.json – актуальные правила очереди. Старые
 USAGE_ACTIVE.txt и create_combined_tickets с лимитом 10 не применять.
 
-Базовый маршрут API – /api/v2 из api_contract_v1.json. Импортируй
+Базовый маршрут API – /api/v2 из api_contract_v1.json. Справочник
+объектов находится в data/catalog/справочник_объектов_диспетчер.csv.
+Импортируй
 исторический пакет без изменения draft_id, situation_id, channel_id и
 source_ref. Реальные решения храни отдельно, с автором, причиной и
 idempotency_key. Временная отсечка обязательна на всех страницах и

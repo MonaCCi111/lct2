@@ -80,6 +80,13 @@
       }
     ]
   },
+  "GET /api/v2/objects/{object_id}": {
+    "object_id": 5333,
+    "object_name": "ДУ объект Кси",
+    "kind": "controlHouse",
+    "parent_id": 5327,
+    "channel_count": 215
+  },
   "GET /api/v2/channels?in_catalog=false": {
     "items": [
       {
@@ -250,6 +257,74 @@
     "source_ref": "dispatch_review_v2/diagnostic_2025_2026/members.parquet:draft_id",
     "review_state": "pending",
     "decision": null
+  },
+  "GET /api/v2/drafts?basis_kind=forecast": {
+    "items": [
+      {
+        "schema_version": "ml_handoff_v1",
+        "draft_id": "power_phase_scada_v2:178259:20251210T090000",
+        "group_id": "review_v2:5003:20251210T090000",
+        "object_id": 5003,
+        "channel_id": 178259,
+        "basis_kind": "forecast",
+        "model_version": "power_phase_scada_v2",
+        "score": 0.9848484848484849,
+        "forecast_horizon_hours": 48,
+        "target_kind": "SCADA_STATUS_EPISODE",
+        "source_obs_time": "2025-12-10T09:00:00",
+        "available_at": "2025-12-10T09:00:00",
+        "review_status": "draft",
+        "situation_id": null,
+        "location_key": null,
+        "limitations": "model_score_is_not_physical_failure_probability;event_time_only;delivery_time_unavailable",
+        "affected_channels": null,
+        "channel_observation_state": "recent_observation",
+        "fault_reports_72h": 0,
+        "service_reports_72h": 1,
+        "mixed_alarm_timestamps_72h": 0,
+        "last_source_ref": "source_v2/journal_2025.parquet:channel_id+event_time+event_id+sensor_value+is_alarm",
+        "its_value": null,
+        "its_status": "unavailable_no_confirmed_health_target",
+        "calculation_version": "dispatch_review_v2",
+        "source_ref": "dispatch_review_v2/diagnostic_2025_2026/members.parquet:draft_id",
+        "feature_snapshot": {
+          "channel_id": 178259,
+          "sensor_type": "Состояние фазы",
+          "obs_time": "2025-12-10 09:00:00",
+          "event_count_1h": 1,
+          "event_count_24h": 1.0,
+          "status_changes_1h": 1,
+          "status_changes_24h": 1.0,
+          "status_changes_72h": 3.0,
+          "rapid_status_changes_24h": 0.0,
+          "fast_change_fraction_24h": 0.0,
+          "alarm_events_24h": 0.0,
+          "alarm_event_fraction_24h": 0.0,
+          "undefined_events_24h": 0.0,
+          "undefined_event_fraction_24h": 0.0,
+          "observed_hours_72h": 2
+        },
+        "review_state": "pending",
+        "decision": null
+      }
+    ],
+    "next_cursor": null
+  },
+  "GET /api/v2/drafts/{forecast_draft_id}/evidence": {
+    "items": [
+      {
+        "draft_id": "power_phase_scada_v2:178259:20251210T090000",
+        "group_id": "review_v2:5003:20251210T090000",
+        "channel_id": 178259,
+        "event_time": "2025-12-10T08:16:53",
+        "available_at": "2025-12-10T08:16:53",
+        "event_id": 3262044394,
+        "observed_value": "Есть питание",
+        "is_alarm": false,
+        "source_ref": "source_v2/journal_2025.parquet:channel_id+event_time+event_id+sensor_value+is_alarm"
+      }
+    ],
+    "next_cursor": null
   },
   "GET /api/v2/fire-history": {
     "source_status": "NO_CONFIRMED_FIRE_SOURCE",
