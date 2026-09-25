@@ -28,14 +28,15 @@ const urgencyTones: Record<MaintenanceUrgency, Tone> = {
   FLASH_1_6H: 'critical',
 };
 /**
- * Urgency is encoded by length, never by risk: the marker grows as the window shortens, so a
- * column of them reads as a rising scale while scanning. The label stays the source of truth.
+ * Urgency reads as a compact mini-chart, never as risk: the number of columns grows as the
+ * maintenance window shortens, and their heights give each level its own silhouette. The label
+ * stays the source of truth.
  */
-const urgencyLengths: Record<MaintenanceUrgency, number> = {
-  FLASH_1_6H: 3,
-  URGENT_6_24H: 2,
-  PLANNED_24_48H: 1,
-  NORMAL: 0,
+const urgencyColumns: Record<MaintenanceUrgency, readonly ('sm' | 'md' | 'lg')[]> = {
+  FLASH_1_6H: ['sm', 'lg', 'md'],
+  URGENT_6_24H: ['sm', 'md'],
+  PLANNED_24_48H: ['sm'],
+  NORMAL: [],
 };
 export function UrgencyIndicator({ value }: { value: MaintenanceUrgency | null }) {
   const tone = value === null ? 'neutral' : urgencyTones[value];
@@ -52,7 +53,9 @@ export function UrgencyIndicator({ value }: { value: MaintenanceUrgency | null }
   return (
     <span className="semantic-indicator urgency-indicator">
       <span className={`urgency-meter tone-${tone}`} aria-hidden="true">
-        <span className={`urgency-bar urgency-bar-${value === null ? 1 : urgencyLengths[value]}`} />
+        {(value === null ? urgencyColumns.PLANNED_24_48H : urgencyColumns[value]).map((size, index) => (
+          <span key={index} className={`urgency-column urgency-column-${size}`} />
+        ))}
       </span>
       {getUrgencyLabel(value)}
     </span>

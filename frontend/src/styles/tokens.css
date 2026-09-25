@@ -10,20 +10,21 @@
   --text-primary: #e7e8ea;
   --text-secondary: #a5a9b0;
   --text-muted: #9a9fa8;
-  /* Severity reads as text first: these four stay inside AA on every surface. */
-  --risk-critical: #ef8b8e;
-  --risk-high: #ffa24d;
-  --risk-medium: #efc75c;
+  /* Severity reads as text first: these four stay inside AA on every surface. The hues are held
+     apart on purpose — red 358°, orange 25°, yellow 49° — so the three levels never blend. */
+  --risk-critical: #f4787c;
+  --risk-high: #ff9042;
+  --risk-medium: #f2d75a;
   --risk-low: #83c79d;
   /* Markers, stripes and bars are shapes, not text, so they can be a shade louder. */
-  --risk-critical-accent: #ee6a70;
-  --risk-high-accent: #ff9330;
-  --risk-medium-accent: #f2c633;
+  --risk-critical-accent: #f04a52;
+  --risk-high-accent: #ff7d1a;
+  --risk-medium-accent: #ffd426;
   --risk-low-accent: #4fc184;
   --status-info: #9eb9d5;
   --status-success: #83c79d;
-  --status-warning: #efc75c;
-  --status-error: #ef8b8e;
+  --status-warning: #f2d75a;
+  --status-error: #f4787c;
   --accent: #b5c9dd;
   --focus: #a9c6e5;
   --accent-hover: #c7d6e5;
@@ -54,20 +55,22 @@
   --text-primary: #1c1e23;
   --text-secondary: #575c65;
   --text-muted: #626873;
-  /* Text severity: saturated but dark enough to stay readable on white. */
-  --risk-critical: #b3232f;
+  /* Text severity: saturated but dark enough to stay readable on white. On a light background
+     every level has to stay dark, so the separation is carried by hue — red 353°, orange 30°,
+     yellow 55° — and by full chroma, not by lightness. */
+  --risk-critical: #c2172b;
   --risk-high: #a85400;
-  --risk-medium: #7d6200;
+  --risk-medium: #6f6600;
   --risk-low: #1d7a4c;
   /* Shapes carry the "bright orange / bright yellow" reading that text cannot on white. */
-  --risk-critical-accent: #d8313c;
-  --risk-high-accent: #d96800;
-  --risk-medium-accent: #a87e00;
+  --risk-critical-accent: #e01b2d;
+  --risk-high-accent: #e06400;
+  --risk-medium-accent: #ab8d00;
   --risk-low-accent: #149257;
   --status-info: #2f5e86;
   --status-success: #1d7a4c;
-  --status-warning: #7d6200;
-  --status-error: #b3232f;
+  --status-warning: #6f6600;
+  --status-error: #c2172b;
   --accent: #2f5e86;
   --accent-hover: #244c6e;
   --on-accent: #ffffff;

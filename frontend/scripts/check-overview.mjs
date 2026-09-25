@@ -69,10 +69,18 @@ try {
         const dotless = element.classList.contains('risk-indicator-text');
         const marker = element.querySelector(urgency ? '.urgency-meter' : '.semantic-marker');
         const markerStyle = marker ? getComputedStyle(marker) : null;
-        // Urgency is a single bar whose length encodes the maintenance window.
-        const bar = element.querySelector('.urgency-bar');
-        const barStyle = bar ? getComputedStyle(bar) : null;
+        // Urgency is a mini-chart: one column per step, heights giving the level its silhouette.
+        const columns = [...element.querySelectorAll('.urgency-column')].map((column) => {
+          const columnStyle = getComputedStyle(column);
+          return {
+            height: Math.round(parseFloat(columnStyle.height)),
+            width: Math.round(parseFloat(columnStyle.width)),
+            radius: columnStyle.borderTopLeftRadius,
+            flatBottom: columnStyle.borderBottomLeftRadius,
+          };
+        });
         return {
+          columns,
           dotless,
           background: style.backgroundColor,
           border: style.borderTopWidth,
@@ -82,9 +90,9 @@ try {
           fontWeight: style.fontWeight,
           numeric: style.fontVariantNumeric,
           markerWidth: markerStyle?.width ?? null,
-          markerHeight: barStyle ? barStyle.height : (markerStyle?.height ?? null),
-          markerRadius: barStyle ? barStyle.borderRadius : (markerStyle?.borderRadius ?? null),
-          barWidth: barStyle ? Math.round(parseFloat(barStyle.width)) : null,
+          markerHeight: markerStyle?.height ?? null,
+          markerRadius: markerStyle?.borderRadius ?? null,
+          markerAlign: markerStyle?.alignItems ?? null,
           barColor: markerStyle?.color ?? null,
           decorative: marker?.getAttribute('aria-hidden') ?? null,
           urgency,
@@ -108,16 +116,27 @@ try {
     } else {
       assert.equal(style.color, 'rgb(231, 232, 234)');
       assert.equal(style.decorative, 'true');
-      assert.equal(style.markerWidth, style.urgency ? '24px' : '6px');
-      assert.equal(style.markerHeight, style.urgency ? '4px' : '6px');
-      assert.equal(style.markerRadius, style.urgency ? '2px' : '3px');
+      assert.equal(style.markerWidth, style.urgency ? '16px' : '6px');
+      assert.equal(style.markerHeight, style.urgency ? '11px' : '6px');
+      if (!style.urgency) assert.equal(style.markerRadius, '3px');
     }
-    // Urgency reads as one bar of 8, 16 or 24px — shorter window, longer bar — and it is the
-    // only indicator that carries the urgency accent colour.
+    // Urgency reads as a mini-chart standing on a shared baseline: the column pattern is what
+    // separates the three lifecycle steps, and only this indicator carries the urgency accent.
     if (style.urgency) {
-      assert.ok([8, 16, 24].includes(style.barWidth), `urgency bar: ${style.barWidth}`);
+      const expected = { '1–6 ч': [5, 11, 8], '6–24 ч': [5, 8], '24–48 ч': [5] }[style.label];
+      assert.ok(expected, `unexpected urgency label: ${style.label}`);
+      assert.deepEqual(
+        style.columns.map((column) => column.height),
+        expected,
+        `columns for ${style.label}`,
+      );
+      assert.equal(style.markerAlign, 'flex-end');
+      assert.ok(
+        style.columns.every((column) => column.width === 3 && column.radius !== column.flatBottom),
+        'columns are narrow with rounded tops only',
+      );
       assert.match(style.barColor, /^rgb\(/);
-    } else assert.equal(style.barWidth, null);
+    } else assert.equal(style.columns.length, 0);
   }
   assert.equal(
     await page

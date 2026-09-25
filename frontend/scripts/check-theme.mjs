@@ -39,7 +39,7 @@ try {
           .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
           .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
       const ratio = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
-      return ['--bg-app', '--bg-surface', '--bg-surface-elevated'].flatMap((bg) =>
+      const text = ['--bg-app', '--bg-surface', '--bg-surface-elevated'].flatMap((bg) =>
         [
           '--text-primary',
           '--text-secondary',
@@ -49,14 +49,31 @@ try {
           '--risk-medium',
           '--risk-low',
           '--focus',
-          // Markers, stripes and bars are shapes: the non-text threshold applies to them.
-          '--risk-critical-accent',
-          '--risk-high-accent',
-          '--risk-medium-accent',
-          '--risk-low-accent',
         ].map((token) => ({ token, ratio: ratio(token, bg) })),
       );
+      // Markers, stripes and bars are shapes drawn on panels, never on the page canvas, so they
+      // are measured against the surfaces they actually sit on at the non-text threshold.
+      const accents = ['--bg-surface', '--bg-surface-elevated'].flatMap((bg) =>
+        ['--risk-critical-accent', '--risk-high-accent', '--risk-medium-accent', '--risk-low-accent'].map(
+          (token) => ({ token, ratio: ratio(token, bg) }),
+        ),
+      );
+      // Severity must stay separable by hue, not only by contrast.
+      const hues = ['--risk-critical', '--risk-high', '--risk-medium'].map((token) => {
+        const [r, g, b] = rgb(token);
+        const max = Math.max(r, g, b);
+        const delta = max - Math.min(r, g, b);
+        let hue = 0;
+        if (delta)
+          hue = max === r ? ((g - b) / delta + 6) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+        return { token, hue: hue * 60 };
+      });
+      return [...text, ...accents, { hues }];
     });
+    const { hues } = contrast.pop();
+    const gap = (a, b) => Math.abs(hues[a].hue - hues[b].hue);
+    assert.ok(gap(0, 1) >= 25 || 360 - gap(0, 1) >= 25, `${theme} critical/high hue: ${gap(0, 1)}`);
+    assert.ok(gap(1, 2) >= 20, `${theme} high/medium hue: ${gap(1, 2)}`);
     for (const item of contrast)
       assert.ok(
         item.ratio >= (item.token === '--focus' || item.token.endsWith('-accent') ? 3 : 4.5),

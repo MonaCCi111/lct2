@@ -383,28 +383,30 @@
 .risk-indicator-text.tone-neutral {
   color: var(--text-secondary);
 }
-/* Urgency marker: one bar whose length grows as the maintenance window shortens. The slot has a
-   fixed width so the labels stay aligned down the column, and there is no track behind the bar —
-   this is a severity mark, not a progress bar. */
+/* Urgency marker: a compact mini-chart of columns sitting on a shared baseline. More columns and
+   a taller silhouette mean a shorter maintenance window. The slot width is fixed so the labels
+   stay aligned down the column, and there is no track or fill — this is not a progress bar. */
 .urgency-meter {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
+  gap: 2px;
   flex-shrink: 0;
-  width: 24px;
+  width: 16px;
+  height: 11px;
 }
-.urgency-bar {
-  height: 4px;
-  border-radius: 2px;
+.urgency-column {
+  width: 3px;
+  border-radius: 1.5px 1.5px 0 0;
   background: currentColor;
 }
-.urgency-bar-1 {
-  width: 8px;
+.urgency-column-sm {
+  height: 5px;
 }
-.urgency-bar-2 {
-  width: 16px;
+.urgency-column-md {
+  height: 8px;
 }
-.urgency-bar-3 {
-  width: 24px;
+.urgency-column-lg {
+  height: 11px;
 }
 .urgency-meter.tone-critical {
   color: var(--risk-critical-accent);
@@ -420,6 +422,7 @@
 }
 /* The normal regime reads as a green check: an absence of a deadline, not a shorter one. */
 .urgency-check {
+  align-items: center;
   color: var(--risk-low-accent);
   margin-left: -2px;
 }
