@@ -38,5 +38,15 @@ history keys. A 409 triggers the same refresh and is presented as an already-sav
 Decision timestamps are timezone-aware server events and use the operational datetime formatter;
 historical draft/evidence timestamps remain literal.
 
-Decision corrections, work-order mutations, replay UI and v2 analytics remain outside the current
-frontend. Approval never creates a work order implicitly.
+The separate v2 work-order flow supports `GET /work-orders`, `GET /work-orders/{work_order_id}`
+and `POST /work-orders`. Creation is available only when the latest authoritative Decision is
+approved and has no `work_order_id`. The user explicitly supplies the required `work_type` and
+`description`; one stable `idempotency_key` belongs to that create attempt. Approval never creates
+a work order implicitly. After creation, the Decision relation is refreshed and the resource is
+available under `/review/work-orders` and `/review/work-orders/:workOrderId`.
+
+V2 work orders are isolated from legacy `/api/v1/tickets`; neither stores nor query invalidation
+cross that boundary. The current contract does not enumerate work-order status values and exposes
+no status mutation, so the frontend displays the returned status literally and implements no
+lifecycle controls. Decision corrections, assignment workflow, auth, replay UI and v2 analytics
+remain outside the current frontend.

@@ -9,6 +9,8 @@ const ObjectWorkspacePage = lazy(() => import('../../pages/object-workspace/Obje
 const PredictionsPage = lazy(() => import('../../pages/predictions/PredictionsPage'));
 const ReviewPage = lazy(() => import('../../pages/review/ReviewPage'));
 const ReviewDetailPage = lazy(() => import('../../pages/review/ReviewDetailPage'));
+const WorkOrdersPage = lazy(() => import('../../pages/review/WorkOrdersPage'));
+const WorkOrderDetailPage = lazy(() => import('../../pages/review/WorkOrderDetailPage'));
 const PredictionInvestigationPage = lazy(
   () => import('../../pages/prediction-investigation/PredictionInvestigationPage'),
 );
@@ -39,6 +41,8 @@ export const router = createBrowserRouter([
         { path: 'predictions', Component: PredictionsPage },
         { path: 'predictions/:predictionId', Component: PredictionInvestigationPage },
         { path: 'review', Component: ReviewPage },
+        { path: 'review/work-orders', Component: WorkOrdersPage },
+        { path: 'review/work-orders/:workOrderId', Component: WorkOrderDetailPage },
         { path: 'review/:draftId', Component: ReviewDetailPage },
         { path: 'tickets', Component: TicketsPage },
         { path: 'analytics', Component: AnalyticsPage },

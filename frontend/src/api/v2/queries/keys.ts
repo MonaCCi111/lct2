@@ -24,6 +24,12 @@ export interface V2EvidenceParams extends V2PageParams {
   at?: string;
 }
 
+export interface V2WorkOrderListParams extends V2PageParams {
+  draftId?: string;
+  objectId?: number;
+  status?: string;
+}
+
 export const v2MetaKeys = { all: ['v2', 'meta'] as const };
 export const v2ObjectKeys = {
   all: ['v2', 'objects'] as const,
@@ -41,4 +47,11 @@ export const v2DraftKeys = {
   decisions: (id: string) => [...v2DraftKeys.details(), id, 'decisions'] as const,
   evidence: (id: string, params: V2EvidenceParams = {}) =>
     [...v2DraftKeys.detail(id), 'evidence', params] as const,
+};
+export const v2WorkOrderKeys = {
+  all: ['v2', 'work-orders'] as const,
+  lists: () => [...v2WorkOrderKeys.all, 'list'] as const,
+  list: (params: V2WorkOrderListParams = {}) => [...v2WorkOrderKeys.lists(), params] as const,
+  details: () => [...v2WorkOrderKeys.all, 'detail'] as const,
+  detail: (id: string) => [...v2WorkOrderKeys.details(), id] as const,
 };

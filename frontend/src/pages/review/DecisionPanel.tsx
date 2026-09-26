@@ -142,7 +142,7 @@ export function DecisionPanel({ draft }: { draft: V2Draft }) {
           {savedDecision ? (
             <>
               <strong>Решение сохранено</strong>
-              {savedDecision === 'approved' && <span>Наряд не создан.</span>}
+              {savedDecision === 'approved' && !currentDecision?.workOrderId && <span>Наряд не создан.</span>}
             </>
           ) : (
             <strong>{conflict}</strong>

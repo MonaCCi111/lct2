@@ -20,6 +20,18 @@ export function resetV2DecisionStore() {
 export const listV2Decisions = (draftId: string) =>
   decisions.filter((item) => item.draft_id === draftId).map((item) => ({ ...item }));
 
+export const latestV2Decision = (draftId: string) => listV2Decisions(draftId).at(-1) ?? null;
+
+export function linkV2WorkOrderToDecision(draftId: string, workOrderId: string) {
+  const latest = latestV2Decision(draftId);
+  if (!latest || latest.decision !== 'approved')
+    throw new V2DecisionMockError('Наряд можно создать только после одобрения черновика.', 409);
+  if (latest.work_order_id) throw new V2DecisionMockError('Для этого решения уже создан наряд.', 409);
+  decisions = decisions.map((item) =>
+    item.decision_id === latest.decision_id ? { ...item, work_order_id: workOrderId } : item,
+  );
+}
+
 export function createV2Decision(draftId: string, body: V2DecisionRequestDto, now: string): V2DecisionDto {
   const idempotent = decisions.find((item) => item.idempotency_key === body.idempotency_key);
   if (idempotent) return { ...idempotent };

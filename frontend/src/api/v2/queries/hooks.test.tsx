@@ -6,8 +6,10 @@ import { setupServer } from 'msw/node';
 import { v2Handlers } from '../mocks/handlers';
 import { v2ForecastDraftFixture } from '../mocks/fixtures';
 import { resetV2DecisionStore } from '../mocks/decisions';
+import { resetV2WorkOrderStore } from '../mocks/work-orders';
 import {
   invalidateV2DecisionQueries,
+  invalidateV2WorkOrderQueries,
   useCreateV2DraftDecision,
   useV2Draft,
   useV2DraftDecisions,
@@ -16,10 +18,20 @@ import {
   useV2Meta,
   useV2Object,
   useV2Objects,
+  useCreateV2WorkOrder,
+  useV2WorkOrder,
+  useV2WorkOrders,
 } from './hooks';
-import { v2DraftDecisionsPath, v2DraftEvidencePath, v2DraftPath } from './paths';
-import { v2DraftKeys } from './keys';
+import {
+  v2DraftDecisionsPath,
+  v2DraftEvidencePath,
+  v2DraftPath,
+  v2WorkOrderPath,
+  v2WorkOrdersPath,
+} from './paths';
+import { v2DraftKeys, v2WorkOrderKeys } from './keys';
 import type { V2Decision } from '../domain/types';
+import type { V2WorkOrder } from '../domain/types';
 
 const server = setupServer(...v2Handlers);
 const requests: string[] = [];
@@ -36,6 +48,7 @@ afterEach(() => {
   client.clear();
   requests.length = 0;
   resetV2DecisionStore();
+  resetV2WorkOrderStore();
 });
 afterAll(() => server.close());
 
@@ -119,6 +132,52 @@ describe('API v2 queries and dispatcher decisions', () => {
     invalidateV2DecisionQueries(queryClient, 'draft:1');
     expect(invalidate).toHaveBeenCalledTimes(3);
     expect(invalidate).toHaveBeenNthCalledWith(1, { queryKey: v2DraftKeys.lists() });
+    expect(invalidate).toHaveBeenNthCalledWith(2, { queryKey: v2DraftKeys.detail('draft:1') });
+    expect(invalidate).toHaveBeenNthCalledWith(3, { queryKey: v2DraftKeys.decisions('draft:1') });
+  });
+
+  it('creates, lists and reads a v2 work order after approval', async () => {
+    const draftId = v2ForecastDraftFixture.draft_id;
+    const decisionMutation = mount(() => useCreateV2DraftDecision());
+    await act(async () => {
+      await decisionMutation.result.current.mutateAsync({
+        draftId,
+        request: { decision: 'approved', reason: 'Проверено', idempotencyKey: 'decision-for-work' },
+      });
+    });
+    decisionMutation.unmount();
+
+    const mutation = mount(() => useCreateV2WorkOrder());
+    let created: V2WorkOrder | undefined;
+    await act(async () => {
+      created = await mutation.result.current.mutateAsync({
+        draftId,
+        workType: 'Диагностика',
+        description: 'Проверить цепь питания',
+        idempotencyKey: 'work-hook-attempt',
+      });
+    });
+    expect(created?.workOrderId).toBe('WO-V2-0001');
+    mutation.unmount();
+
+    const list = mount(() => useV2WorkOrders({ draftId, limit: 20 }));
+    await waitFor(() => expect(list.result.current.isSuccess).toBe(true));
+    expect(list.result.current.data?.items[0]?.workOrderId).toBe('WO-V2-0001');
+    list.unmount();
+
+    expect(v2WorkOrdersPath({ draftId })).toContain(`draft_id=${encodeURIComponent(draftId)}`);
+    expect(v2WorkOrderPath('WO/V2:1')).toBe('/work-orders/WO%2FV2%3A1');
+    const detail = mount(() => useV2WorkOrder('WO-V2-0001'));
+    await waitFor(() => expect(detail.result.current.isSuccess).toBe(true));
+    expect(detail.result.current.data?.createdBy).toBe('dispatcher.demo');
+  });
+
+  it('invalidates only v2 work-order and linked draft resources after create', () => {
+    const queryClient = new QueryClient();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    invalidateV2WorkOrderQueries(queryClient, 'draft:1');
+    expect(invalidate).toHaveBeenCalledTimes(3);
+    expect(invalidate).toHaveBeenNthCalledWith(1, { queryKey: v2WorkOrderKeys.all });
     expect(invalidate).toHaveBeenNthCalledWith(2, { queryKey: v2DraftKeys.detail('draft:1') });
     expect(invalidate).toHaveBeenNthCalledWith(3, { queryKey: v2DraftKeys.decisions('draft:1') });
   });

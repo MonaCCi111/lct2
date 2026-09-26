@@ -6,6 +6,8 @@ import type {
   V2MetaDto,
   V2ObjectDto,
   V2PageDto,
+  V2WorkOrderDto,
+  V2WorkOrderRequestDto,
 } from '../dto/types';
 import type {
   V2Decision,
@@ -15,6 +17,8 @@ import type {
   V2Meta,
   V2Object,
   V2Page,
+  V2WorkOrder,
+  V2WorkOrderRequest,
 } from '../domain/types';
 
 export const toV2Meta = (dto: V2MetaDto): V2Meta => ({
@@ -52,6 +56,29 @@ export const toV2DecisionRequest = (request: V2DecisionRequest): V2DecisionReque
   decision: request.decision,
   reason: request.reason,
   idempotency_key: request.idempotencyKey,
+});
+
+export const toV2WorkOrder = (dto: V2WorkOrderDto): V2WorkOrder => ({
+  workOrderId: dto.work_order_id,
+  draftId: dto.draft_id,
+  objectId: dto.object_id,
+  status: dto.status,
+  workType: dto.work_type,
+  description: dto.description,
+  createdAt: dto.created_at,
+  createdBy: dto.created_by,
+  externalWorkOrderId: dto.external_work_order_id,
+  assigneeId: dto.assignee_id,
+  dueAt: dto.due_at,
+});
+
+export const toV2WorkOrderRequest = (request: V2WorkOrderRequest): V2WorkOrderRequestDto => ({
+  draft_id: request.draftId,
+  work_type: request.workType,
+  description: request.description,
+  idempotency_key: request.idempotencyKey,
+  ...(request.assigneeId !== undefined ? { assignee_id: request.assigneeId } : {}),
+  ...(request.dueAt !== undefined ? { due_at: request.dueAt } : {}),
 });
 
 export const toV2Draft = (dto: V2DraftDto): V2Draft => ({

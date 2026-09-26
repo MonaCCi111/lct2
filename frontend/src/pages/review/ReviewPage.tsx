@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useV2Drafts, useV2Meta, useV2Objects } from '../../api/v2/queries/hooks';
 import { StaleState } from '../../components/feedback/States';
 import { PageHeader } from '../../components/feedback/PageShell';
@@ -40,10 +41,15 @@ export default function ReviewPage() {
         title="Очередь проверки"
         description="Исторические ML-черновики и наблюдаемые события для проверки диспетчером."
         action={
-          <Button variant="ghost" disabled={drafts.isFetching} onClick={refresh}>
-            <RefreshCw size={14} aria-hidden="true" />
-            Обновить очередь
-          </Button>
+          <div className="review-header-actions">
+            <Link className="button button-secondary" to="/review/work-orders">
+              Наряды v2
+            </Link>
+            <Button variant="ghost" disabled={drafts.isFetching} onClick={refresh}>
+              <RefreshCw size={14} aria-hidden="true" />
+              Обновить очередь
+            </Button>
+          </div>
         }
       />
       <HistoricalNotice

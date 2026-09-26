@@ -1,4 +1,4 @@
-import type { V2DraftListParams, V2EvidenceParams, V2ObjectListParams } from './keys';
+import type { V2DraftListParams, V2EvidenceParams, V2ObjectListParams, V2WorkOrderListParams } from './keys';
 
 function withQuery(path: string, values: Record<string, string | number | undefined>) {
   const query = new URLSearchParams();
@@ -40,3 +40,14 @@ export const v2DraftEvidencePath = (id: string, params: V2EvidenceParams = {}) =
     limit: params.limit,
     cursor: params.cursor,
   });
+
+export const v2WorkOrdersPath = (params: V2WorkOrderListParams = {}) =>
+  withQuery('/work-orders', {
+    draft_id: params.draftId,
+    object_id: params.objectId,
+    status: params.status,
+    limit: params.limit,
+    cursor: params.cursor,
+  });
+
+export const v2WorkOrderPath = (id: string) => `/work-orders/${encodeURIComponent(id)}`;

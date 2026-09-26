@@ -984,7 +984,7 @@ Theme browser check требует свежий `npm run build`, сам запу
 контраст текста/маркеров/focus, профиль, persistence, runtime OS changes и компоненты.
 Скриншоты overview dark/light 1920×1080 и 1366×768 — `frontend/test-results/`.
 
-## Historical Review и решения диспетчера (Tasks 10B.2–10B.3)
+## Historical Review, решения и наряды v2 (Tasks 10B.2–10B.4)
 
 `/review` и `/review/:draftId` — отдельный historical workflow поверх `/api/v2`; он не заменяет
 legacy `/predictions`. Источник — `dispatcher_api_v1` с base path `/api/v2`. Queue использует
@@ -1001,6 +1001,17 @@ backend-сессией. После success инвалидируются толь
 показывает отдельное conflict-состояние. `decided_at` — timezone-aware серверное событие и
 форматируется как операционное время Europe/Moscow.
 
-Approval не создаёт наряд автоматически. Correction mutation, elevated-role UI, work-order
-creation, auth, replay и v2 analytics не входят в реализованный workflow. История умеет показывать
-`supersedes_decision_id` и `work_order_id`, если backend вернул их, без кнопки изменения решения.
+Approval не создаёт наряд автоматически. Для latest approved Decision без `work_order_id` detail
+предлагает отдельный `POST /work-orders`; форма содержит только обязательные `work_type` и
+`description`, а `idempotency_key` стабилен в пределах попытки. Pending/rejected Decision не дают
+права создания. После success обновляются только v2 work-order resources, linked Draft и Decision
+history. 409 не создаёт дубль и обновляет authoritative relation.
+
+`/review/work-orders` и `/review/work-orders/:workOrderId` используют GET list/detail, v2 object
+catalog и серверные timezone-aware `created_at`/`due_at`. Исторические source timestamps linked
+Draft остаются literal. WorkOrder status показывается как contract value: enum и status mutation в
+актуальном контракте отсутствуют. Этот flow полностью отделён от `/api/v1/tickets`.
+
+Correction mutation, elevated-role UI, assignment workflow, auth, replay и v2 analytics не входят
+в реализованный workflow. История умеет показывать `supersedes_decision_id` и `work_order_id`, если
+backend вернул их, без кнопки изменения решения.

@@ -43,6 +43,29 @@ export interface V2DecisionRequestDto {
   idempotency_key: string;
 }
 
+export interface V2WorkOrderRequestDto {
+  draft_id: string;
+  work_type: string;
+  description: string;
+  idempotency_key: string;
+  assignee_id?: string | null;
+  due_at?: string | null;
+}
+
+export interface V2WorkOrderDto {
+  work_order_id: string;
+  draft_id: string;
+  object_id: number;
+  status: string;
+  work_type: string;
+  description: string;
+  created_at: string;
+  created_by: string;
+  external_work_order_id: string | null;
+  assignee_id: string | null;
+  due_at: string | null;
+}
+
 export interface V2DraftDto {
   schema_version?: string;
   draft_id: string;

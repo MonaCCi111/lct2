@@ -5,6 +5,7 @@ import type {
   V2MetaDto,
   V2ObjectDto,
   V2PageDto,
+  V2WorkOrderDto,
 } from '../dto/types';
 
 export const v2MetaFixture: V2MetaDto = {
@@ -123,6 +124,20 @@ export const v2DecisionFixture: V2DecisionDto = {
   idempotency_key: 'fixture-idempotency-key',
   supersedes_decision_id: null,
   work_order_id: null,
+};
+
+export const v2WorkOrderFixture: V2WorkOrderDto = {
+  work_order_id: 'WO-V2-0001',
+  draft_id: v2ForecastDraftFixture.draft_id,
+  object_id: v2ForecastDraftFixture.object_id,
+  status: 'created',
+  work_type: 'Диагностика цепи питания',
+  description: 'Проверить цепь питания и зарегистрировать результат осмотра.',
+  created_at: '2026-09-26T13:00:00Z',
+  created_by: 'dispatcher.fixture',
+  external_work_order_id: null,
+  assignee_id: null,
+  due_at: null,
 };
 
 export const v2ForecastEvidenceFixture: V2EvidenceDto = {

@@ -19,13 +19,22 @@ export function AppLayout() {
   const system = useSystem();
   const current = navigation.find((item) => location.pathname.startsWith(item.path));
   const detailId = location.pathname.split('/')[2];
+  const workOrderRoute = location.pathname === '/review/work-orders';
+  const workOrderDetail = location.pathname.startsWith('/review/work-orders/');
   const title =
-    current?.label ?? (location.pathname === '/foundation' ? 'Компоненты и данные' : 'Страница не найдена');
-  const crumbs: BreadcrumbItem[] = [
-    { label: 'Рабочее пространство', to: '/overview' },
-    { label: title, to: detailId ? current?.path : undefined },
-  ];
-  if (detailId) crumbs.push({ label: decodeURIComponent(detailId) });
+    workOrderRoute || workOrderDetail
+      ? 'Наряды v2'
+      : (current?.label ??
+        (location.pathname === '/foundation' ? 'Компоненты и данные' : 'Страница не найдена'));
+  const crumbs: BreadcrumbItem[] = [{ label: 'Рабочее пространство', to: '/overview' }];
+  if (workOrderRoute || workOrderDetail) {
+    crumbs.push({ label: 'Очередь проверки', to: '/review' });
+    crumbs.push({ label: title, to: workOrderDetail ? '/review/work-orders' : undefined });
+    if (workOrderDetail) crumbs.push({ label: decodeURIComponent(location.pathname.split('/')[3] ?? '') });
+  } else {
+    crumbs.push({ label: title, to: detailId ? current?.path : undefined });
+    if (detailId) crumbs.push({ label: decodeURIComponent(detailId) });
+  }
   useEffect(() => {
     document.title = `Dolos · ${title}`;
   }, [title]);

@@ -8,6 +8,8 @@ import {
   toV2Meta,
   toV2Object,
   toV2Page,
+  toV2WorkOrder,
+  toV2WorkOrderRequest,
 } from '../adapters';
 import { v2ApiGet, v2ApiSend } from '../client/http';
 import type {
@@ -17,11 +19,12 @@ import type {
   V2MetaDto,
   V2ObjectDto,
   V2PageDto,
+  V2WorkOrderDto,
 } from '../dto/types';
-import type { V2DecisionRequest } from '../domain/types';
+import type { V2DecisionRequest, V2WorkOrderRequest } from '../domain/types';
 import { ApiError } from '../../client/http';
-import type { V2DraftListParams, V2EvidenceParams, V2ObjectListParams } from './keys';
-import { v2DraftKeys, v2MetaKeys, v2ObjectKeys } from './keys';
+import type { V2DraftListParams, V2EvidenceParams, V2ObjectListParams, V2WorkOrderListParams } from './keys';
+import { v2DraftKeys, v2MetaKeys, v2ObjectKeys, v2WorkOrderKeys } from './keys';
 import {
   v2DraftDecisionsPath,
   v2DraftEvidencePath,
@@ -29,6 +32,8 @@ import {
   v2DraftsPath,
   v2ObjectPath,
   v2ObjectsPath,
+  v2WorkOrderPath,
+  v2WorkOrdersPath,
 } from './paths';
 
 export const useV2Meta = () =>
@@ -103,6 +108,42 @@ export function useCreateV2DraftDecision() {
     onError: (error, variables) => {
       if (error instanceof ApiError && error.status === 409)
         invalidateV2DecisionQueries(queryClient, variables.draftId);
+    },
+  });
+}
+
+export const useV2WorkOrders = (params: V2WorkOrderListParams = {}) =>
+  useQuery({
+    queryKey: v2WorkOrderKeys.list(params),
+    queryFn: async ({ signal }) =>
+      toV2Page(await v2ApiGet<V2PageDto<V2WorkOrderDto>>(v2WorkOrdersPath(params), signal), toV2WorkOrder),
+  });
+
+export const useV2WorkOrder = (id: string) =>
+  useQuery({
+    queryKey: v2WorkOrderKeys.detail(id),
+    queryFn: async ({ signal }) => toV2WorkOrder(await v2ApiGet<V2WorkOrderDto>(v2WorkOrderPath(id), signal)),
+    enabled: id !== '',
+  });
+
+export function invalidateV2WorkOrderQueries(queryClient: QueryClient, draftId: string) {
+  void queryClient.invalidateQueries({ queryKey: v2WorkOrderKeys.all });
+  void queryClient.invalidateQueries({ queryKey: v2DraftKeys.detail(draftId) });
+  void queryClient.invalidateQueries({ queryKey: v2DraftKeys.decisions(draftId) });
+}
+
+export function useCreateV2WorkOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: V2WorkOrderRequest) =>
+      toV2WorkOrder(await v2ApiSend<V2WorkOrderDto>('/work-orders', toV2WorkOrderRequest(request))),
+    onSuccess: (workOrder, request) => {
+      queryClient.setQueryData(v2WorkOrderKeys.detail(workOrder.workOrderId), workOrder);
+      invalidateV2WorkOrderQueries(queryClient, request.draftId);
+    },
+    onError: (error, request) => {
+      if (error instanceof ApiError && error.status === 409)
+        invalidateV2WorkOrderQueries(queryClient, request.draftId);
     },
   });
 }

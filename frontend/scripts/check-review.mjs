@@ -16,6 +16,10 @@ try {
       locale: 'ru-RU',
     });
     page.setDefaultTimeout(15000);
+    const writeRequests = [];
+    page.on('request', (request) => {
+      if (request.method() !== 'GET') writeRequests.push(`${request.method()} ${request.url()}`);
+    });
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`${origin}/review`);
     const table = page.getByRole('table', { name: 'Исторические черновики для проверки' });
@@ -77,6 +81,56 @@ try {
         /Сигнал и контекст проверены диспетчером\./,
       );
 
+      const workOrderPanel = page.getByRole('region', { name: 'Наряд' });
+      await workOrderPanel.getByRole('button', { name: 'Создать наряд', exact: true }).waitFor();
+      await workOrderPanel.getByRole('button', { name: 'Создать наряд', exact: true }).click();
+      await workOrderPanel.getByRole('button', { name: 'Создать наряд', exact: true }).click();
+      await workOrderPanel.getByText('Укажите тип работ.', { exact: true }).waitFor();
+      await workOrderPanel.getByText('Добавьте описание работ.', { exact: true }).waitFor();
+      await workOrderPanel.getByLabel('Тип работ').fill('Диагностика цепи питания');
+      await workOrderPanel
+        .getByLabel('Описание работ')
+        .fill('Проверить цепь питания и зарегистрировать результат осмотра.');
+      await workOrderPanel.getByRole('button', { name: 'Создать наряд', exact: true }).click();
+      await workOrderPanel.getByText('Наряд создан', { exact: true }).waitFor();
+      assert.equal(await page.getByText('Наряд не создан.', { exact: true }).count(), 0);
+      const createdWorkOrderLink = workOrderPanel.getByRole('link', { name: 'WO-V2-0001' });
+      await createdWorkOrderLink.waitFor();
+
+      const duplicateWorkOrder = await page.evaluate(async () => {
+        const response = await fetch('http://localhost:8000/api/v2/work-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            draft_id: 'power_phase_scada_v2:178259:20251210T090000',
+            work_type: 'Повторный осмотр',
+            description: 'Повторная попытка создания наряда',
+            idempotency_key: 'browser-duplicate-work-order',
+          }),
+        });
+        return { status: response.status, body: await response.json() };
+      });
+      assert.equal(duplicateWorkOrder.status, 409);
+      assert.match(duplicateWorkOrder.body.message, /уже создан наряд/);
+      assert.equal(
+        await workOrderPanel.getByRole('button', { name: 'Создать наряд', exact: true }).count(),
+        0,
+      );
+
+      await createdWorkOrderLink.click();
+      await page.waitForURL('**/review/work-orders/WO-V2-0001');
+      await page.getByRole('heading', { name: 'WO-V2-0001' }).waitFor();
+      assert.match(await page.locator('.review-work-order-detail').innerText(), /Диагностика цепи питания/);
+      assert.match(await page.locator('.review-work-order-detail').innerText(), /review-decision-0001/);
+      assert.match(await page.locator('.review-work-order-detail').innerText(), /2025-12-10T09:00:00/);
+      await page.getByRole('link', { name: 'К нарядам v2' }).click();
+      await page.waitForURL('**/review/work-orders');
+      const workOrdersTable = page.getByRole('table', { name: 'Наряды v2' });
+      await workOrdersTable.getByText('WO-V2-0001', { exact: true }).waitFor();
+      assert.match(await workOrdersTable.innerText(), /Одобрено/);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+      await page.screenshot({ path: 'test-results/review-work-orders-dark-1366.png', fullPage: true });
+
       const conflict = await page.evaluate(async () => {
         const response = await fetch(
           'http://localhost:8000/api/v2/drafts/power_phase_scada_v2%3A178259%3A20251210T090000/decisions',
@@ -95,7 +149,10 @@ try {
       assert.equal(conflict.status, 409);
       assert.match(conflict.body.message, /уже сохранено решение/);
 
-      await page.getByRole('link', { name: 'К очереди проверки' }).click();
+      await page
+        .getByRole('navigation', { name: 'Основная навигация' })
+        .getByRole('link', { name: 'Очередь проверки', exact: true })
+        .click();
       await page.waitForURL('**/review');
       const updatedTable = page.getByRole('table', { name: 'Исторические черновики для проверки' });
       const approvedRow = updatedTable.getByRole('row', { name: /канал 178259/ });
@@ -119,6 +176,13 @@ try {
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
       await page.screenshot({ path: 'test-results/review-detail-dark-1366.png', fullPage: true });
     } else {
+      await page.getByRole('link', { name: 'Наряды v2', exact: true }).click();
+      await page.waitForURL('**/review/work-orders');
+      await page.getByText('Наряды v2 ещё не созданы.', { exact: true }).waitFor();
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+      await page.screenshot({ path: 'test-results/review-work-orders-light-1366.png', fullPage: true });
+      await page.getByRole('link', { name: 'К очереди проверки' }).click();
+      await page.waitForURL('**/review');
       const staleRow = table.getByRole('row', { name: /канал 178259/ });
       await staleRow.click();
       await page.getByRole('heading', { name: 'Черновик проверки' }).waitFor();
@@ -145,11 +209,15 @@ try {
       await stalePanel.getByText('По этому черновику уже сохранено решение.', { exact: true }).waitFor();
       assert.equal(await stalePanel.getByRole('button', { name: 'Отклонить', exact: true }).count(), 0);
     }
+    assert.equal(
+      writeRequests.some((request) => request.includes('/api/v1/tickets')),
+      false,
+    );
     await page.close();
   }
   assert.deepEqual(errors, []);
   console.log(
-    'PASS Review: v2 drafts, approve/reject, required reason, 409 conflict, history, no automatic work order, evidence, dark/light and 1920/1366.',
+    'PASS Review: decisions, explicit v2 work-order create, duplicate protection, list/detail, no v1 ticket mutation, evidence, dark/light and 1920/1366.',
   );
 } finally {
   await browser.close();

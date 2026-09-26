@@ -8,6 +8,8 @@ import {
   toV2Meta,
   toV2Object,
   toV2Page,
+  toV2WorkOrder,
+  toV2WorkOrderRequest,
 } from '.';
 import {
   v2ForecastDraftFixture,
@@ -16,6 +18,7 @@ import {
   v2MetaFixture,
   v2ObjectFixture,
   v2ObservedDraftFixture,
+  v2WorkOrderFixture,
 } from '../mocks/fixtures';
 
 describe('API v2 adapters', () => {
@@ -131,5 +134,37 @@ describe('API v2 adapters', () => {
     expect(toV2DecisionHistory([v2DecisionFixture, corrected])[1]?.supersedesDecisionId).toBe(
       v2DecisionFixture.decision_id,
     );
+  });
+
+  it('maps a work order and preserves nullable optional fields', () => {
+    expect(toV2WorkOrder(v2WorkOrderFixture)).toEqual({
+      workOrderId: 'WO-V2-0001',
+      draftId: v2ForecastDraftFixture.draft_id,
+      objectId: 5003,
+      status: 'created',
+      workType: 'Диагностика цепи питания',
+      description: 'Проверить цепь питания и зарегистрировать результат осмотра.',
+      createdAt: '2026-09-26T13:00:00Z',
+      createdBy: 'dispatcher.fixture',
+      externalWorkOrderId: null,
+      assigneeId: null,
+      dueAt: null,
+    });
+  });
+
+  it('maps only supplied create request fields to contract wire names', () => {
+    expect(
+      toV2WorkOrderRequest({
+        draftId: 'draft:1',
+        workType: 'Осмотр',
+        description: 'Проверить оборудование',
+        idempotencyKey: 'work-attempt-1',
+      }),
+    ).toEqual({
+      draft_id: 'draft:1',
+      work_type: 'Осмотр',
+      description: 'Проверить оборудование',
+      idempotency_key: 'work-attempt-1',
+    });
   });
 });
