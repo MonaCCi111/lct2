@@ -7,6 +7,8 @@ const OverviewPage = lazy(() => import('../../pages/overview/OverviewPage'));
 const ObjectsPage = lazy(() => import('../../pages/objects/ObjectsPage'));
 const ObjectWorkspacePage = lazy(() => import('../../pages/object-workspace/ObjectWorkspacePage'));
 const PredictionsPage = lazy(() => import('../../pages/predictions/PredictionsPage'));
+const ReviewPage = lazy(() => import('../../pages/review/ReviewPage'));
+const ReviewDetailPage = lazy(() => import('../../pages/review/ReviewDetailPage'));
 const PredictionInvestigationPage = lazy(
   () => import('../../pages/prediction-investigation/PredictionInvestigationPage'),
 );
@@ -36,6 +38,8 @@ export const router = createBrowserRouter([
         { path: 'objects/:objectId', Component: ObjectWorkspacePage },
         { path: 'predictions', Component: PredictionsPage },
         { path: 'predictions/:predictionId', Component: PredictionInvestigationPage },
+        { path: 'review', Component: ReviewPage },
+        { path: 'review/:draftId', Component: ReviewDetailPage },
         { path: 'tickets', Component: TicketsPage },
         { path: 'analytics', Component: AnalyticsPage },
         ...(apiConfig.enableMocks ? [{ path: 'foundation', Component: FoundationPage }] : []),

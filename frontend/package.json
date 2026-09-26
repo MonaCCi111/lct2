@@ -12,7 +12,7 @@
     "typecheck": "tsc -b",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
-    "test:browser": "node scripts/check-browser.mjs && node scripts/check-overview.mjs && node scripts/check-object-workspace.mjs && node scripts/check-objects-registry.mjs && node scripts/check-predictions-registry.mjs && node scripts/check-prediction-investigation.mjs && node scripts/check-tickets.mjs && node scripts/check-theme.mjs && node scripts/check-analytics.mjs",
+    "test:browser": "node scripts/check-browser.mjs && node scripts/check-overview.mjs && node scripts/check-object-workspace.mjs && node scripts/check-objects-registry.mjs && node scripts/check-predictions-registry.mjs && node scripts/check-prediction-investigation.mjs && node scripts/check-tickets.mjs && node scripts/check-theme.mjs && node scripts/check-analytics.mjs && node scripts/check-review.mjs",
     "test:real": "node scripts/check-real-mode.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

@@ -22,11 +22,21 @@ export const v2Handlers = [
       : missing(),
   ),
   http.get(endpoint('/drafts'), ({ request }) => {
-    const basis = new URL(request.url).searchParams.get('basis_kind');
-    const items = basis
-      ? v2DraftsFixture.items.filter((item) => item.basis_kind === basis)
-      : v2DraftsFixture.items;
-    return HttpResponse.json({ items, next_cursor: null });
+    const query = new URL(request.url).searchParams;
+    const basis = query.get('basis_kind');
+    const reviewState = query.get('review_state');
+    const objectId = query.get('object_id');
+    const offset = Math.max(0, Number(query.get('cursor') ?? 0) || 0);
+    const limit = Math.max(1, Number(query.get('limit') ?? 50) || 50);
+    const matching = v2DraftsFixture.items.filter(
+      (item) =>
+        (!basis || item.basis_kind === basis) &&
+        (!reviewState || item.review_state === reviewState) &&
+        (!objectId || item.object_id === Number(objectId)),
+    );
+    const items = matching.slice(offset, offset + limit);
+    const nextCursor = offset + limit < matching.length ? String(offset + limit) : null;
+    return HttpResponse.json({ items, next_cursor: nextCursor });
   }),
   http.get(endpoint('/drafts/:draftId'), ({ params }) => {
     const id = String(params.draftId);

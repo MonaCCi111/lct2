@@ -18,12 +18,14 @@ export function Sidebar({ onSystem, onProfile }: { onSystem: () => void; onProfi
         <p className="nav-label">Рабочее пространство</p>
         {navigation.map((item, index) => (
           <div key={item.path}>
-            {index === 4 && <Divider />}
+            {index === 5 && <Divider />}
             <NavLink
               to={item.path}
               title={item.label}
               aria-label={item.label}
-              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+              className={({ isActive }) =>
+                `nav-link ${item.historical ? 'nav-link-historical' : ''} ${isActive ? 'active' : ''}`
+              }
             >
               <item.icon size={17} strokeWidth={1.6} />
               <span>{item.label}</span>
