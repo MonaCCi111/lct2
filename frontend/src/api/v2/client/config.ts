@@ -1,0 +1,3 @@
+export const v2ApiConfig = {
+  baseUrl: (import.meta.env.VITE_API_V2_BASE_URL || 'http://localhost:8000/api/v2').replace(/\/$/, ''),
+};
