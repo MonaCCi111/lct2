@@ -1,6 +1,17 @@
 import { ApiError } from '../../client/http';
 import { v2ApiConfig } from './config';
 
+function toV2HttpError(payload: unknown, status: number) {
+  const body = payload && typeof payload === 'object' ? payload : null;
+  const message =
+    body && 'message' in body && typeof body.message === 'string'
+      ? body.message
+      : `Ошибка API v2 (${status})`;
+  const code = body && 'code' in body && typeof body.code === 'string' ? body.code : 'HTTP_ERROR';
+  const details = body && 'details' in body ? body.details : null;
+  return new ApiError(message, status, code, details);
+}
+
 export async function v2ApiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   let response: Response;
   try {
@@ -13,12 +24,7 @@ export async function v2ApiGet<T>(path: string, signal?: AbortSignal): Promise<T
     throw new ApiError('Не удалось подключиться к API v2. Проверьте соединение.', 0, 'NETWORK_ERROR');
   }
   if (!response.ok) {
-    const body: unknown = await response.json().catch(() => null);
-    const message =
-      body && typeof body === 'object' && 'message' in body && typeof body.message === 'string'
-        ? body.message
-        : `Ошибка API v2 (${response.status})`;
-    throw new ApiError(message, response.status, 'HTTP_ERROR');
+    throw toV2HttpError(await response.json().catch(() => null), response.status);
   }
   try {
     return (await response.json()) as T;
@@ -41,12 +47,7 @@ export async function v2ApiSend<T>(path: string, body: unknown, signal?: AbortSi
     throw new ApiError('Не удалось подключиться к API v2. Проверьте соединение.', 0, 'NETWORK_ERROR');
   }
   if (!response.ok) {
-    const payload: unknown = await response.json().catch(() => null);
-    const message =
-      payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string'
-        ? payload.message
-        : `Ошибка API v2 (${response.status})`;
-    throw new ApiError(message, response.status, 'HTTP_ERROR');
+    throw toV2HttpError(await response.json().catch(() => null), response.status);
   }
   try {
     return (await response.json()) as T;
