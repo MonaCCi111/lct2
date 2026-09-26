@@ -34,6 +34,12 @@ export interface V2Decision {
   workOrderId: string | null;
 }
 
+export interface V2DecisionRequest {
+  decision: V2DecisionValue;
+  reason: string;
+  idempotencyKey: string;
+}
+
 /**
  * A dispatcher draft is its own domain. In particular it has no legacy risk, urgency,
  * failure-probability or health-index interpretation.

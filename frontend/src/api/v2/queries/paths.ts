@@ -32,6 +32,8 @@ export const v2DraftsPath = (params: V2DraftListParams = {}) =>
 export const v2DraftPath = (id: string, at?: string) =>
   withQuery(`/drafts/${encodeURIComponent(id)}`, { at });
 
+export const v2DraftDecisionsPath = (id: string) => `/drafts/${encodeURIComponent(id)}/decisions`;
+
 export const v2DraftEvidencePath = (id: string, params: V2EvidenceParams = {}) =>
   withQuery(`/drafts/${encodeURIComponent(id)}/evidence`, {
     at: params.at,

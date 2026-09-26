@@ -38,6 +38,7 @@ export const v2DraftKeys = {
   list: (params: V2DraftListParams = {}) => [...v2DraftKeys.lists(), params] as const,
   details: () => [...v2DraftKeys.all, 'detail'] as const,
   detail: (id: string, at?: string) => [...v2DraftKeys.details(), id, { at }] as const,
+  decisions: (id: string) => [...v2DraftKeys.details(), id, 'decisions'] as const,
   evidence: (id: string, params: V2EvidenceParams = {}) =>
     [...v2DraftKeys.detail(id), 'evidence', params] as const,
 };

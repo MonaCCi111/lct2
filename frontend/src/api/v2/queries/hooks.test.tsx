@@ -1,12 +1,25 @@
 import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { setupServer } from 'msw/node';
 import { v2Handlers } from '../mocks/handlers';
 import { v2ForecastDraftFixture } from '../mocks/fixtures';
-import { useV2Draft, useV2DraftEvidence, useV2Drafts, useV2Meta, useV2Object, useV2Objects } from './hooks';
-import { v2DraftEvidencePath, v2DraftPath } from './paths';
+import { resetV2DecisionStore } from '../mocks/decisions';
+import {
+  invalidateV2DecisionQueries,
+  useCreateV2DraftDecision,
+  useV2Draft,
+  useV2DraftDecisions,
+  useV2DraftEvidence,
+  useV2Drafts,
+  useV2Meta,
+  useV2Object,
+  useV2Objects,
+} from './hooks';
+import { v2DraftDecisionsPath, v2DraftEvidencePath, v2DraftPath } from './paths';
+import { v2DraftKeys } from './keys';
+import type { V2Decision } from '../domain/types';
 
 const server = setupServer(...v2Handlers);
 const requests: string[] = [];
@@ -22,6 +35,7 @@ afterEach(() => {
   server.resetHandlers();
   client.clear();
   requests.length = 0;
+  resetV2DecisionStore();
 });
 afterAll(() => server.close());
 
@@ -30,7 +44,7 @@ function mount<T>(hook: () => T) {
   return renderHook(hook, { wrapper });
 }
 
-describe('API v2 read-only queries', () => {
+describe('API v2 queries and dispatcher decisions', () => {
   it('fetches Meta, object list and object detail through the isolated v2 base URL', async () => {
     const meta = mount(() => useV2Meta());
     await waitFor(() => expect(meta.result.current.isSuccess).toBe(true));
@@ -77,5 +91,35 @@ describe('API v2 read-only queries', () => {
     expect(requests.some((url) => url.includes('power_phase_scada_v2%3A178259%3A20251210T090000'))).toBe(
       true,
     );
+  });
+
+  it('posts a decision and reads it back through append-only history', async () => {
+    const id = v2ForecastDraftFixture.draft_id;
+    expect(v2DraftDecisionsPath(id)).toContain('power_phase_scada_v2%3A178259%3A20251210T090000');
+    const mutation = mount(() => useCreateV2DraftDecision());
+    let createdDecision: V2Decision | undefined;
+    await act(async () => {
+      createdDecision = await mutation.result.current.mutateAsync({
+        draftId: id,
+        request: { decision: 'approved', reason: 'Проверено', idempotencyKey: 'hook-attempt' },
+      });
+    });
+    expect(createdDecision?.decision).toBe('approved');
+    mutation.unmount();
+
+    const history = mount(() => useV2DraftDecisions(id));
+    await waitFor(() => expect(history.result.current.isSuccess).toBe(true));
+    expect(history.result.current.data).toHaveLength(1);
+    expect(history.result.current.data?.[0]?.reason).toBe('Проверено');
+  });
+
+  it('invalidates only v2 draft detail, list and decision history keys', () => {
+    const queryClient = new QueryClient();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    invalidateV2DecisionQueries(queryClient, 'draft:1');
+    expect(invalidate).toHaveBeenCalledTimes(3);
+    expect(invalidate).toHaveBeenNthCalledWith(1, { queryKey: v2DraftKeys.lists() });
+    expect(invalidate).toHaveBeenNthCalledWith(2, { queryKey: v2DraftKeys.detail('draft:1') });
+    expect(invalidate).toHaveBeenNthCalledWith(3, { queryKey: v2DraftKeys.decisions('draft:1') });
   });
 });

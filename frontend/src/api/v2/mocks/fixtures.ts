@@ -1,4 +1,11 @@
-import type { V2DraftDto, V2EvidenceDto, V2MetaDto, V2ObjectDto, V2PageDto } from '../dto/types';
+import type {
+  V2DecisionDto,
+  V2DraftDto,
+  V2EvidenceDto,
+  V2MetaDto,
+  V2ObjectDto,
+  V2PageDto,
+} from '../dto/types';
 
 export const v2MetaFixture: V2MetaDto = {
   contract_version: 'dispatcher_api_v1',
@@ -104,6 +111,18 @@ export const v2ForecastDraftFixture: V2DraftDto = {
 export const v2DraftsFixture: V2PageDto<V2DraftDto> = {
   items: [v2ForecastDraftFixture, v2ObservedDraftFixture],
   next_cursor: null,
+};
+
+export const v2DecisionFixture: V2DecisionDto = {
+  decision_id: 'review-decision-fixture',
+  draft_id: v2ForecastDraftFixture.draft_id,
+  decision: 'approved',
+  reason: 'Сигнал и контекст проверены диспетчером.',
+  author_id: 'dispatcher.fixture',
+  decided_at: '2026-09-26T12:30:00Z',
+  idempotency_key: 'fixture-idempotency-key',
+  supersedes_decision_id: null,
+  work_order_id: null,
 };
 
 export const v2ForecastEvidenceFixture: V2EvidenceDto = {

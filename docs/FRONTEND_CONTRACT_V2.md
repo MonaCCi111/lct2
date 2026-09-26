@@ -312,7 +312,7 @@ Mock list endpoints поддерживают `?scenario=empty|error|slow`; эт�
 
 ## 11. Проверки и ограничения интеграции
 
-Перед завершением изменений: `npm run typecheck`, `npm test`, `npm run build`, `npm run format:check`, `npm run test:browser` (check-browser → check-overview → check-object-workspace → check-objects-registry → check-predictions-registry → check-prediction-investigation → check-tickets → check-theme), `npm run test:real`. При системном Node 18 на текущем компьютере используется `frontend/scripts/npm.ps1`, выбирающий доступный Node 24.
+Перед завершением изменений: `npm run typecheck`, `npm test`, `npm run build`, `npm run format:check`, `npm run test:browser` (check-browser → check-overview → check-object-workspace → check-objects-registry → check-predictions-registry → check-prediction-investigation → check-tickets → check-theme → check-analytics → check-review), `npm run test:real`. При системном Node 18 на текущем компьютере используется `frontend/scripts/npm.ps1`, выбирающий доступный Node 24.
 
 Проверки должны сохранять сценарии 46% = critical, unsupported ML, отсутствие пересчёта backend aggregate, московское время при другой browser timezone, routing, клавиатурный фокус, loading/error/empty/stale и mock/real mode. Браузерные тесты запускаются в Edge или Chrome.
 
@@ -320,7 +320,7 @@ Mock list endpoints поддерживают `?scenario=empty|error|slow`; эт�
 
 - Настоящий HTTP backend пока не подключён. `backend_app_ml_predictor.py` — ML-модуль; его fallback low / 1% / ИТС 99 для неизвестных датчиков не соответствует этому frontend-контракту. Backend-обёртка должна выдавать явный `prediction_supported=false` и nullable ML-поля.
 - TypeScript DTO не заменяют runtime schema validation; сейчас client проверяет HTTP и корректность JSON.
-- Авторизация, роли/права, mutations, pagination, realtime, virtualized tables и продуктовые workflows не реализованы.
+- Авторизация, роли/права, realtime и virtualized tables не реализованы. Наряды `/api/v1` и решения диспетчера `/api/v2` имеют отдельные ограниченные mutation workflows; review queue использует cursor pagination.
 - Prediction Investigation остаётся shell и показывает route ID; detail API integration для прогноза относится к Task 04. Object Workspace уже проверяет существование объекта через `/objects/:id`.
 - Для cross-origin backend требуется CORS; для production hosting нужен SPA fallback и mocks=false.
 
@@ -983,3 +983,24 @@ Theme browser check требует свежий `npm run build`, сам запу
 проверяет production bootstrap с заблокированным JS приложения, обе палитры,
 контраст текста/маркеров/focus, профиль, persistence, runtime OS changes и компоненты.
 Скриншоты overview dark/light 1920×1080 и 1366×768 — `frontend/test-results/`.
+
+## Historical Review и решения диспетчера (Tasks 10B.2–10B.3)
+
+`/review` и `/review/:draftId` — отдельный historical workflow поверх `/api/v2`; он не заменяет
+legacy `/predictions`. Источник — `dispatcher_api_v1` с base path `/api/v2`. Queue использует
+Meta, Objects и flat Drafts с фильтрами `review_state`, `basis_kind`, `object_id` и cursor
+pagination. Score подписан только как «Балл модели», не переводится в проценты и не означает
+вероятность отказа, риск или срочность. Naive historical timestamps выводятся буквально через
+`formatV2HistoricalTimestamp`; им не назначается МСК/UTC.
+
+Detail загружает Draft, Evidence и append-only `GET /drafts/{draft_id}/decisions`. Pending draft
+разрешает `POST /drafts/{draft_id}/decisions` с `decision: approved|rejected`, обязательным
+`reason` и стабильным `idempotency_key` одной пользовательской попытки. Author определяется
+backend-сессией. После success инвалидируются только v2 draft list, текущий detail и history.
+409 означает, что решение уже сохранено: overwrite запрещён, UI обновляет detail/history и
+показывает отдельное conflict-состояние. `decided_at` — timezone-aware серверное событие и
+форматируется как операционное время Europe/Moscow.
+
+Approval не создаёт наряд автоматически. Correction mutation, elevated-role UI, work-order
+creation, auth, replay и v2 analytics не входят в реализованный workflow. История умеет показывать
+`supersedes_decision_id` и `work_order_id`, если backend вернул их, без кнопки изменения решения.

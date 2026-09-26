@@ -1,10 +1,35 @@
-import { useQuery } from '@tanstack/react-query';
-import { toV2Draft, toV2Evidence, toV2Meta, toV2Object, toV2Page } from '../adapters';
-import { v2ApiGet } from '../client/http';
-import type { V2DraftDto, V2EvidenceDto, V2MetaDto, V2ObjectDto, V2PageDto } from '../dto/types';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import {
+  toV2Decision,
+  toV2DecisionHistory,
+  toV2DecisionRequest,
+  toV2Draft,
+  toV2Evidence,
+  toV2Meta,
+  toV2Object,
+  toV2Page,
+} from '../adapters';
+import { v2ApiGet, v2ApiSend } from '../client/http';
+import type {
+  V2DecisionDto,
+  V2DraftDto,
+  V2EvidenceDto,
+  V2MetaDto,
+  V2ObjectDto,
+  V2PageDto,
+} from '../dto/types';
+import type { V2DecisionRequest } from '../domain/types';
+import { ApiError } from '../../client/http';
 import type { V2DraftListParams, V2EvidenceParams, V2ObjectListParams } from './keys';
 import { v2DraftKeys, v2MetaKeys, v2ObjectKeys } from './keys';
-import { v2DraftEvidencePath, v2DraftPath, v2DraftsPath, v2ObjectPath, v2ObjectsPath } from './paths';
+import {
+  v2DraftDecisionsPath,
+  v2DraftEvidencePath,
+  v2DraftPath,
+  v2DraftsPath,
+  v2ObjectPath,
+  v2ObjectsPath,
+} from './paths';
 
 export const useV2Meta = () =>
   useQuery({
@@ -50,3 +75,34 @@ export const useV2DraftEvidence = (id: string, params: V2EvidenceParams = {}) =>
       ),
     enabled: id !== '',
   });
+
+export const useV2DraftDecisions = (id: string) =>
+  useQuery({
+    queryKey: v2DraftKeys.decisions(id),
+    queryFn: async ({ signal }) =>
+      toV2DecisionHistory(await v2ApiGet<V2DecisionDto[]>(v2DraftDecisionsPath(id), signal)),
+    enabled: id !== '',
+  });
+
+export function invalidateV2DecisionQueries(queryClient: QueryClient, draftId: string) {
+  void queryClient.invalidateQueries({ queryKey: v2DraftKeys.lists() });
+  void queryClient.invalidateQueries({ queryKey: v2DraftKeys.detail(draftId) });
+  void queryClient.invalidateQueries({ queryKey: v2DraftKeys.decisions(draftId) });
+}
+
+export function useCreateV2DraftDecision() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ draftId, request }: { draftId: string; request: V2DecisionRequest }) =>
+      toV2Decision(
+        await v2ApiSend<V2DecisionDto>(v2DraftDecisionsPath(draftId), toV2DecisionRequest(request)),
+      ),
+    onSuccess: (_decision, variables) => {
+      invalidateV2DecisionQueries(queryClient, variables.draftId);
+    },
+    onError: (error, variables) => {
+      if (error instanceof ApiError && error.status === 409)
+        invalidateV2DecisionQueries(queryClient, variables.draftId);
+    },
+  });
+}

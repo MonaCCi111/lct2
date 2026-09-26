@@ -3,8 +3,9 @@
 `/api/v1` and `/api/v2` intentionally coexist.
 
 - `/api/v1` is the existing demo operational layer used by the current routes and UI.
-- `/api/v2` is the historical dispatcher/review contract (`dispatcher_api_v1`). Its read-only
-  foundation lives in `frontend/src/api/v2`. No existing route consumes it yet.
+- `/api/v2` is the historical dispatcher/review contract (`dispatcher_api_v1`). Its isolated
+  transport, DTO, adapter and query layer lives in `frontend/src/api/v2`. The `/review` routes
+  consume this layer without adapting drafts into the legacy Prediction domain.
 
 The v2 client has a separate `VITE_API_V2_BASE_URL`, DTOs, domain models, adapters, query keys,
 hooks and MSW handlers. It must not adapt a v2 Draft into the legacy Prediction domain.
@@ -30,6 +31,12 @@ The current `fixtures_v1.json` and integration guide contain `forecast_horizon_h
 it optional and nullable, while a conformance test records its presence in the current fixture. It
 must not become required until the upstream schema declares it.
 
-Decisions, decision corrections, work-order mutations, replay UI and v2 analytics remain outside
-this foundation. The handlers added for Task 10B.1 expose only Meta, Objects, Drafts and Draft
-Evidence reads.
+The review detail supports `GET /drafts/{draft_id}/decisions` and
+`POST /drafts/{draft_id}/decisions`. A decision requires `decision`, `reason` and one stable
+`idempotency_key` per user attempt. Successful decisions invalidate only v2 draft list/detail and
+history keys. A 409 triggers the same refresh and is presented as an already-saved decision.
+Decision timestamps are timezone-aware server events and use the operational datetime formatter;
+historical draft/evidence timestamps remain literal.
+
+Decision corrections, work-order mutations, replay UI and v2 analytics remain outside the current
+frontend. Approval never creates a work order implicitly.

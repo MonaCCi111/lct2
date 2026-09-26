@@ -12,6 +12,7 @@ import { PageHeader } from '../../components/feedback/PageShell';
 import { Button } from '../../components/ui/Button';
 import { HistoricalNotice } from './HistoricalNotice';
 import { BasisLabel, ReviewState } from './ReviewSemantics';
+import { DecisionPanel } from './DecisionPanel';
 import { formatForecastHorizon, formatIts, formatModelScore, parseLimitations } from './review-model';
 import type { V2Evidence } from '../../api/v2/domain/types';
 import './review-page.css';
@@ -170,6 +171,7 @@ export default function ReviewDetailPage() {
           <p className="review-raw-value">{item.sourceRef ?? '—'}</p>
         </div>
       </section>
+      <DecisionPanel draft={item} />
       <section className="review-evidence-panel" aria-labelledby="review-evidence-heading">
         <header>
           <div>

@@ -24,7 +24,7 @@ export interface V2ObjectDto {
   channel_count: number;
 }
 
-/** Read-only nested decision state. Decision mutations are intentionally outside Task 10B.1. */
+/** Persisted decision event, used by the current draft snapshot and append-only history. */
 export interface V2DecisionDto {
   decision_id: string;
   draft_id: string;
@@ -35,6 +35,12 @@ export interface V2DecisionDto {
   idempotency_key: string;
   supersedes_decision_id: string | null;
   work_order_id: string | null;
+}
+
+export interface V2DecisionRequestDto {
+  decision: V2DecisionValue;
+  reason: string;
+  idempotency_key: string;
 }
 
 export interface V2DraftDto {

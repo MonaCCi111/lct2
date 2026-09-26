@@ -1,12 +1,21 @@
 import type {
   V2DecisionDto,
+  V2DecisionRequestDto,
   V2DraftDto,
   V2EvidenceDto,
   V2MetaDto,
   V2ObjectDto,
   V2PageDto,
 } from '../dto/types';
-import type { V2Decision, V2Draft, V2Evidence, V2Meta, V2Object, V2Page } from '../domain/types';
+import type {
+  V2Decision,
+  V2DecisionRequest,
+  V2Draft,
+  V2Evidence,
+  V2Meta,
+  V2Object,
+  V2Page,
+} from '../domain/types';
 
 export const toV2Meta = (dto: V2MetaDto): V2Meta => ({
   contractVersion: dto.contract_version,
@@ -25,7 +34,7 @@ export const toV2Object = (dto: V2ObjectDto): V2Object => ({
   channelCount: dto.channel_count,
 });
 
-const toV2Decision = (dto: V2DecisionDto): V2Decision => ({
+export const toV2Decision = (dto: V2DecisionDto): V2Decision => ({
   decisionId: dto.decision_id,
   draftId: dto.draft_id,
   decision: dto.decision,
@@ -35,6 +44,14 @@ const toV2Decision = (dto: V2DecisionDto): V2Decision => ({
   idempotencyKey: dto.idempotency_key,
   supersedesDecisionId: dto.supersedes_decision_id,
   workOrderId: dto.work_order_id,
+});
+
+export const toV2DecisionHistory = (dtos: readonly V2DecisionDto[]): V2Decision[] => dtos.map(toV2Decision);
+
+export const toV2DecisionRequest = (request: V2DecisionRequest): V2DecisionRequestDto => ({
+  decision: request.decision,
+  reason: request.reason,
+  idempotency_key: request.idempotencyKey,
 });
 
 export const toV2Draft = (dto: V2DraftDto): V2Draft => ({

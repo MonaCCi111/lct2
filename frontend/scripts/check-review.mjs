@@ -62,14 +62,94 @@ try {
       await evidence.getByText('Есть питание', { exact: true }).waitFor();
       assert.match(await evidence.innerText(), /2025-12-10T08:16:53/);
       assert.match(await evidence.innerText(), /Нет/);
+
+      const decisionPanel = page.getByRole('region', { name: 'Решение диспетчера' });
+      await decisionPanel.getByRole('button', { name: 'Одобрить', exact: true }).click();
+      await decisionPanel.getByRole('button', { name: 'Сохранить решение' }).click();
+      await decisionPanel.getByText('Укажите причину решения диспетчера.', { exact: true }).waitFor();
+      await decisionPanel.getByLabel('Причина решения').fill('Сигнал и контекст проверены диспетчером.');
+      await decisionPanel.getByRole('button', { name: 'Сохранить решение' }).click();
+      await decisionPanel.getByText('Решение сохранено', { exact: true }).waitFor();
+      assert.equal(await decisionPanel.getByText('Наряд не создан.', { exact: true }).count(), 1);
+      assert.equal(await decisionPanel.getByRole('button', { name: 'Одобрить', exact: true }).count(), 0);
+      assert.match(
+        await page.getByRole('table', { name: 'История решений по черновику' }).innerText(),
+        /Сигнал и контекст проверены диспетчером\./,
+      );
+
+      const conflict = await page.evaluate(async () => {
+        const response = await fetch(
+          'http://localhost:8000/api/v2/drafts/power_phase_scada_v2%3A178259%3A20251210T090000/decisions',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              decision: 'rejected',
+              reason: 'Повторная попытка',
+              idempotency_key: 'browser-conflict-attempt',
+            }),
+          },
+        );
+        return { status: response.status, body: await response.json() };
+      });
+      assert.equal(conflict.status, 409);
+      assert.match(conflict.body.message, /уже сохранено решение/);
+
+      await page.getByRole('link', { name: 'К очереди проверки' }).click();
+      await page.waitForURL('**/review');
+      const updatedTable = page.getByRole('table', { name: 'Исторические черновики для проверки' });
+      const approvedRow = updatedTable.getByRole('row', { name: /канал 178259/ });
+      await approvedRow.getByText('Одобрено', { exact: true }).waitFor();
+
+      const observedRow = updatedTable.getByRole('row', { name: /канал 229590/ });
+      await observedRow.click();
+      await page.waitForURL('**/review/*');
+      const rejectPanel = page.getByRole('region', { name: 'Решение диспетчера' });
+      await rejectPanel.getByRole('button', { name: 'Отклонить', exact: true }).click();
+      await rejectPanel.getByRole('button', { name: 'Сохранить решение' }).click();
+      await rejectPanel.getByText('Укажите причину решения диспетчера.', { exact: true }).waitFor();
+      await rejectPanel.getByLabel('Причина решения').fill('Событие не подтверждается доступным контекстом.');
+      await rejectPanel.getByRole('button', { name: 'Сохранить решение' }).click();
+      await rejectPanel.getByText('Решение сохранено', { exact: true }).waitFor();
+      assert.match(
+        await page.getByRole('table', { name: 'История решений по черновику' }).innerText(),
+        /Событие не подтверждается доступным контекстом\./,
+      );
+      assert.equal(await rejectPanel.getByRole('button', { name: 'Отклонить', exact: true }).count(), 0);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
       await page.screenshot({ path: 'test-results/review-detail-dark-1366.png', fullPage: true });
+    } else {
+      const staleRow = table.getByRole('row', { name: /канал 178259/ });
+      await staleRow.click();
+      await page.getByRole('heading', { name: 'Черновик проверки' }).waitFor();
+      const seeded = await page.evaluate(async () => {
+        const response = await fetch(
+          'http://localhost:8000/api/v2/drafts/power_phase_scada_v2%3A178259%3A20251210T090000/decisions',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              decision: 'approved',
+              reason: 'Решение из другой сессии',
+              idempotency_key: 'browser-concurrent-attempt',
+            }),
+          },
+        );
+        return response.status;
+      });
+      assert.equal(seeded, 201);
+      const stalePanel = page.getByRole('region', { name: 'Решение диспетчера' });
+      await stalePanel.getByRole('button', { name: 'Отклонить', exact: true }).click();
+      await stalePanel.getByLabel('Причина решения').fill('Конфликтующая попытка');
+      await stalePanel.getByRole('button', { name: 'Сохранить решение' }).click();
+      await stalePanel.getByText('По этому черновику уже сохранено решение.', { exact: true }).waitFor();
+      assert.equal(await stalePanel.getByRole('button', { name: 'Отклонить', exact: true }).count(), 0);
     }
     await page.close();
   }
   assert.deepEqual(errors, []);
   console.log(
-    'PASS Review: v2 drafts, decimal score semantics, literal historical time, filters, keyboard detail navigation, evidence, dark/light and 1920/1366.',
+    'PASS Review: v2 drafts, approve/reject, required reason, 409 conflict, history, no automatic work order, evidence, dark/light and 1920/1366.',
   );
 } finally {
   await browser.close();
