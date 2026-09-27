@@ -21,11 +21,6 @@ from app.services import normalize
 
 log = logging.getLogger("seed")
 
-# Временное соответствие tag_root -> объект 2 уровня для случаев, когда channel_current.parquet недоступен.
-# Единственная подтверждённая пара - 847 -> 5327 (объект Кси, ARCHITECTURE_AND_ROLES §3.2, DATA_AUDIT §2.3).
-# Остальные корни распределяются по коллекторам детерминированно и помечаются object_map_source='fallback'.
-CONFIRMED_TAG_ROOT_MAP: dict[str, int] = {"847": 5327}
-
 
 def _find(path_dir: Path, name: str) -> Path | None:
     for candidate in (path_dir / name, path_dir / "catalog" / name, path_dir / "representative_slice" / name):
@@ -67,91 +62,59 @@ async def seed_objects(session: AsyncSession) -> int:
     return len(rows)
 
 
-def _load_channel_object_map() -> dict[int, int]:
-    """channel_id -> object_id из channel_current.parquet ML-пакета, если он доступен."""
-    parquet = settings.ml_handoff_dir / "handoff_v1" / "channel_current.parquet"
-    if not parquet.exists():
-        return {}
-    try:
-        import pyarrow.parquet as pq
-
-        table = pq.read_table(parquet, columns=["channel_id", "object_id"]).to_pylist()
-    except Exception as exc:  # LFS-указатель вместо файла и т.п.
-        log.warning("channel_current.parquet unreadable (%s); using fallback mapping", exc)
-        return {}
-    return {int(r["channel_id"]): int(r["object_id"]) for r in table if r.get("object_id") is not None}
-
-
 async def seed_channels(session: AsyncSession) -> int:
+    """Справочник каналов. Колонка ид_объект (объект 3 уровня) есть в версии справочника из пакета ML."""
     if not await _is_empty(session, SensorChannel):
         return 0
     path = _find(settings.data_dir, settings.channels_csv)
     if path is None:
         log.warning("channels csv not found in %s", settings.data_dir)
         return 0
-    collectors = (
-        await session.scalars(select(CollectorObject).where(CollectorObject.level == 2).order_by(CollectorObject.id))
-    ).all()
-    collector_ids = [c.id for c in collectors]
-    real_map = _load_channel_object_map()
-
+    known_objects = set((await session.scalars(select(CollectorObject.id))).all())
     rows = []
-    fallback_roots: dict[str, int] = dict(CONFIRMED_TAG_ROOT_MAP)
     with path.open(encoding="utf-8-sig", newline="") as f:
         for r in csv.DictReader(f):
-            cid = int(r["ид_канала_данных"])
             name = r["название_датчика"].strip()
             tag = r["тег_инженерной_системы"].strip()
-            root = normalize.tag_root(tag)
             piket, piket_value = normalize.parse_piket(name)
-            if cid in real_map:
-                object_id, src = real_map[cid], "ml_handoff"
-            else:
-                if root not in fallback_roots and collector_ids:
-                    # детерминированное распределение неизвестных корней по коллекторам
-                    used = set(fallback_roots.values())
-                    free = [c for c in collector_ids if c not in used] or collector_ids
-                    fallback_roots[root] = free[(int(root) if root.isdigit() else len(root)) % len(free)]
-                object_id, src = fallback_roots.get(root), "fallback"
+            raw_obj = (r.get("ид_объект") or "").strip()
+            object_id = int(raw_obj) if raw_obj.isdigit() and int(raw_obj) in known_objects else None
             rows.append(
                 SensorChannel(
-                    id=cid,
+                    id=int(r["ид_канала_данных"]),
                     subsystem=r["тип_инж_системы"].strip(),
                     sensor_type=r["тип_датчика"].strip(),
                     tag=tag,
                     sensor_name=name,
-                    tag_root=root,
+                    tag_root=normalize.tag_root(tag),
                     piket=piket,
                     piket_value=piket_value,
                     object_id=object_id,
-                    object_map_source=src,
+                    object_map_source="catalog" if object_id else None,
                 )
             )
     session.add_all(rows)
     await session.commit()
-    log.info("channels seeded: %d (object map from ml_handoff: %d)", len(rows), len(real_map))
+    log.info("channels seeded: %d (with object: %d)", len(rows), sum(1 for c in rows if c.object_id))
     return len(rows)
 
 
 async def seed_state_dictionary(session: AsyncSession) -> int:
     if not await _is_empty(session, StateDictionaryRow):
         return 0
-    path = _find(settings.data_dir, settings.states_csv) or _find(settings.ml_handoff_dir, settings.states_csv)
+    path = _find(settings.data_dir, settings.states_csv)
     if path is None:
         return 0
     rows = []
     with path.open(encoding="utf-8-sig", newline="") as f:
         for r in csv.DictReader(f):
-            keys = {k.lower(): k for k in r}
-            sensor_type = r.get(keys.get("тип_датчика", ""), "") or r.get(keys.get("sensor_type", ""), "")
-            text = r.get(keys.get("состояние", ""), "") or r.get(keys.get("state_text", ""), "") or ""
-            alarm_raw = r.get(keys.get("тревожное", ""), None) or r.get(keys.get("is_alarm", ""), None)
+            alarm_raw = (r.get("тревожное") or "").strip()
             rows.append(
                 StateDictionaryRow(
-                    sensor_type=sensor_type.strip(),
-                    state_text=text.strip(),
-                    is_alarm=normalize.parse_bool(alarm_raw) if alarm_raw not in (None, "") else None,
-                    state_set=r.get(keys.get("набор", ""), None) or r.get(keys.get("state_set", ""), None),
+                    sensor_type=(r.get("тип_датчика") or "").strip(),
+                    state_text=(r.get("название_состояния") or "").strip(),
+                    is_alarm=normalize.parse_bool(alarm_raw) if alarm_raw else None,
+                    state_set=(r.get("ид_набор_состояний") or "").strip() or None,
                     raw=json.dumps(r, ensure_ascii=False),
                 )
             )

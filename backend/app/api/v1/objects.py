@@ -98,8 +98,11 @@ async def object_topology(object_id: int, db: DbSession) -> ObjectTopologyDto:
     collector = o
     while collector.level > 2 and collector.parent_id in objects:
         collector = objects[collector.parent_id]
+    descendants = {collector.id}
+    for _ in range(3):  # глубина дерева объектов - 3 уровня
+        descendants |= {c.id for c in objects.values() if c.parent_id in descendants}
     channels = (
-        await db.scalars(select(SensorChannel).where(SensorChannel.object_id == collector.id, SensorChannel.piket_value.is_not(None)))
+        await db.scalars(select(SensorChannel).where(SensorChannel.object_id.in_(descendants), SensorChannel.piket_value.is_not(None)))
     ).all()
     preds = {p.channel_id: p for p in (await db.scalars(select(PredictionRecord))).all() if is_active(p)}
     now = iso_msk(now_msk()) or ""

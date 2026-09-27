@@ -133,3 +133,39 @@ class AuditLog(Base):
     entity_type: Mapped[str] = mapped_column(String(32))
     entity_id: Mapped[str] = mapped_column(String(64))
     payload: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+# --- API v2: решения диспетчера и наряды (append-only, исторический пакет не меняется) ---------------
+class V2Decision(Base):
+    __tablename__ = "v2_decisions"
+
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    decision_id: Mapped[str] = mapped_column(String(40), unique=True)
+    draft_id: Mapped[str] = mapped_column(String(255), index=True)
+    decision: Mapped[str] = mapped_column(String(16))  # approved | rejected
+    reason: Mapped[str] = mapped_column(Text)
+    author_id: Mapped[str] = mapped_column(String(128))
+    author_role: Mapped[str] = mapped_column(String(32))
+    decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    idempotency_key: Mapped[str] = mapped_column(String(128), unique=True)
+    supersedes_decision_id: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    work_order_id: Mapped[str | None] = mapped_column(String(40), nullable=True)
+
+
+class V2WorkOrder(Base):
+    __tablename__ = "v2_work_orders"
+
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    work_order_id: Mapped[str] = mapped_column(String(40), unique=True)
+    draft_id: Mapped[str] = mapped_column(String(255), unique=True)  # один наряд на черновик
+    decision_id: Mapped[str] = mapped_column(String(40))
+    object_id: Mapped[int] = mapped_column(Integer, index=True)
+    status: Mapped[str] = mapped_column(String(32), default="created")
+    work_type: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_by: Mapped[str] = mapped_column(String(128))
+    idempotency_key: Mapped[str] = mapped_column(String(128), unique=True)
+    external_work_order_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    assignee_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    due_at: Mapped[str | None] = mapped_column(String(40), nullable=True)

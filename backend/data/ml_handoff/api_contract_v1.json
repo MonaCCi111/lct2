@@ -1,0 +1,89 @@
+{
+  "contract_version": "dispatcher_api_v1",
+  "base_path": "/api/v2",
+  "data_version": "ml_handoff_v1",
+  "clock": {
+    "historical_format": "YYYY-MM-DDTHH:mm:ss, timezone absent in source",
+    "historical_rule": "Do not append +03:00 or Z; filter all historical views by available_at <= at",
+    "live_rule": "Store source_event_time separately from received_at with an explicit timezone",
+    "display_rule": "Render historical timestamps literally with label Время источника, зона неизвестна. Do not pass them through browser-local Date conversion. Show available_at as Доступно в реконструкции; source_obs_time as Время сигнала."
+  },
+  "pagination": {
+    "request": ["limit", "cursor"],
+    "response": ["items", "next_cursor"],
+    "default_limit": 50,
+    "max_limit": 200,
+    "sort": "stable by available_at then immutable id"
+  },
+  "errors": {
+    "format": {"code": "string", "message": "string", "details": "object|null"},
+    "statuses": {"400": "invalid query or missing decision reason", "403": "correction requires elevated role", "404": "unknown id", "409": "decision conflict or stale revision", "422": "unsupported historical time or schema"}
+  },
+  "enums": {
+    "forecast_capability": ["active", "research", "not_released", "not_assessed"],
+    "basis_kind": ["forecast", "observed_status"],
+    "decision": ["approved", "rejected"],
+    "review_state": ["pending", "approved", "rejected"],
+    "fire_source_state": ["NO_CONFIRMED_FIRE_SOURCE"]
+  },
+  "endpoints": [
+    {"method": "GET", "path": "/meta", "query": [], "source": "package_manifest.json + feedback_availability.json", "returns": "Meta", "purpose": "data cutoff, source clock, API and ML versions, available features"},
+    {"method": "GET", "path": "/model-types", "query": [], "source": "model_type_decisions.json", "returns": "TypeDecision[]", "purpose": "all 19 type decisions; unknown types are not_assessed"},
+    {"method": "GET", "path": "/objects", "query": ["kind?", "name?", "limit?", "cursor?"], "source": "catalog/справочник_объектов_диспетчер.csv + channel_current", "returns": "Page<Object>", "purpose": "all catalogued objects, including those without situations; object_name from dispatcher catalog"},
+    {"method": "GET", "path": "/objects/{object_id}", "query": [], "source": "catalog/справочник_объектов_диспетчер.csv + channel_current", "returns": "Object", "purpose": "stable object id, dispatcher name, parent and kind"},
+    {"method": "GET", "path": "/overview", "query": ["from", "to", "object_id?", "sensor_type?", "at?"], "source": "overview_object_day + overview_object_type_day", "returns": "Overview", "purpose": "day counts for situations, draft cards, groups and coverage; no summed group count after type filtering"},
+    {"method": "GET", "path": "/channels", "query": ["object_id?", "sensor_type?", "forecast_capability?", "observation_state?", "at?", "limit?", "cursor?"], "source": "channel_current or observation_snapshots", "returns": "Page<Channel>", "purpose": "include uncatalogued and nonforecast channels"},
+    {"method": "GET", "path": "/channels/{channel_id}", "query": ["at?"], "source": "channel_current + observation_snapshots", "returns": "ChannelDetail", "purpose": "source state, history, dictionary provenance and ITS reason"},
+    {"method": "GET", "path": "/situations", "query": ["object_id?", "kind?", "from?", "to?", "at?", "limit?", "cursor?"], "source": "situation_cards", "returns": "Page<Situation>", "purpose": "observed information and links to drafts"},
+    {"method": "GET", "path": "/situations/{situation_id}", "query": ["at?"], "source": "situation_cards", "returns": "Situation", "purpose": "never claim physical incident when confirmed_physical_incident is null"},
+    {"method": "GET", "path": "/situations/{situation_id}/evidence", "query": ["at?", "limit?", "cursor?"], "source": "situation_evidence", "returns": "Page<Evidence>", "purpose": "raw readings and source_ref without future evidence"},
+    {"method": "GET", "path": "/groups", "query": ["object_id?", "from?", "to?", "review_state?", "at?", "limit?", "cursor?"], "source": "group_cards + server decision store", "returns": "Page<Group>", "purpose": "queue organized by group but retains every draft"},
+    {"method": "GET", "path": "/groups/{group_id}", "query": ["at?"], "source": "group_cards + draft_cards", "returns": "GroupDetail", "purpose": "group and its separately actionable drafts"},
+    {"method": "GET", "path": "/drafts", "query": ["group_id?", "object_id?", "basis_kind?", "review_state?", "from?", "to?", "at?", "limit?", "cursor?"], "source": "draft_cards + server decision store", "returns": "Page<Draft>", "purpose": "flat queue and search, same draft_id and state as group details"},
+    {"method": "GET", "path": "/drafts/{draft_id}", "query": ["at?"], "source": "draft_cards + server decision store", "returns": "Draft", "purpose": "model-specific score or observed status, never universal risk"},
+    {"method": "GET", "path": "/drafts/{draft_id}/evidence", "query": ["at?", "limit?", "cursor?"], "source": "dispatch_review_v2/*/forecast_evidence + observed_evidence + forecast_features", "returns": "Page<Evidence>", "purpose": "forecast raw previous-hour events and feature snapshot, or observed source events"},
+    {"method": "POST", "path": "/drafts/{draft_id}/decisions", "query": [], "body": "DecisionRequest", "source": "server decision store", "returns": "Decision", "purpose": "authenticated human action with reason and idempotency_key; approval does not silently create a work order"},
+    {"method": "GET", "path": "/drafts/{draft_id}/decisions", "query": [], "source": "server decision store", "returns": "Decision[]", "purpose": "append-only history; regular POST after a different decision returns 409"},
+    {"method": "POST", "path": "/drafts/{draft_id}/decision-corrections", "query": [], "body": "DecisionCorrectionRequest", "source": "server decision store", "returns": "Decision", "purpose": "elevated-role correction, never overwrite previous decision; normal dispatcher UI does not show it"},
+    {"method": "GET", "path": "/work-orders", "query": ["draft_id?", "object_id?", "status?", "limit?", "cursor?"], "source": "server work-order store or external system adapter", "returns": "Page<WorkOrder>", "purpose": "human-created orders linked to approved drafts"},
+    {"method": "POST", "path": "/work-orders", "query": [], "body": "WorkOrderRequest", "source": "server work-order store or external system adapter", "returns": "WorkOrder", "purpose": "explicit action after approval; backend owns id, may retain external_work_order_id"},
+    {"method": "GET", "path": "/work-orders/{work_order_id}", "query": [], "source": "server work-order store or external system adapter", "returns": "WorkOrder", "purpose": "order status and link to source draft"},
+    {"method": "GET", "path": "/charts/cases", "query": ["draft_id|situation_id", "at?"], "source": "situation_evidence or dispatch_review_v2 evidence; chart_examples only for five fixture cases", "returns": "CaseChart", "purpose": "source points, gaps, numeric/text series and relation to signal time"},
+    {"method": "GET", "path": "/fire-history", "query": [], "source": "fire_history_view.json", "returns": "FireHistory", "purpose": "source unavailable, real fire count null, separate smoke statistics"},
+    {"method": "GET", "path": "/replays", "query": [], "source": "replay_scenarios_v1.json", "returns": "ReplayScenario[]", "purpose": "eight verified historical demo scenarios"},
+    {"method": "GET", "path": "/replays/{scenario_id}/events", "query": ["after_seq?", "limit?"], "source": "replay_v1/{scenario_id}/timeline.parquet", "returns": "Page<ReplayEvent>", "purpose": "ordered seq cursor; reset view and simulated decisions on seek"}
+  ],
+  "schemas": {
+    "Meta": {"required": ["contract_version", "data_version", "data_cutoff", "source_timezone_known", "real_feedback_available", "live_ingestion_available"], "nullable": []},
+    "TypeDecision": {"required": ["sensor_type", "forecast_capability", "forecast_reason", "forecast_reason_text"], "nullable": ["forecast_model_version", "forecast_target_kind"]},
+    "Object": {"required": ["object_id", "object_name", "kind", "channel_count"], "nullable": ["parent_id"], "notes": "object_name is copied from the dispatcher object catalog, not inferred from sensor names"},
+    "Channel": {"required": ["channel_id", "in_catalog", "forecast_capability", "forecast_reason_text", "coverage_observation_state", "detailed_observation_state", "its_status", "its_reason", "available_at"], "nullable": ["object_id", "sensor_type", "channel_name", "forecast_model_version", "last_event_time", "last_recorded_value", "its_value"]},
+    "ChannelDetail": {"extends": "Channel", "required": ["dictionary_state", "recent_input_context", "history"], "nullable": ["last_source_ref", "last_text_status", "dictionary_source_ref"]},
+    "Situation": {"required": ["situation_id", "object_id", "situation_kind", "available_at", "evidence_count", "review_link_state", "limitations"], "nullable": ["draft_id", "group_id", "confirmed_physical_incident", "numeric_unit", "stated_threshold"]},
+    "Evidence": {"required": ["channel_id", "available_at", "source_ref", "observed_value"], "nullable": ["event_id", "numeric_value", "numeric_unit", "source_alarm", "dictionary_state"]},
+    "Group": {"required": ["group_id", "object_id", "available_at", "draft_count", "forecast_count", "observed_count"], "nullable": []},
+    "GroupDetail": {"extends": "Group", "required": ["drafts"], "nullable": []},
+    "Draft": {"required": ["draft_id", "group_id", "object_id", "channel_id", "basis_kind", "target_kind", "available_at", "review_state", "limitations"], "nullable": ["model_version", "score", "situation_id", "its_value", "decision"]},
+    "DecisionRequest": {"required": ["decision", "reason", "idempotency_key"], "nullable": [], "notes": "author is taken from authenticated session; same idempotency_key returns same decision; different decision on decided draft returns 409"},
+    "DecisionCorrectionRequest": {"required": ["decision", "reason", "idempotency_key", "expected_decision_id"], "nullable": [], "notes": "restricted role; appends a new event superseding expected_decision_id"},
+    "Decision": {"required": ["decision_id", "draft_id", "decision", "reason", "author_id", "decided_at", "idempotency_key"], "nullable": ["supersedes_decision_id", "work_order_id"]},
+    "WorkOrderRequest": {"required": ["draft_id", "work_type", "description", "idempotency_key"], "nullable": ["assignee_id", "due_at"], "notes": "draft must have latest approved decision; human chooses work type and description"},
+    "WorkOrder": {"required": ["work_order_id", "draft_id", "object_id", "status", "work_type", "description", "created_at", "created_by"], "nullable": ["external_work_order_id", "assignee_id", "due_at"]},
+    "CaseChart": {"required": ["case_id", "view_at", "points", "limitations"], "nullable": [], "notes": "numeric and text points remain separate; gaps are explicit; only available_at<=view_at"},
+    "FireHistory": {"required": ["source_status", "real_fire_count", "smoke_signal_statistics_are_fires"], "nullable": ["real_fire_count"]},
+    "ReplayScenario": {"required": ["id", "object_id", "start", "end", "title"], "nullable": []},
+    "ReplayEvent": {"required": ["seq", "event_time", "event_kind", "object_id", "source_id", "payload", "availability_basis"], "nullable": ["channel_id"]},
+    "Overview": {"required": ["days", "data_cutoff"], "nullable": []}
+  },
+  "invariants": [
+    "Never serialize null as zero for ITS, fire count, physical incident or real feedback",
+    "Only active forecast model versions power_phase_scada_v2 and pump_scada_v1 may enter forecast drafts",
+    "Observed drafts have score null; model scores do not imply physical failure probability or common urgency",
+    "Every draft_id is independently reviewable even when several drafts share group_id",
+    "Historical results are read-only; real decisions are a separate append-only server resource",
+    "A regular conflicting decision returns 409; privileged correction is a new audited event, never an update in place",
+    "Work orders are created only after explicit human action and an approved draft; IDs are owned by backend, optional external IDs are mappings",
+    "Do not expose retrospective target outcomes in as-of or replay views",
+    "Unknown or uncatalogued channels remain visible, with reasons"
+  ]
+}

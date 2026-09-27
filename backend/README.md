@@ -49,10 +49,9 @@ uvicorn app.main:app --reload --port 8000
 от текущего времени, поэтому при загрузке все метки сдвигаются так, чтобы последняя запись совпала с моментом старта.
 Отключается `TELEMETRY_REPLAY_SHIFT=false`.
 
-**Привязка каналов к коллекторам.** Справочник каналов не содержит `object_id`. Если доступен
-`data/ml_handoff/handoff_v1/channel_current.parquet` (пакет ML, Git LFS), берётся привязка оттуда
-(`channels.object_map_source = 'ml_handoff'`). Иначе — подтверждённая пара `tag_root 847 → объект Кси (5327)` и
-детерминированное распределение остальных корней тегов по коллекторам (`'fallback'`). Fallback — приближение для демо.
+**Привязка каналов к объектам.** Справочник каналов взят из пакета ML (`integration/backend_sanya/data/catalog`),
+в нём есть колонка `ид_объект` — объект 3 уровня (например, канал 228571 → 5343 «объект Кси ПК202-ПК302»).
+Счётчики и риск в v1 суммируются вверх по дереву: объект 3 уровня → коллектор → район.
 
 ## ML
 
@@ -100,6 +99,38 @@ critical) плюс градуированный балл для остальны
 Коды: 400 — некорректный запрос, 403 — неизвестная роль, 404 — нет сущности, 409 — конфликт/недопустимый переход,
 422 — нарушение длины полей наряда.
 
+## API v2 (`/api/v2`) — исторический разбор черновиков ML
+
+Контракт: `data/ml_handoff/api_contract_v1.json` (`dispatcher_api_v1`). Все 25 маршрутов:
+`meta`, `model-types`, `objects`, `overview`, `channels`, `situations` (+`evidence`), `groups`, `drafts` (+`evidence`,
+`decisions`, `decision-corrections`), `work-orders`, `charts/cases`, `fire-history`, `replays` (+`events`).
+
+- **Данные.** Исторический пакет с отсечкой 30.06.2026 загружается при старте в память (pyarrow) из
+  `data/ml_handoff/data/**.parquet`. Пока parquet не скачаны из Git LFS, используются реальные записи из
+  `fixtures_v1.json` (2 черновика, 1 ситуация, 2 канала); `GET /meta` → `data_source` показывает, что загружено.
+- **Время.** Исторические метки отдаются буквально `YYYY-MM-DDTHH:MM:SS` без зоны; `at`/`from`/`to` с `Z` или
+  смещением → 422. Всё с `available_at > at` скрыто. Серверные `decided_at`/`created_at` — с `+03:00`.
+- **Решения.** `POST /drafts/{id}/decisions`: `decision`, непустой `reason`, `idempotency_key`; автор из `X-User-Id`.
+  Тот же ключ → прежний ответ (200); другое решение по уже решённому черновику → 409. Исправление — только
+  `decision-corrections` с ролью `supervisor` (иначе 403) и `expected_decision_id` (иначе 409). История append-only.
+- **Наряды.** `POST /work-orders` только после `approved` (иначе 409), один на черновик, ID выдаёт бэкенд
+  (`WO2-2026-00001`); связь видна в `Draft.decision.work_order_id`.
+- **Пагинация.** `{items, next_cursor}`, `limit` по умолчанию 50, максимум 200, курсор непрозрачный.
+- В очереди только действующие модели из `runtime_policy_v1.json` (`power_phase_scada_v2`, `pump_scada_v1`);
+  `score` отдаётся как есть, `its_value` и `real_fire_count` остаются `null`.
+
+Подключение полного пакета:
+```bash
+git lfs fetch origin feature/ml-research
+git checkout origin/feature/ml-research -- integration/backend_sanya/data integration/backend_sanya/models
+cp -r integration/backend_sanya/data/* backend/data/ml_handoff/data/ && git restore --staged integration && rm -rf integration
+```
+
+## Тесты
+```bash
+cd backend && pytest -q
+```
+
 ## Демо-сценарий (INTEGRATION_SPEC §6)
 ```bash
 curl localhost:8000/api/v1/objects/status-summary                  # объект Кси в красной зоне
@@ -114,18 +145,18 @@ curl -X PATCH localhost:8000/api/v1/tickets/WO-2026-0001/status -H 'Content-Type
 ## Структура
 ```
 app/
-  api/v1/        роутеры REST v1;  api/deps.py — сессия БД и RBAC;  api/errors.py — формат ошибок
+  api/v1, api/v2 роутеры REST;  api/deps.py — сессия БД и RBAC;  api/errors.py — формат ошибок
   core/          настройки, подключение к БД, работа со временем (МСК)
   db/            ORM-модели и сидинг справочников
   ml/            контракт предиктора, заглушка, расчёт признаков
   reports/       генераторы xlsx/pdf и шрифты
   schemas/       Pydantic v2 контракты
   services/      нормализация, скоринг, агрегаты, сериализация
-data/            справочники и срез телеметрии
+  v2/            загрузка исторического пакета ML (pyarrow) для API v2
+data/            справочники, срез телеметрии, data/ml_handoff — пакет ML
 ```
 
 ## Ограничения текущей версии
-- API v2 (`/api/v2`, контракт `integration/backend_sanya/api_contract_v1.json`) ещё не реализован: нужен пакет данных
-  из Git LFS (`git lfs pull origin feature/ml-research`).
-- Прогнозы — от `DummyPredictor`; вероятности эвристические до подключения моделей ML.
-- Привязка каналов к коллекторам — fallback до получения `channel_current.parquet`.
+- API v2 работает на фикстурах, пока parquet пакета ML не скачаны из Git LFS (см. выше).
+- Прогнозы v1 — от `DummyPredictor`; вероятности эвристические до подключения моделей ML.
+- `live_ingestion_available=false`: инкрементальный расчёт признаков для живого потока ML ещё не выпущен.

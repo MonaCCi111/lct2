@@ -10,11 +10,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException
 
 from app.api.errors import ApiError, api_error_handler, http_error_handler, validation_error_handler
+from app.api.v2 import routes as v2_routes
 from app.api.v1 import analytics, dashboard, objects, predictions, reports, sensors, system, tickets, weather
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.db import models  # noqa: F401  (регистрация моделей)
 from app.db.init_db import seed_all
+from app.v2.store import get_store
 from app.services.scoring import build_risk_timeline_background, score_all_channels
 
 logging.basicConfig(level=settings.log_level.upper(), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -28,6 +30,7 @@ async def lifespan(app: FastAPI):
     async with SessionLocal() as session:
         await seed_all(session)
         scored = await score_all_channels(session)
+    await asyncio.to_thread(get_store)  # исторический пакет ML для API v2
     timeline_task = asyncio.create_task(build_risk_timeline_background()) if scored else None
     log.info("startup complete: %s", settings.database_url.split("@")[-1])
     yield
@@ -57,6 +60,7 @@ app.add_exception_handler(RequestValidationError, validation_error_handler)
 
 for _router in (system, dashboard, objects, predictions, sensors, tickets, analytics, reports, weather):
     app.include_router(_router.router, prefix=settings.api_v1_prefix)
+app.include_router(v2_routes.router, prefix=settings.api_v2_prefix)
 
 
 @app.get("/", include_in_schema=False)

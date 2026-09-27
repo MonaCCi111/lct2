@@ -59,8 +59,7 @@ def collector_of(obj: CollectorObject, objects: dict[int, CollectorObject]) -> C
 
 
 async def object_stats(session: AsyncSession, objects: dict[int, CollectorObject] | None = None) -> dict[int, ObjectStats]:
-    """Статистика по каждому объекту. Каналы привязаны к коллекторам (уровень 2); объекты уровня 3
-    с диапазоном пикетов получают срез своего коллектора по piket_value."""
+    """Статистика по каждому объекту. Каналы привязаны к объектам 3 уровня и суммируются вверх по дереву."""
     objects = objects or await load_objects(session)
     channels = (await session.scalars(select(SensorChannel))).all()
     predictions = (await session.scalars(select(PredictionRecord))).all()
@@ -94,32 +93,18 @@ async def object_stats(session: AsyncSession, objects: dict[int, CollectorObject
             if p.failure_probability is not None:
                 st.max_probability = max(st.max_probability or 0.0, p.failure_probability)
 
-    for ch in channels:
-        if ch.object_id is None or ch.object_id not in stats:
-            continue
-        add_channel(stats[ch.object_id], ch)
-        # дочерние объекты 3 уровня с диапазоном пикетов
-        for child in objects.values():
-            if child.parent_id == ch.object_id and child.piket_from is not None and child.piket_to is not None:
-                if ch.piket_value is not None and child.piket_from <= ch.piket_value <= child.piket_to:
-                    add_channel(stats[child.id], ch)
+    ancestors: dict[int, list[int]] = {}
+    for oid, obj in objects.items():
+        chain, cur = [], obj
+        while cur is not None:
+            chain.append(cur.id)
+            cur = objects.get(cur.parent_id) if cur.parent_id else None
+        ancestors[oid] = chain
 
-    # район (уровень 1) = сумма коллекторов
-    for obj in objects.values():
-        if obj.level == 1:
-            st = stats[obj.id]
-            for other in objects.values():
-                if other.parent_id == obj.id:
-                    o = stats[other.id]
-                    st.channels_total += o.channels_total
-                    st.ml_supported += o.ml_supported
-                    st.active += o.active
-                    st.critical += o.critical
-                    st.high += o.high
-                    st.medium += o.medium
-                    st.predictions.extend(o.predictions)
-                    if o.max_probability is not None:
-                        st.max_probability = max(st.max_probability or 0.0, o.max_probability)
+    for ch in channels:
+        for oid in ancestors.get(ch.object_id, []):  # канал считается у своего объекта и у всех предков
+            add_channel(stats[oid], ch)
+
     for oid, st in stats.items():
         st.open_tickets = open_by_obj.get(oid, 0)
         st.finalize()

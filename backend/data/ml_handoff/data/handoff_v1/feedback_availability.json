@@ -1,0 +1,9 @@
+{
+  "real_feedback_available": false,
+  "decision_counts": null,
+  "rejection_reasons": null,
+  "meaning": "Журнал решений диспетчеров не передан; нули не подставляются.",
+  "schema_version": "ml_handoff_v1",
+  "source_ref": "no_real_dispatcher_feedback_source",
+  "available_at": null
+}
