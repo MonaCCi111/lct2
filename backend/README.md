@@ -105,9 +105,10 @@ critical) плюс градуированный балл для остальны
 `meta`, `model-types`, `objects`, `overview`, `channels`, `situations` (+`evidence`), `groups`, `drafts` (+`evidence`,
 `decisions`, `decision-corrections`), `work-orders`, `charts/cases`, `fire-history`, `replays` (+`events`).
 
-- **Данные.** Исторический пакет с отсечкой 30.06.2026 загружается при старте в память (pyarrow) из
-  `data/ml_handoff/data/**.parquet`. Пока parquet не скачаны из Git LFS, используются реальные записи из
-  `fixtures_v1.json` (2 черновика, 1 ситуация, 2 канала); `GET /meta` → `data_source` показывает, что загружено.
+- **Данные.** Исторический пакет (отсечка 30.06.2026) лежит в `data/ml_handoff/data/**.parquet` (Git LFS, 35 файлов,
+  SHA256 сверены с `package_manifest.json`) и при старте загружается в память (pyarrow). Контрольные числа совпадают с
+  пакетом ML: 12 627 каналов, 11 704 ситуации, 2 191 черновик, 1 621 группа, 1 142 канала вне справочника, 8 сценариев.
+  Если репозиторий склонирован без LFS, сервис переходит на `fixtures_v1.json`; `GET /meta` → `data_source` это покажет.
 - **Время.** Исторические метки отдаются буквально `YYYY-MM-DDTHH:MM:SS` без зоны; `at`/`from`/`to` с `Z` или
   смещением → 422. Всё с `available_at > at` скрыто. Серверные `decided_at`/`created_at` — с `+03:00`.
 - **Решения.** `POST /drafts/{id}/decisions`: `decision`, непустой `reason`, `idempotency_key`; автор из `X-User-Id`.
@@ -119,12 +120,7 @@ critical) плюс градуированный балл для остальны
 - В очереди только действующие модели из `runtime_policy_v1.json` (`power_phase_scada_v2`, `pump_scada_v1`);
   `score` отдаётся как есть, `its_value` и `real_fire_count` остаются `null`.
 
-Подключение полного пакета:
-```bash
-git lfs fetch origin feature/ml-research
-git checkout origin/feature/ml-research -- integration/backend_sanya/data integration/backend_sanya/models
-cp -r integration/backend_sanya/data/* backend/data/ml_handoff/data/ && git restore --staged integration && rm -rf integration
-```
+Если parquet пришли указателями (клон без LFS): `git lfs install && git lfs pull` в корне репозитория.
 
 ## Тесты
 ```bash
@@ -157,6 +153,6 @@ data/            справочники, срез телеметрии, data/ml_
 ```
 
 ## Ограничения текущей версии
-- API v2 работает на фикстурах, пока parquet пакета ML не скачаны из Git LFS (см. выше).
+- API v2 — исторический режим; живой поток требует инкрементального расчёта признаков от ML (ещё не выпущен).
 - Прогнозы v1 — от `DummyPredictor`; вероятности эвристические до подключения моделей ML.
 - `live_ingestion_available=false`: инкрементальный расчёт признаков для живого потока ML ещё не выпущен.
