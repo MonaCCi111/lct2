@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException
 
 from app.api.errors import ApiError, api_error_handler, http_error_handler, validation_error_handler
-from app.api.v1 import analytics, dashboard, objects, predictions, sensors, system, tickets
+from app.api.v1 import analytics, dashboard, objects, predictions, reports, sensors, system, tickets, weather
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.db import models  # noqa: F401  (регистрация моделей)
@@ -55,7 +55,7 @@ app.add_exception_handler(ApiError, api_error_handler)
 app.add_exception_handler(HTTPException, http_error_handler)
 app.add_exception_handler(RequestValidationError, validation_error_handler)
 
-for _router in (system, dashboard, objects, predictions, sensors, tickets, analytics):
+for _router in (system, dashboard, objects, predictions, sensors, tickets, analytics, reports, weather):
     app.include_router(_router.router, prefix=settings.api_v1_prefix)
 
 
