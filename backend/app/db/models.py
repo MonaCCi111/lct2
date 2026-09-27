@@ -112,6 +112,17 @@ class MaintenanceTicket(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
+class RiskSnapshot(Base):
+    """Почасовые срезы числа активных рисков (для analytics.risk_timeline)."""
+
+    __tablename__ = "risk_snapshots"
+
+    ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
+    critical: Mapped[int] = mapped_column(Integer, default=0)
+    high: Mapped[int] = mapped_column(Integer, default=0)
+    medium: Mapped[int] = mapped_column(Integer, default=0)
+
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 

@@ -36,6 +36,11 @@ class Settings(BaseSettings):
 
     # Даунсэмплинг телеметрии
     telemetry_max_points: int = 1000
+    # Режим воспроизведения: срез телеметрии (январь 2026) сдвигается так, чтобы последняя запись
+    # совпадала с моментом старта сервиса - фронт запрашивает окна "последние 6/24/48 ч" от текущего времени.
+    telemetry_replay_shift: bool = True
+    # Порог формирования черновика наряда (ARCHITECTURE_AND_ROLES §2.2)
+    auto_ticket_threshold: float = 0.65
 
     @property
     def cors_origin_list(self) -> list[str]:

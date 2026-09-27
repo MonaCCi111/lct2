@@ -37,5 +37,13 @@ def parse_iso(value: str) -> datetime:
     return to_msk(dt)
 
 
+def db_dt(dt: datetime) -> datetime:
+    """Значение для сравнения с колонкой DateTime: SQLite хранит наивное время (МСК), PostgreSQL - с зоной."""
+    from app.core.config import settings
+
+    dt = to_msk(dt)
+    return dt.replace(tzinfo=None) if settings.is_sqlite else dt
+
+
 def combine_csv_datetime(date_str: str, time_str: str) -> datetime:
     return datetime.fromisoformat(f"{date_str.strip()}T{time_str.strip()}").replace(tzinfo=MSK)

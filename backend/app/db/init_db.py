@@ -13,7 +13,9 @@ from sqlalchemy import func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.timeutil import combine_csv_datetime
+from datetime import timedelta
+
+from app.core.timeutil import combine_csv_datetime, now_msk
 from app.db.models import CollectorObject, SensorChannel, StateDictionaryRow, TelemetryEvent
 from app.services import normalize
 
@@ -109,7 +111,7 @@ async def seed_channels(session: AsyncSession) -> int:
                     # детерминированное распределение неизвестных корней по коллекторам
                     used = set(fallback_roots.values())
                     free = [c for c in collector_ids if c not in used] or collector_ids
-                    fallback_roots[root] = free[hash(root) % len(free)]
+                    fallback_roots[root] = free[(int(root) if root.isdigit() else len(root)) % len(free)]
                 object_id, src = fallback_roots.get(root), "fallback"
             rows.append(
                 SensorChannel(
@@ -175,6 +177,20 @@ async def seed_telemetry(session: AsyncSession) -> int:
             total += len(batch)
             batch = []
 
+    shift = timedelta(0)
+    if settings.telemetry_replay_shift:
+        with path.open(encoding="utf-8-sig", newline="") as f:
+            last = None
+            for r in csv.DictReader(f):
+                if r["дата"].strip() == "дата" or r["дата"].startswith("1970-01-01"):
+                    continue
+                ts = combine_csv_datetime(r["дата"], r["время"])
+                if last is None or ts > last:
+                    last = ts
+        if last is not None:
+            shift = now_msk() - last
+            log.info("telemetry replay shift: +%s (last sample %s -> now)", shift, last.isoformat())
+
     with path.open(encoding="utf-8-sig", newline="") as f:
         for r in csv.DictReader(f):
             if r["дата"].strip() == "дата" or r["дата"].startswith("1970-01-01"):
@@ -186,7 +202,7 @@ async def seed_telemetry(session: AsyncSession) -> int:
                 {
                     "event_id": int(r["ид_события"]),
                     "channel_id": int(r["ид_канала_данных"]),
-                    "ts": combine_csv_datetime(r["дата"], r["время"]),
+                    "ts": combine_csv_datetime(r["дата"], r["время"]) + shift,
                     "is_alarm": is_alarm,
                     "raw_value": raw,
                     "numeric_value": numeric,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -9,12 +10,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException
 
 from app.api.errors import ApiError, api_error_handler, http_error_handler, validation_error_handler
-from app.api.v1 import system
+from app.api.v1 import analytics, dashboard, objects, predictions, sensors, system, tickets
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.db import models  # noqa: F401  (регистрация моделей)
 from app.db.init_db import seed_all
-from app.services.scoring import score_all_channels
+from app.services.scoring import build_risk_timeline_background, score_all_channels
 
 logging.basicConfig(level=settings.log_level.upper(), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("app")
@@ -26,9 +27,12 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     async with SessionLocal() as session:
         await seed_all(session)
-        await score_all_channels(session)
+        scored = await score_all_channels(session)
+    timeline_task = asyncio.create_task(build_risk_timeline_background()) if scored else None
     log.info("startup complete: %s", settings.database_url.split("@")[-1])
     yield
+    if timeline_task and not timeline_task.done():
+        timeline_task.cancel()
     await engine.dispose()
 
 
@@ -51,7 +55,8 @@ app.add_exception_handler(ApiError, api_error_handler)
 app.add_exception_handler(HTTPException, http_error_handler)
 app.add_exception_handler(RequestValidationError, validation_error_handler)
 
-app.include_router(system.router, prefix=settings.api_v1_prefix)
+for _router in (system, dashboard, objects, predictions, sensors, tickets, analytics):
+    app.include_router(_router.router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/", include_in_schema=False)

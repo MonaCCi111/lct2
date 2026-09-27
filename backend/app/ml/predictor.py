@@ -97,32 +97,40 @@ class DummyPredictor:
         if item.numeric_std_24h is not None and item.numeric_std_24h > 3:
             factors.append(f"Нестабильность показаний (σ={item.numeric_std_24h:.1f})")
 
+        if item.hours_since_last_alarm < 6:
+            factors.append("Тревожное срабатывание менее 6 ч назад")
+
+        # Градуированная эвристика; правило спека (§2.4) - нижняя граница для критического класса.
+        score = 0.06
+        score += min(0.45, 0.06 * item.flapping_count_24h)
+        score += min(0.40, 1.5 * item.alarm_ratio_24h)
+        if item.hours_since_last_alarm < 6:
+            score += 0.12
+        elif item.hours_since_last_alarm < 24:
+            score += 0.06
+        if item.numeric_std_24h is not None and item.numeric_std_24h > 3:
+            score += 0.08
+        p = round(min(0.97, score), 2)
         if item.flapping_count_24h > 5 or item.alarm_ratio_24h > 0.2:
-            p = 0.88
-            return SensorRiskOutput(
-                channel_id=item.channel_id,
-                failure_probability=p,
-                risk_category=risk_category_for(p),
-                primary_cause="Аппаратный дребезг контактов",
-                recommended_action="Протяжка клемм и ревизия датчика",
-                model_domain=MODEL_DOMAIN_BY_SENSOR_TYPE.get(item.sensor_type),
-                maintenance_urgency=urgency_for(p),
-                lead_time_hours=lead_time_for(p),
-                health_index_its=its_for(p),
-                top_risk_factors=factors,
-            )
-        p = 0.08 if item.hours_since_last_alarm > 24 else 0.35
+            p = max(p, 0.88)
+            cause, action = "Аппаратный дребезг контактов", "Протяжка клемм и ревизия датчика"
+        elif p >= 0.5:
+            cause, action = "Нарастание частоты тревожных срабатываний", "Внеплановый осмотр и проверка линии связи"
+        elif p >= 0.3:
+            cause, action = "Недавние тревожные срабатывания", "Плановый осмотр при ближайшем обходе"
+        else:
+            cause, action = "Показания в пределах нормы", "Штатный мониторинг"
         return SensorRiskOutput(
             channel_id=item.channel_id,
             failure_probability=p,
             risk_category=risk_category_for(p),
-            primary_cause="Показания в пределах нормы" if p < 0.3 else "Недавние тревожные срабатывания",
-            recommended_action="Штатный мониторинг" if p < 0.3 else "Плановый осмотр при ближайшем обходе",
+            primary_cause=cause,
+            recommended_action=action,
             model_domain=MODEL_DOMAIN_BY_SENSOR_TYPE.get(item.sensor_type),
             maintenance_urgency=urgency_for(p),
             lead_time_hours=lead_time_for(p),
             health_index_its=its_for(p),
-            top_risk_factors=factors,
+            top_risk_factors=factors or [cause],
         )
 
     def supports(self, sensor_type: str) -> bool:
