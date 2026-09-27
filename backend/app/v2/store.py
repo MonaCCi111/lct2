@@ -51,8 +51,9 @@ def _is_real_parquet(path: Path) -> bool:
 
 def _stringify_times(table: pa.Table) -> pa.Table:
     for i, field in enumerate(table.schema):
-        if pa.types.is_timestamp(field.type):
-            table = table.set_column(i, field.name, pc.strftime(table.column(i), format=TS_FMT))
+        if pa.types.is_timestamp(field.type):  # без долей секунды: контракт - ровно YYYY-MM-DDTHH:MM:SS
+            col = pc.cast(table.column(i), pa.timestamp("s", tz=field.type.tz), safe=False)
+            table = table.set_column(i, field.name, pc.strftime(col, format=TS_FMT))
         elif pa.types.is_date(field.type):
             table = table.set_column(i, field.name, pc.strftime(pc.cast(table.column(i), pa.timestamp("s")), format="%Y-%m-%d"))
     return table

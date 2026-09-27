@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import re
 import uuid
 from datetime import datetime
@@ -271,17 +272,16 @@ async def list_channels(object_id: Optional[int] = None, sensor_type: Optional[s
                      ("forecast_capability", forecast_capability), ("in_catalog", in_catalog)):
         if val is not None:
             t = st.where_eq(t, col, val)
-    items = st.rows(st.sort_by(t, "channel_id")) if t is not None else []
-
     def as_of(chunk: list[dict]) -> list[dict]:
         snaps = _snapshot_at([r["channel_id"] for r in chunk], at)
         return [_channel_as_of(r, snaps.get(r["channel_id"]), at) for r in chunk]
 
-    if observation_state is None:  # снимки на момент at - только для каналов текущей страницы
-        result = page(items, lim, off)
+    if observation_state is None:  # режем страницу до конвертации; снимки на момент at - только для неё
+        result = page_table(t, lim, off, "channel_id")
         if at is not None:
             result["items"] = as_of(result["items"])
         return result
+    items = st.rows(st.sort_by(t, "channel_id")) if t is not None else []
     if at is not None:
         items = as_of(items)
     items = [r for r in items if observation_state in (r.get("coverage_observation_state"), r.get("detailed_observation_state"))]
@@ -378,7 +378,8 @@ async def get_draft(draft_id: str, db: DbSession, at: Optional[str] = None) -> d
     out = draft_dto(row, decs.get(draft_id))
     feats = st.rows(st.where_eq(s().forecast_features, "draft_id", draft_id))
     if feats:
-        out["feature_snapshot"] = {k: v for k, v in feats[0].items() if k not in ("draft_id", "group_id")}
+        snap = feats[0].get("feature_snapshot")
+        out["feature_snapshot"] = json.loads(snap) if isinstance(snap, str) else snap
     return out
 
 
