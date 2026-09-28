@@ -419,7 +419,8 @@ async def situation_evidence(situation_id: str, at: Optional[str] = None,
 
 
 # ------------------------------------------------------------------ drafts
-def _filter_drafts(group_id=None, object_id=None, basis_kind=None, lo=None, hi=None, at=None) -> list[dict]:
+def _filter_drafts(group_id=None, object_id=None, basis_kind=None, lo=None, hi=None, at=None,
+                   sensor_type=None) -> list[dict]:
     t = s().table("drafts")
     for col, val in (("group_id", group_id), ("object_id", object_id), ("basis_kind", basis_kind)):
         if val is not None:
@@ -429,7 +430,12 @@ def _filter_drafts(group_id=None, object_id=None, basis_kind=None, lo=None, hi=N
     if t is None:
         return []
     active = s().active_models
-    return [r for r in st.rows(st.sort_by(t, "available_at", "draft_id")) if draft_visible(r, active)]
+    rows = [r for r in st.rows(st.sort_by(t, "available_at", "draft_id")) if draft_visible(r, active)]
+    if sensor_type is not None:
+        channels = st.where_eq(s().table("channel_current"), "sensor_type", sensor_type)
+        channel_ids = set(channels.column("channel_id").to_pylist()) if channels is not None else set()
+        rows = [r for r in rows if r.get("channel_id") in channel_ids]
+    return rows
 
 
 @router.get("/drafts")
@@ -483,7 +489,7 @@ async def draft_evidence(draft_id: str, at: Optional[str] = None,
 
 # ------------------------------------------------------------------ groups
 @router.get("/groups")
-async def list_groups(db: DbSession, object_id: Optional[int] = None,
+async def list_groups(db: DbSession, object_id: Optional[int] = None, sensor_type: Optional[str] = None,
                       from_: Optional[str] = Query(default=None, alias="from"), to: Optional[str] = None,
                       review_state: Optional[Literal["pending", "approved", "rejected"]] = None,
                       at: Optional[str] = None, limit: Optional[int] = None, cursor: Optional[str] = None) -> dict:
@@ -494,12 +500,14 @@ async def list_groups(db: DbSession, object_id: Optional[int] = None,
     t = st.where_between(t, "source_first_obs_time", hist_time(from_, "from"), hist_time(to, "to", end_of_day=True))
     t = st.where_le(t, "available_at", hist_time(at, "at"))
     groups = st.rows(st.sort_by(t, "available_at", "group_id")) if t is not None else []
-    if review_state:
-        decs = await latest_decisions(db)
+    if review_state or sensor_type:
+        drafts = _filter_drafts(sensor_type=sensor_type)
+        decs = await latest_decisions(db, [d["draft_id"] for d in drafts]) if review_state else {}
         states: dict[str, set[str]] = {}
-        for d in _filter_drafts():
+        for d in drafts:
             states.setdefault(d["group_id"], set()).add(decs[d["draft_id"]].decision if d["draft_id"] in decs else "pending")
-        groups = [g for g in groups if review_state in states.get(g["group_id"], set())]
+        groups = [g for g in groups if g["group_id"] in states and
+                  (review_state is None or review_state in states[g["group_id"]])]
     return page(groups, lim, off)
 
 

@@ -55,6 +55,9 @@ def test_v1_ticket_lifecycle_and_v2_decisions():
         coverage = c.get(f"{b2}/coverage/summary")
         assert coverage.status_code == 200
         assert sum(coverage.json()["states"].values()) == coverage.json()["channel_count"]
+        typed = c.get(f"{b2}/groups?from=2026-01-01&to=2026-06-30&sensor_type={quote('Состояние фазы')}&limit=5")
+        assert typed.status_code == 200
+        assert typed.json()["items"]
         assert c.post(f"{b2}/drafts/{d}/decisions", json=dec).json() == first.json()  # идемпотентность
         assert c.post(f"{b2}/drafts/{d}/decisions", json={**dec, "decision": "rejected", "idempotency_key": "k2"}).status_code == 409
         w = c.post(f"{b2}/work-orders", json=wo)
