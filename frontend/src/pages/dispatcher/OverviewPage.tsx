@@ -15,7 +15,7 @@ export default function HistoricalOverviewPage() {
   const objects = useV2Objects({ limit: 200 });
   const types = useHistorical<Row[]>('/model-types');
   const overview = useHistorical<{ days: Day[] }>(query('/overview', { from, to, object_id: objectId, sensor_type: sensorType }));
-  const groups = useHistorical<Page>(query('/groups', { from, to, object_id: objectId, review_state: reviewState, limit: 8 }));
+  const groups = useHistorical<Page>(query('/groups', { from, to, object_id: objectId, sensor_type: sensorType, review_state: reviewState, limit: 8 }));
   const days = overview.data?.days ?? [];
   const total = (field: keyof Day) => days.reduce((sum, day) => sum + (typeof day[field] === 'number' ? day[field] as number : 0), 0);
   const names = new Map(objects.data?.items.map((object) => [object.objectId, object.objectName]) ?? []);
@@ -50,13 +50,13 @@ export default function HistoricalOverviewPage() {
           </ComposedChart></ResponsiveContainer></div>
         </section>
       </div>
-      <section className="dispatch-panel"><div className="dispatch-panel-header"><h2>Группы в выбранном периоде</h2><Link to="/review/groups">Открыть всю очередь</Link></div>{sensorType && <p>Группы ниже охватывают все типы датчиков: связь группы с отдельным типом в сводке не размечена.</p>}
+      <section className="dispatch-panel"><div className="dispatch-panel-header"><h2>Группы в выбранном периоде</h2><Link to="/review/groups">Открыть всю очередь</Link></div>{sensorType && <p>Показаны группы, в которых есть черновик выбранного типа. Состав группы может включать другие типы.</p>}
         <DataState loading={groups.isPending} error={groups.error?.message} empty={groups.data?.items.length === 0} />
         <div className="dispatch-table-scroll"><table className="dispatch-table"><thead><tr><th>Доступно в реконструкции</th><th>Объект</th><th>Черновиков</th><th>Прогноз / наблюдение</th><th></th></tr></thead><tbody>
           {groups.data?.items.map((group) => <tr key={String(group.group_id)}><td>{sourceTime(group.available_at)}</td><td>{names.get(Number(group.object_id)) ?? `Объект ${group.object_id}`}</td><td>{count(group.draft_count)}</td><td>{count(group.forecast_count)} / {count(group.observed_count)}</td><td><Link to={`/review/groups/${encodeURIComponent(String(group.group_id))}`}>Разобрать</Link></td></tr>)}
         </tbody></table></div>
       </section>
     </>}
-    <Note>Дата и время источника показаны буквально. Фильтр типа меняет графики и счётчики; фильтр разбора – список групп. Для новых показаний ML-черновики пока не рассчитываются в этом сервисе.</Note>
+    <Note>Дата и время источника показаны буквально. Фильтр разбора меняет список групп; графики сохраняют весь исторический объём выбранного типа и периода. Для новых показаний ML-черновики пока не рассчитываются в этом сервисе.</Note>
   </div>;
 }
