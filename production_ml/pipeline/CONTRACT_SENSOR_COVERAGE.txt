@@ -1,0 +1,69 @@
+Контракт sensor_coverage_v1
+
+Выход build_sensor_coverage: локальные channels.csv, types.json и
+object_type_coverage.csv.
+Они описывают наблюдение на as_of, но не создают прогноз, событие или черновик.
+as_of и время журнала не содержат часового пояса; поток с реальным временем
+должен отдельно определить единый часовой пояс и время доставки.
+Справочник предоставлен в одной текущей версии: на старом as_of канал
+без событий мог ещё не существовать. no_historical_events не доказывает
+его исторического присутствия.
+
+channels.csv содержит все ID текущего справочника плюс ID, встреченные
+в журналах до as_of без записи в справочнике. Строка по неизвестному ID
+имеет in_catalog=false, пустые sensor_type и object_id. Тип по названию
+или значению не угадывается. Новый ID с известным типом проходит те же
+правила, что старый, без списка разрешённых ID.
+
+Типовые возможности описаны отдельно от текущего состояния канала:
+forecast_capability: active, research, not_released, not_assessed.
+forecast_model_version заполнен только при существующем пакете.
+forecast_reason сообщает, почему тип активен, исследовательский или
+ещё не допущен. Типовые причины не превращаются в постоянную метку ID.
+forecast_target_kind указывает именно цель SCADA, если она определена.
+forecast_reason_text содержит краткое объяснение для человека. Источник
+решений по 19 типам: model_type_decisions.json. Новый неизвестный тип
+получает not_assessed и остаётся видимым.
+observed_event_capability: research, not_assessed. Исследовательская
+карточка дыма или газа пока не является рабочим нарядом.
+observed_event_reason объясняет отсутствие рабочего сценария.
+chart_capability: categorical, numeric_and_status, raw_event_timeline.
+raw_event_timeline не подтверждает физический смысл значений.
+chart_reason отмечает непроверенные единицы и смысл значений.
+its_capability=pending_definition для всех типов.
+
+observation_state: no_historical_events, no_recent_events,
+recent_conflicting_events, recent_events. Окно последнего события 72 часа.
+no_recent_events означает только отсутствие записей за 72 часа и не
+доказывает поломку или отсутствие наблюдения у событийного датчика.
+mixed_alarm_timestamps_72h считает временные метки канала с true и false.
+issue_codes хранит дополнительные причины. Последняя запись и её возраст
+сохранены для проверки, но сырое значение само по себе не является
+полезной оперативной карточкой.
+
+recent_input_context для активного типа: metadata_missing,
+no_recent_events, conflicting_recent_events, limited_72h_history,
+recent_input_present. Для иных типов: no_active_model_for_type.
+Это описание входного контекста, не гарантия балла модели и не решение
+об исключении канала. Фактическую допустимость расчёта проверяет scorer.
+
+types.json содержит одну запись на тип текущего справочника с числом
+каналов, каналов с историей и событиями за 72 часа, конфликтами и общим
+числом событий до as_of. channels_without_catalog_metadata считает
+исторические ID без справочника отдельно, не приписывая их типу.
+object_type_coverage.csv агрегирует текущий охват по объекту и типу:
+число каналов, каналов с историей и записями за 72 часа, с конфликтами
+и относящихся к типам с активной моделью. Отсутствие записей за 72 часа
+не является доказательством неисправности событийного датчика.
+
+Для интерфейса: показывать типовую возможность, состояние наблюдения,
+последнее событие и причину отсутствия расчёта раздельно. Не скрывать
+неизвестный или временно молчащий канал. При новых событиях пересчитывать
+снимок; никакой статус канала не является постоянной меткой обучения.
+
+Воспроизведение полного источника:
+ $journals = (Get-ChildItem production_ml\data\source_v2\journal_*.parquet | Sort-Object Name | ForEach-Object FullName)
+ .\.venv\Scripts\python.exe -m production_ml.pipeline.build_sensor_coverage --catalog G:\lct2\dataset\справочник_каналов_датчиков.csv --journals $journals --as-of 2026-06-30T23:59:59 --output production_ml\data\sensor_coverage_v1
+
+Проверка сценариев:
+ .\.venv\Scripts\python.exe -m validation.check_sensor_coverage

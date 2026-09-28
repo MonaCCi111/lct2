@@ -1,0 +1,9 @@
+{"year":2019,"source_rows":20993328,"accepted_rows":20991837,"exact_duplicate_rows_removed":1491,"reused_event_ids_with_different_content":0,"row_status":{"VALID":20993328}}
+{"year":2020,"source_rows":28172398,"accepted_rows":28172398,"exact_duplicate_rows_removed":0,"reused_event_ids_with_different_content":0,"row_status":{"VALID":28172398}}
+{"year":2021,"source_rows":53698948,"accepted_rows":53698948,"exact_duplicate_rows_removed":0,"reused_event_ids_with_different_content":775099,"row_status":{"VALID":53698948}}
+{"year":2022,"source_rows":43483149,"accepted_rows":43483149,"exact_duplicate_rows_removed":0,"reused_event_ids_with_different_content":667317,"row_status":{"VALID":43483149}}
+{"year":2023,"source_rows":31937125,"accepted_rows":31374676,"exact_duplicate_rows_removed":562449,"reused_event_ids_with_different_content":226852,"row_status":{"VALID":31937125}}
+{"year":2024,"source_rows":49023883,"accepted_rows":49023883,"exact_duplicate_rows_removed":0,"reused_event_ids_with_different_content":0,"row_status":{"VALID":49023883}}
+{"year":2025,"source_rows":55541797,"accepted_rows":55541796,"exact_duplicate_rows_removed":0,"reused_event_ids_with_different_content":0,"row_status":{"VALID":55541796,"REPEATED_HEADER":1}}
+{"year":2026,"source_rows":30695389,"accepted_rows":30695389,"exact_duplicate_rows_removed":0,"reused_event_ids_with_different_content":0,"row_status":{"VALID":30695389}}
+{"total_source_rows":313546017,"total_accepted_rows":312982076,"missing_dictionary_rows":9439655,"missing_dictionary_channels":1142,"unknown_alarm_rows":0,"invalid_key_or_time_rows":0}

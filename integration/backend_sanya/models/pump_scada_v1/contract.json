@@ -1,0 +1,24 @@
+{
+  "version": "pump_scada_v1",
+  "supported_sensor_types": ["Состояние насоса"],
+  "target": "Начало автоматической тревоги насоса SCADA через 1–48 часов",
+  "episode_rule": "Новый эпизод начинается при is_alarm=true после явно наблюдавшегося is_alarm=false с более ранней временной меткой; временные метки с обоими состояниями исключаются",
+  "recovery_rule": "Первое последующее событие is_alarm=false со строго более поздней временной меткой",
+  "operational_eligibility": "Есть не менее 72 часов истории; последнее состояние не тревожное; после предыдущей тревоги прошло 48 часов от явного восстановления",
+  "training_eligibility": "Operational eligibility и последнее событие канала находится не раньше чем через 48 часов после observation_time",
+  "observation_time": "Конец часа; используются события с event_time строго раньше observation_time",
+  "late_events": "В журнале нет времени поступления. Историческая доступность по event_time не доказывает отсутствие задержки доставки",
+  "model_inputs": [
+    "current_status", "event_count_1h", "event_count_24h", "status_changes_1h",
+    "status_changes_24h", "status_changes_72h", "rapid_status_changes_24h",
+    "fast_change_fraction_24h", "on_events_24h", "on_event_fraction_24h",
+    "off_events_24h", "off_event_fraction_24h", "undefined_events_24h",
+    "undefined_event_fraction_24h", "observed_hours_72h"
+  ],
+  "input_key": ["channel_id", "obs_time"],
+  "output": ["channel_id", "obs_time", "score"],
+  "coverage": "Строка создаётся только для часа, в котором у канала есть хотя бы одно событие",
+  "missing_hour_semantics": "Отсутствие строки не считается нормальным состоянием; observed_hours_72h показывает число часов с событиями",
+  "unsupported_input": "Каналы других типов не оцениваются",
+  "score_meaning": "Калиброванный по истории балл автоматической тревоги насоса SCADA. Он не является вероятностью подтверждённого подтопления, отказа или ремонта"
+}

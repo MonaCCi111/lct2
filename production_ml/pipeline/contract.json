@@ -1,0 +1,24 @@
+{
+  "version": "power_phase_scada_v1",
+  "target": "Автоматически выделенное статусное событие SCADA через 1–48 часов",
+  "episode_statuses": ["Неисправен", "Обесточен", "Затоплен", "-100", "255", "-3276", "-127"],
+  "sensors": ["Состояние фазы"],
+  "observation_time": "Конец часа, события этого часа уже получены",
+  "feature_source": "hourly_YYYY.parquet строится из событий SCADA, пришедших до observation_time",
+  "inference_source": "features.parquet и failure_events.parquet; будущие episodes.parquet и labels.parquet не читаются",
+  "input_key": ["channel_id", "obs_time"],
+  "output": ["channel_id", "obs_time", "score"],
+  "late_events": "Исторический пересчёт возможен после поступления запоздавших записей; онлайн-режим требует правила задержки данных",
+  "eligibility": "Не менее 48 часов с последней наблюдаемой аварийной записи канала",
+  "model_inputs": [
+    "sensor_type",
+    "event_count_1h", "event_count_24h", "status_changes_1h",
+    "status_changes_24h", "status_changes_72h", "rapid_status_changes_24h",
+    "fast_change_fraction_24h", "alarm_events_24h", "alarm_event_fraction_24h",
+    "undefined_events_24h", "undefined_event_fraction_24h", "observed_hours_72h"
+  ],
+  "missing_values": "DuckDB NULL передаётся LightGBM как missing; нулём не подменяется",
+  "sensor_type_categories": ["Состояние фазы"],
+  "coverage": "Строка появляется только для часа, в котором были события канала",
+  "score_meaning": "Балл будущего автоматического эпизода SCADA; физический отказ и ремонт не подтверждены. Основная метка – статус Обесточен"
+}

@@ -1,0 +1,10 @@
+{"check": "counts", "rows": [{"events": 3803624, "features": 1300597, "episodes": 1080530, "labels": 1300597}]}
+{"check": "duplicate_keys", "rows": [{"event_duplicates": 0, "feature_duplicates": 0}]}
+{"check": "feature_availability", "rows": [{"future_event_violations": 0, "count_mismatches": 0}]}
+{"check": "cross_year_context", "rows": [{"boundary_pairs": 5287, "boundary_changes": 5234}]}
+{"check": "episode_order", "rows": [{"bad_recovery": 0, "overlap": 0}]}
+{"check": "label_rules", "rows": [{"censored_with_target": 0, "censored_rows": 357, "min_lead": 1.0002777777777778, "max_lead": 47.996944444444445}]}
+{"check": "feature_values", "rows": [{"invalid_fraction": 0, "invalid_observed_hours": 0}]}
+{"check": "split_episode_overlap", "rows": []}
+{"check": "train_inference_parity", "rows": [{"common": 10270, "differences": 0, "max_difference": 0.0, "operational_rows": 10272}]}
+{"check": "bundle", "hashes_match": true, "schema_match": true, "version_match": true, "canonical_json_hashes": true}

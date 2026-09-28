@@ -1,0 +1,16 @@
+{"check": "case_sensitive_gas", "rows": [{"actual_sql_match": false, "case_insensitive_match": true}]}
+{"check": "episode_totals", "rows": [{"n": 77527, "single_event": 33286, "first_onset": "2025-01-01 02:46:25", "last_onset": "2026-06-30 20:50:06"}]}
+{"check": "positive_clusters_as_notebook", "rows": [{"n": 40977}]}
+{"check": "observed_hours", "rows": [{"n": 3254280, "channels": 11473, "n_days": 545}]}
+{"check": "sparse_gaps", "rows": [{"gaps_over_hour": 1369949, "gap_quantiles_hours": [1.0, 48.0, 842.0]}]}
+{"check": "train_precursor_filter", "rows": [{"y": 0, "n": 771200, "has_predicate": 726260}, {"y": 1, "n": 154240, "has_predicate": 154240}]}
+{"check": "gas_reasons", "rows": [{"primary_fail_reason": "TEXT_FAIL", "n": 848}, {"primary_fail_reason": "ALARM_FREEZE_2H", "n": 4}]}
+{"check": "ghost_nonzero", "rows": [{"sensor_type": "Датчик движения", "n": 187165}]}
+{"check": "alarm_freeze_across_year_gap", "rows": [{"n": 0}]}
+{"check": "POWER_PHASE_positive_episode_folds", "rows": [{"episodes": 81893, "n_rows": 94181, "split_episodes": 4691, "rows_in_split_episodes": 16262}]}
+{"check": "ANALOG_TEMP_positive_episode_folds", "rows": [{"episodes": 525, "n_rows": 1825, "split_episodes": 286, "rows_in_split_episodes": 1569}]}
+{"check": "ANALOG_GAS_positive_episode_folds", "rows": [{"episodes": 364, "n_rows": 8056, "split_episodes": 290, "rows_in_split_episodes": 7978}]}
+{"check": "FIRE_SAFETY_positive_episode_folds", "rows": [{"episodes": 3916, "n_rows": 9426, "split_episodes": 1665, "rows_in_split_episodes": 6945}]}
+{"check": "HYDRO_MECHANICS_positive_episode_folds", "rows": [{"episodes": 8955, "n_rows": 40248, "split_episodes": 6471, "rows_in_split_episodes": 37227}]}
+{"check": "hour_availability_raw_example", "rows": [{"channel_id": 95360, "event_time": "2026-01-02 08:08:30", "sensor_value": "Есть питание"}]}
+{"check": "hour_availability_feature_example", "rows": [{"channel_id": 95360, "obs_time": "2026-01-02 08:00:00", "events_count_24h": 1, "flips_count_1h": 0, "target_flash_1_6h": 1}]}

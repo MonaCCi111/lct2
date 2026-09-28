@@ -1,0 +1,39 @@
+Состояние фазы, версия power_phase_scada_v1 – архивная диагностика
+
+Действующий исправленный путь описан в USAGE_V2.txt. Версия v1 сохранена
+для воспроизводимости прежних результатов и не должна выбираться новой
+интеграцией.
+
+Сборка запускается из корня репозитория. Нужны локальные почасовые кэши
+production_ml/data/cache_v6/hourly_{2020,2022,2023,2024,2025,2026}.parquet,
+журналы ml_research/data/parquet_by_year/journal_*.parquet и справочник
+dataset/справочник_каналов_датчиков.csv. Крупные входные файлы не входят в Git.
+Аргумент --source-root указывает на каталог с журналами и кэшами. Если
+используется другая копия проекта, справочник каналов должен лежать в её
+dataset/. В текущей рабочей копии исходные журналы находятся в G:\lct2.
+
+python -m production_ml.pipeline.build_power_phase --source-root G:\lct2
+python -m production_ml.pipeline.train_power_phase
+python -m production_ml.pipeline.package_power_phase
+python -m production_ml.pipeline.score_power_phase --start 2025-01-03 --end 2026-07-01 --output production_ml/data/power_phase_v1/diagnostic_2025_2026_scores.parquet
+python -m validation.evaluate_power_phase
+python -m validation.check_power_phase
+
+build_power_phase записывает отдельно failure_events, episodes, features и
+labels в production_ml/data/power_phase_v1/. Обучение использует только
+допустимые строки 2020, 2022 и 2023 годов, калибровку – январь–июнь 2024,
+подбор фиксированной политики – июль–декабрь 2024. ИБП и переключатель
+исключены из поставляемой модели: у первого слишком мало целевых
+эпизодов, у второго их нет. Диагностика 2025–2026
+не является нетронутым тестом: эти годы уже просматривали в проекте.
+
+score_power_phase читает признаки и предшествующие записи об аварийном
+статусе. Метки и будущие эпизоды он не читает. Результат – channel_id,
+obs_time, score. Заявки выбирает select_alerts из alerts.py по policy.json:
+порог 0.80, не более 10 заявок в день, пауза 48 часов по каналу.
+
+Пакет модели лежит в production_ml/models/power_phase_scada_v1/. Его
+contract.json задаёт схему. score означает вероятность автоматического
+эпизода SCADA в интервале 1–48 часов при исторической калибровке. Это не
+вероятность подтверждённого отказа оборудования. При переносе между
+версиями Python и LightGBM модель лучше пересобрать из исходных данных.

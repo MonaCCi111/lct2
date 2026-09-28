@@ -1,0 +1,16 @@
+{"split": "threshold_2024", "check": "row_ranking", "rows": 20757, "positives": 9347, "roc_auc": 0.945223267819836, "average_precision": 0.8868153149975418, "brier": 0.06926398842951373, "count_baseline_roc_auc": 0.928295922700643, "count_baseline_ap": 0.854676172661143}
+{"split": "threshold_2024", "check": "score_bin", "lower": 0, "upper": 0.1, "rows": 8429, "mean_score": 0.010737968923676922, "event_rate": 0.0024913987424368253}
+{"split": "threshold_2024", "check": "score_bin", "lower": 0.1, "upper": 0.5, "rows": 2135, "mean_score": 0.22580742951923166, "event_rate": 0.18220140515222483}
+{"split": "threshold_2024", "check": "score_bin", "lower": 0.5, "upper": 0.8, "rows": 319, "mean_score": 0.7520830324177331, "event_rate": 0.7492163009404389}
+{"split": "threshold_2024", "check": "score_bin", "lower": 0.8, "upper": 0.9, "rows": 8221, "mean_score": 0.8640769837669595, "event_rate": 0.8698455175769371}
+{"split": "threshold_2024", "check": "score_bin", "lower": 0.9, "upper": 1.000001, "rows": 1653, "mean_score": 0.92616899097621, "event_rate": 0.9358741681790683}
+{"split": "threshold_2024", "check": "tickets", "policy": "power_phase_scada_v1", "threshold": 0.8, "candidates": 9874, "tickets": 1501, "tickets_per_day": 8.338888888888889, "days_at_limit": 142, "matched_tickets": 1314, "ticket_match_rate": 0.8754163890739507, "caught_episodes": 1314, "all_episodes": 15287, "observable_episodes": 9028, "recall_all": 0.0859553869300713, "recall_observable": 0.1455471865307931, "median_lead_hours": 5.133194444444444}
+{"split": "threshold_2024", "check": "tickets_by_sensor", "rows": [{"sensor_type": "Состояние фазы", "tickets": 1501}]}
+{"split": "diagnostic_2025_2026", "check": "row_ranking", "rows": 75797, "positives": 32201, "roc_auc": 0.925251075625853, "average_precision": 0.854624463921846, "brier": 0.10527689168966153, "count_baseline_roc_auc": 0.8586141506354285, "count_baseline_ap": 0.8086978375531857}
+{"split": "diagnostic_2025_2026", "check": "score_bin", "lower": 0, "upper": 0.1, "rows": 25767, "mean_score": 0.011678613234863447, "event_rate": 0.0071797260061318745}
+{"split": "diagnostic_2025_2026", "check": "score_bin", "lower": 0.1, "upper": 0.5, "rows": 12847, "mean_score": 0.2597929905095679, "event_rate": 0.23297267844632988}
+{"split": "diagnostic_2025_2026", "check": "score_bin", "lower": 0.5, "upper": 0.8, "rows": 7204, "mean_score": 0.6698529147265532, "event_rate": 0.39977790116601886}
+{"split": "diagnostic_2025_2026", "check": "score_bin", "lower": 0.8, "upper": 0.9, "rows": 25811, "mean_score": 0.8645649577319653, "event_rate": 0.8652125062957654}
+{"split": "diagnostic_2025_2026", "check": "score_bin", "lower": 0.9, "upper": 1.000001, "rows": 4168, "mean_score": 0.92616899097621, "event_rate": 0.9143474088291746}
+{"split": "diagnostic_2025_2026", "check": "tickets", "policy": "power_phase_scada_v1", "threshold": 0.8, "candidates": 29979, "tickets": 4354, "tickets_per_day": 8.003676470588236, "days_at_limit": 403, "matched_tickets": 3682, "ticket_match_rate": 0.8456591639871383, "caught_episodes": 3682, "all_episodes": 49143, "observable_episodes": 27852, "recall_all": 0.07492420080174185, "recall_observable": 0.1321987649001867, "median_lead_hours": 5.482777777777778}
+{"split": "diagnostic_2025_2026", "check": "tickets_by_sensor", "rows": [{"sensor_type": "Состояние фазы", "tickets": 4354}]}

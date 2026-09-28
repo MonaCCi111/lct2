@@ -1,0 +1,55 @@
+ML-выход для диспетчерского разбора
+
+Сначала сформировать действующие баллы и отдельную очередь черновиков
+по USAGE_ACTIVE.txt и USAGE_REVIEW_QUEUE.txt. Затем из рабочего каталога:
+
+.venv\Scripts\python.exe -m production_ml.pipeline.build_dispatch_review --drafts production_ml/data/review_queue/policy_2024.parquet --output production_ml/data/dispatch_review/policy_2024
+.venv\Scripts\python.exe -m production_ml.pipeline.build_dispatch_review --drafts production_ml/data/review_queue/diagnostic_2025_2026.parquet --output production_ml/data/dispatch_review/diagnostic_2025_2026
+.venv\Scripts\python.exe -m validation.check_dispatch_review
+.venv\Scripts\python.exe -m validation.report_dispatch_review
+.venv\Scripts\python.exe -m validation.check_dispatch_feedback
+
+review_members.parquet сохраняет каждую строку исходной ML-очереди,
+её draft_id и group_id, object_id и rank_in_model_day. Ранг считается
+по убыванию score только внутри пары модель/календарный день.
+Баллы фазы и насоса имеют разные цели и пороги, поэтому общего ранга
+риска нет. Ранг задаёт порядок показа, а не доказанную срочность.
+
+review_groups.parquet объединяет черновики одного объекта при разрыве
+между соседними obs_time не более часа. Группа – контекст для обзора,
+каждый её черновик сохраняет свой draft_id и отдельное решение.
+Суточного лимита на группы или черновики нет. Исторический group_id
+строится из объекта и первого времени группы. При поздней доставке
+ранней записи группу нужно пересчитать; стабильный ключ отдельного
+черновика – draft_id.
+
+Период политики: 292 черновика в 139 группах, максимум 5 групп и
+18 отдельных черновиков в день, самая большая группа – 14 строк.
+Диагностический период 2025–2026: 1 030 черновиков в 661 группе,
+максимум 8 групп и 33 черновика в день, самая большая группа – 31
+строка. Группировка уменьшает число элементов списка, но не число
+решений, которые может потребоваться принять человеку.
+
+Бэкенд может передавать решения в виде JSONL, по одному событию на
+строку. Обязательные поля: feedback_id, draft_id, reviewed_at,
+decision, reviewer_id. Время reviewed_at должно содержать часовой
+пояс, например 2026-09-24T12:00:00+03:00. Решение – approved либо
+rejected. Для rejected обязателен reason_code; work_order_id можно
+заполнить после создания наряда. feedback_id уникален, события можно
+добавлять в журнал без перезаписи прежних. Пример события:
+
+{"feedback_id":"example-1","draft_id":"power_phase_scada_v2:123:20240924T120000","reviewed_at":"2026-09-24T12:00:00+03:00","decision":"rejected","reviewer_id":"dispatcher-1","reason_code":"sensor_check"}
+
+Применение к экспортированному журналу:
+
+.venv\Scripts\python.exe -m production_ml.pipeline.apply_dispatch_feedback --members production_ml/data/dispatch_review/policy_2024/review_members.parquet --feedback production_ml/data/dispatch_review/feedback.jsonl --output production_ml/data/dispatch_review/policy_2024/reviewed.parquet
+
+Скрипт проверяет идентификаторы и значения, сохраняет последнее по
+времени решение для каждого draft_id и не меняет остальные черновики.
+Исходный журнал решений должен храниться отдельно как история.
+Одобрение и отклонение человеком не считаются автоматически меткой
+физического отказа: для обучения нужна отдельная проверка результата
+наряда. Настоящего журнала решений в переданных данных нет.
+
+Это отдельный ML-выход. Фронтенд, бэкенд и старый маршрут заявок
+не изменены. Локальные Parquet и JSONL с решениями не входят в Git.

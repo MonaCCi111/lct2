@@ -1,0 +1,24 @@
+{
+  "version": "temperature_scada_v1",
+  "supported_sensor_types": ["Датчик температуры"],
+  "target": "Начало автоматической тревоги SCADA через 1–48 часов",
+  "episode_rule": "Новый эпизод начинается при is_alarm=true после явно наблюдавшегося is_alarm=false с более ранней временной меткой; временные метки, содержащие одновременно тревожное и нормальное состояние, не создают эпизод",
+  "recovery_rule": "Первое последующее событие is_alarm=false со строго более поздней временной меткой",
+  "operational_eligibility": "Есть не менее 72 часов истории; последнее состояние не тревожное; после предыдущей тревоги прошло 48 часов от явного восстановления",
+  "training_eligibility": "Operational eligibility и последнее событие канала находится не раньше чем через 48 часов после observation_time",
+  "observation_time": "Конец часа; используются события с event_time строго раньше observation_time",
+  "numeric_values": "Числовые строки используются как переданные измерения без объявления единицы и без автоматического удаления крайних значений",
+  "late_events": "В журнале нет времени поступления. Историческая доступность по event_time не доказывает отсутствие задержки доставки",
+  "model_inputs": [
+    "event_count_1h", "event_count_24h", "numeric_count_1h", "numeric_count_24h",
+    "numeric_mean_1h", "numeric_mean_24h", "numeric_min_24h", "numeric_max_24h",
+    "numeric_range_24h", "numeric_last_72h", "value_changes_24h", "status_events_24h",
+    "undefined_events_24h", "numeric_fraction_24h", "observed_hours_72h"
+  ],
+  "input_key": ["channel_id", "obs_time"],
+  "output": ["channel_id", "obs_time", "score"],
+  "coverage": "Строка создаётся только для часа, в котором у канала есть хотя бы одно событие",
+  "missing_hour_semantics": "Отсутствие строки не считается нормальным состоянием; observed_hours_72h показывает число часов с событиями",
+  "unsupported_input": "Каналы других типов не оцениваются",
+  "score_meaning": "Калиброванный по истории балл автоматической тревоги SCADA. Он не является вероятностью подтверждённого пожара, отказа или ремонта"
+}

@@ -1,0 +1,7 @@
+{"check":"time_conflicts","conflicting_times":16322,"removed_events":59472}
+{"check":"counts","events":1987434,"clear_events":1927962,"episodes":58429,"features":844054,"labels":844054}
+{"check":"split_counts","train_rows":328262,"train_positive_rows":12860,"train_target_episodes":3804,"calibration_rows":27171,"calibration_positive_rows":1999,"calibration_target_episodes":721,"policy_rows":36254,"policy_positive_rows":1465,"policy_target_episodes":557,"diagnostic_rows":107128,"diagnostic_positive_rows":6964,"diagnostic_target_episodes":2710}
+{"check":"model_policy","roc_auc":0.5187297346058055,"average_precision":0.04481727117032993,"positive_fraction":0.04040933414243945}
+{"check":"tickets_policy_2024","threshold":0.16,"tickets":38,"matched_tickets":5,"available_episodes":557,"covered_episodes":5,"max_daily":9}
+{"check":"tickets_diagnostic_2025_2026","threshold":0.16,"tickets":36,"matched_tickets":11,"available_episodes":2710,"covered_episodes":11,"max_daily":10}
+{"check":"structure","feature_duplicates":0,"label_duplicates":0,"future_events":0,"count_mismatches":0,"bad_recovery":0,"overlapping_episodes":0,"split_episode_overlap":0,"censored_rows":1193,"censored_with_target":0,"policy_score_parity_differences":0,"ineligible_scores":0,"missing_scores":0,"empty_rows":0,"bundle_hashes_match":true}

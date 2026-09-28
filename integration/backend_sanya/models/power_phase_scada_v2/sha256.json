@@ -1,0 +1,22 @@
+{
+  "model.pkl": {
+    "mode": "bytes",
+    "sha256": "425399780cbab7de5c27b3984638e70cd35f5413adcffea4d5064bd9f6a8bc98"
+  },
+  "calibrator.pkl": {
+    "mode": "bytes",
+    "sha256": "a1a1ef73a5ead11c8810df7ff4931360d00e394f8b3fe86149f84d3973ff2145"
+  },
+  "model_meta.json": {
+    "mode": "canonical_json",
+    "sha256": "26ca68dff06a71dfe507c77698049227b6a22fe7662a6a75bfbf988a781c13cf"
+  },
+  "contract.json": {
+    "mode": "canonical_json",
+    "sha256": "98ad2569d985dac4526fc0d2b24318b83ef4d49975301e226bc504b0d5d4b6e7"
+  },
+  "policy.json": {
+    "mode": "canonical_json",
+    "sha256": "9a44486522979696e4c20296527493557f5eda0bf987441524e44e0d31c09107"
+  }
+}

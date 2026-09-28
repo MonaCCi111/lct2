@@ -1,0 +1,52 @@
+Локальные данные для ML
+
+В репозитории оставлены два справочника:
+- справочник_каналов_датчиков.csv – 11 485 каналов;
+- справочник_объектов_диспетчер.csv – 95 записей дерева объектов.
+
+Для повторной сборки витрин нужны файлы journal_2019.parquet,
+journal_2020.parquet, journal_2022.parquet, journal_2023.parquet,
+journal_2024.parquet, journal_2025.parquet, journal_2026.parquet
+в каталоге ml_research/data/parquet_by_year/. Исходные архивы лежат
+локально в dataset/ext-journal-YYYY.7z. 2021 год в v6.1 не используется.
+
+Локальные выходные файлы скрипта production_ml/scripts/build_final_v6_dataset.py:
+- production_ml/data/v6_train_full_multihorizon.parquet – 925 440 строк, 54 МиБ;
+- production_ml/data/v6_matched_test_18m.parquet – 438 714 строк, 29 МиБ;
+- production_ml/data/v6_stream_full_18m.parquet – 3 254 280 строк, 157 МиБ.
+
+Проверенная пересборка production_ml/scripts/build_v6_2_pit_dataset.py
+создала локально, без добавления в Git:
+- production_ml/data/v6_2_train_full_multihorizon.parquet – 7 141 031 строк, 359 МиБ;
+- production_ml/data/v6_2_stream_18m.parquet – 3 105 258 строк, 152 МиБ;
+- production_ml/data/v6_2_matched_18m.parquet – 407 460 строк, 27 МиБ.
+Для повторения использовались LCT2_SOURCE_ROOT и LCT2_CACHE_DIR,
+указывающие на локальные исходные журналы и почасовые кэши.
+
+Скрипт также использует временные витрины в production_ml/data/cache_v6/
+и каталог duckdb_temp/. Эти файлы не включены в Git: они тяжёлые,
+а часть журналов получена от организаторов. Модели лежат в
+production_ml/models/. Их можно открыть без сырых журналов.
+
+В этих витринах метки выделены автоматически из SCADA. Они не
+подтверждают фактический ремонт. Проверенные ограничения перечислены
+в validation/ML_FINDINGS.txt.
+
+Для power_phase_scada_v1 отдельно собираются четыре локальных файла:
+production_ml/data/power_phase_v1/failure_events.parquet – сырые признаки
+аварийного статуса; episodes.parquet – сгруппированные эпизоды;
+features.parquet – почасовые признаки; labels.parquet – будущие эпизоды
+на горизонте 1–48 часов и признак допуска. Это производные файлы от
+указанных выше журналов и кэшей. Они не загружаются в Git. Код сборки и
+контракт лежат в production_ml/pipeline/, итоговая проверка –
+validation/POWER_PHASE_V1.txt. В Git находится только небольшой пакет
+модели production_ml/models/power_phase_scada_v1/.
+
+Исправленный путь power_phase_scada_v2 читает исходные CSV и создаёт
+локальные production_ml/data/source_v2/journal_YYYY.parquet, затем
+production_ml/data/power_phase_v2/. Эти файлы также не входят в Git.
+Правила и команды перечислены в production_ml/pipeline/USAGE_V2.txt.
+
+Ветки pump_scada_v1 и temperature_scada_v1 создают локальные каталоги
+production_ml/data/pump_v1/ и production_ml/data/temperature_v1/.
+Насосная ветка активна, температурная оставлена исследовательской.

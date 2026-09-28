@@ -36,6 +36,11 @@ backend/data/replay_cache/
 dataset/*.7z
 dataset/ext-journal-*.csv
 data/v6_stream_full_18m.parquet
+ml_research/data/
+production_ml/data/
+tmp/
+*.7z
+*.zip
 
 # Frontend and browser tests
 node_modules/
@@ -43,6 +48,7 @@ frontend/dist/
 frontend/build/
 test-results/
 playwright-report/
+.ipynb_checkpoints/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

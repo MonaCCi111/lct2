@@ -1,0 +1,1 @@
+{"check":"active_registry","models":["power_phase_scada_v2","pump_scada_v1"],"supported_sensor_types":["Состояние фазы","Состояние насоса"],"schema_match":true,"tickets":267,"cooldown_violations":0,"max_daily":10,"wrong_horizon":0,"wrong_model":0,"tickets_by_model":{"power_phase_scada_v2":127,"pump_scada_v1":140}}

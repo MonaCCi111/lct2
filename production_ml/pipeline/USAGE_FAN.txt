@@ -1,0 +1,40 @@
+Состояние вентилятора, версия fan_scada_v1
+
+Статус: research_candidate. В активный реестр не включена.
+
+Среда: Python 3.12, DuckDB 1.5.5, numpy 2.3.5, pandas 3.0.1,
+LightGBM 4.6.0, scikit-learn 1.7.2. Зависимости указаны в
+production_ml/requirements.txt.
+
+Исходные данные: очищенные журналы production_ml/data/source_v2/journal_2019.parquet
+до journal_2026.parquet и dataset/справочник_каналов_датчиков.csv.
+Большие Parquet и временные зонды хранятся только локально.
+
+Команды из корня рабочей копии:
+
+python -m production_ml.pipeline.build_fan
+python -m production_ml.pipeline.train_fan
+python -m production_ml.pipeline.package_fan
+python -m production_ml.pipeline.score_fan --start 2024-07-03 --end 2024-12-30 --output production_ml/data/fan_v1/policy_2024_scores.parquet
+python -m production_ml.pipeline.score_fan --start 2025-01-01 --end 2026-07-01 --output production_ml/data/fan_v1/diagnostic_scores.parquet
+python -m production_ml.pipeline.score_fan --start 2027-01-01 --end 2027-02-01 --output production_ml/data/fan_v1/empty_scores.parquet
+python -m validation.check_fan
+python -m validation.evaluate_fan
+
+Тревожный эпизод начинается при переходе от однозначной нормальной
+временной метки к однозначной тревожной. Метки с одновременно true и
+false исключаются целиком. Цель – начало автоматической тревоги SCADA
+через 1–48 часов. Ремонт и физический отказ не подтверждены.
+
+Обучение: 2020, 2022 и 2023 до 30 декабря. Калибровка: 3 января –
+28 июня 2024. Период выбора политики: 3 июля – 29 декабря 2024.
+Модель LightGBM использует 220 деревьев, 31 лист, learning_rate=0.05,
+min_child_samples=100 и random_state=42. Эти параметры зафиксированы
+до оценки периода политики. Порог 0,16 выбран по периоду политики:
+38 заявок и 5 совпадений из 557 доступных эпизодов. Без изменения порога
+2025–2026 дали 36 заявок и 11 совпадений из 2 710 доступных эпизодов.
+
+ROC-AUC периода политики 0,51873, AP 0,04482 при доле положительных строк
+0,04041. Покрытие эпизодов при зафиксированном пороге слишком мало для
+подключения к общему потоку заявок. 2025–2026 уже использовались в
+проекте и не считаются независимым финальным тестом.
