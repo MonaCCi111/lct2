@@ -32,6 +32,7 @@ wheels/
 *.sqlite
 *.sqlite3
 pgdata/
+backend/data/replay_cache/
 
 # Node / Frontend
 node_modules/

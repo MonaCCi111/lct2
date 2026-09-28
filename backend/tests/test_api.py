@@ -48,6 +48,13 @@ def test_v1_ticket_lifecycle_and_v2_decisions():
         dec = {"decision": "approved", "reason": "Проверены исходные данные", "idempotency_key": "k1"}
         first = c.post(f"{b2}/drafts/{d}/decisions", json=dec)
         assert first.status_code == 201
+        quality = c.get(f"{b2}/quality/reviews?from=2025-02-02&to=2025-02-02&object_id=5333")
+        assert quality.status_code == 200
+        assert quality.json()["totals"]["approved"] >= 1
+        assert sum(day["drafts"] for day in quality.json()["days"]) == quality.json()["totals"]["drafts"]
+        coverage = c.get(f"{b2}/coverage/summary")
+        assert coverage.status_code == 200
+        assert sum(coverage.json()["states"].values()) == coverage.json()["channel_count"]
         assert c.post(f"{b2}/drafts/{d}/decisions", json=dec).json() == first.json()  # идемпотентность
         assert c.post(f"{b2}/drafts/{d}/decisions", json={**dec, "decision": "rejected", "idempotency_key": "k2"}).status_code == 409
         w = c.post(f"{b2}/work-orders", json=wo)

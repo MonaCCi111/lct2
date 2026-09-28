@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     cors_origins: str = "*"
     data_dir: Path = BACKEND_ROOT / "data"
     ml_handoff_dir: Path = BACKEND_ROOT / "data" / "ml_handoff"
+    # Полный локальный архив ML нужен только для произвольного исторического replay.
+    # В переносимом пакете доступны восемь заранее проверенных сценариев.
+    replay_source_root: Path | None = None
+    replay_catalog: Path | None = None
+    replay_cache_dir: Path = BACKEND_ROOT / "data" / "replay_cache"
     log_level: str = "info"
 
     # Имена файлов справочников (dataset/ из репозитория)

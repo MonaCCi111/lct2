@@ -11,6 +11,7 @@ from starlette.exceptions import HTTPException
 
 from app.api.errors import ApiError, api_error_handler, http_error_handler, validation_error_handler
 from app.api.v2 import routes as v2_routes
+from app.api.v2 import replay_builds as v2_replay_builds
 from app.api.v1 import analytics, dashboard, objects, predictions, reports, sensors, system, tickets, weather
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
@@ -61,6 +62,7 @@ app.add_exception_handler(RequestValidationError, validation_error_handler)
 for _router in (system, dashboard, objects, predictions, sensors, tickets, analytics, reports, weather):
     app.include_router(_router.router, prefix=settings.api_v1_prefix)
 app.include_router(v2_routes.router, prefix=settings.api_v2_prefix)
+app.include_router(v2_replay_builds.router, prefix=settings.api_v2_prefix)
 
 
 @app.get("/", include_in_schema=False)

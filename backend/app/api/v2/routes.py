@@ -24,6 +24,7 @@ from app.api.errors import ApiError, bad_request, conflict, forbidden, not_found
 from app.core.timeutil import iso_msk, now_msk
 from app.db.models import CollectorObject, SensorChannel, V2Decision, V2WorkOrder
 from app.v2 import store as st
+from app.api.v2.replay_builds import custom_replay_events
 
 router = APIRouter(tags=["v2"])
 
@@ -229,7 +230,83 @@ async def overview(from_: str = Query(alias="from"), to: str = Query(), object_i
             "object_id": object_id, "sensor_type": sensor_type}
 
 
+@router.get("/quality/reviews")
+async def review_quality(db: DbSession, from_: str = Query(alias="from"), to: str = Query(),
+                         object_id: Optional[int] = None) -> dict:
+    """Решения по историческим черновикам в дате источника, без приписывания им исхода аварии."""
+    lo = hist_time(from_, "from")[:10]
+    hi = hist_time(to, "to", end_of_day=True)[:10]
+    if hi < lo:
+        raise bad_request("Конец периода должен быть не раньше начала")
+    table = st.where_between(s().table("drafts"), "available_at", lo + "T00:00:00", hi + "T23:59:59")
+    if object_id is not None:
+        table = st.where_eq(table, "object_id", object_id)
+    drafts = [d for d in st.rows(table) if draft_visible(d, s().active_models)]
+    decisions = await latest_decisions(db, [str(d["draft_id"]) for d in drafts])
+    days: dict[str, dict] = {}
+    objects: dict[int, dict] = {}
+    reasons: dict[tuple[str, str], int] = {}
+    for draft in drafts:
+        day = str(draft["available_at"])[:10]
+        obj = int(draft["object_id"])
+        current = decisions.get(str(draft["draft_id"]))
+        state = current.decision if current else "pending"
+        daily = days.setdefault(day, {"activity_date": day, "drafts": 0, "approved": 0,
+                                      "rejected": 0, "pending": 0})
+        by_object = objects.setdefault(obj, {"object_id": obj, "drafts": 0, "approved": 0,
+                                              "rejected": 0, "pending": 0})
+        for target in (daily, by_object):
+            target["drafts"] += 1
+            target[state] += 1
+        if current:
+            key = (state, current.reason.strip())
+            reasons[key] = reasons.get(key, 0) + 1
+    totals = {key: sum(item[key] for item in days.values()) for key in ("drafts", "approved", "rejected", "pending")}
+    return {"days": [days[k] for k in sorted(days)],
+            "objects": sorted(objects.values(), key=lambda x: (-x["drafts"], x["object_id"])),
+            "reasons": [{"decision": key[0], "reason": key[1], "count": value}
+                        for key, value in sorted(reasons.items(), key=lambda item: (-item[1], item[0]))],
+            "totals": totals, "object_id": object_id, "source_period": {"from": lo, "to": hi},
+            "limitations": "decision_is_not_confirmed_failure;date_is_draft_source_date;only_latest_decision"}
+
+
 # ------------------------------------------------------------------ channels
+@router.get("/coverage/summary")
+async def coverage_summary(object_id: Optional[int] = None, sensor_type: Optional[str] = None) -> dict:
+    """Охват записями, без трактовки молчания как исправности или поломки."""
+    current = s().table("channel_current")
+    snapshots = s().table("observation_snapshots")
+    for column, value in (("object_id", object_id), ("sensor_type", sensor_type)):
+        if value is not None:
+            current = st.where_eq(current, column, value)
+            snapshots = st.where_eq(snapshots, column, value)
+    counts: dict[str, int] = {}
+    forecasts: dict[str, int] = {}
+    for row in st.rows(current.select(["coverage_observation_state", "forecast_capability"]) if current is not None else None):
+        state = str(row.get("coverage_observation_state") or "unknown")
+        forecast = str(row.get("forecast_capability") or "unknown")
+        counts[state] = counts.get(state, 0) + 1
+        forecasts[forecast] = forecasts.get(forecast, 0) + 1
+    month_counts: dict[str, dict] = {}
+    if snapshots is not None:
+        for row in st.rows(snapshots.select(["snapshot_date", "observation_state"])):
+            month = str(row["snapshot_date"])[:7]
+            state = str(row.get("observation_state") or "unknown")
+            item = month_counts.setdefault(month, {"month": month, "channels": 0, "recent": 0,
+                                                   "no_recent": 0, "uncertain": 0})
+            item["channels"] += 1
+            if state == "recent_observation":
+                item["recent"] += 1
+            elif state == "no_recent_observation":
+                item["no_recent"] += 1
+            else:
+                item["uncertain"] += 1
+    return {"channel_count": sum(counts.values()), "states": counts, "forecast_capabilities": forecasts,
+            "monthly": [month_counts[key] for key in sorted(month_counts)], "object_id": object_id,
+            "sensor_type": sensor_type, "data_cutoff": s().data_cutoff,
+            "meaning": "record_availability_only_not_equipment_health"}
+
+
 def _snapshot_at(channel_ids: list[int], at: str) -> dict[int, dict]:
     t = s().table("observation_snapshots")
     if t is None or not channel_ids:
@@ -657,6 +734,8 @@ async def list_replays() -> list[dict]:
 async def replay_events(scenario_id: str, after_seq: int = Query(default=0, ge=0), limit: Optional[int] = None) -> dict:
     lim, _ = page_args(limit, None)
     data = s()
+    if scenario_id.startswith("custom_"):
+        return custom_replay_events(scenario_id, after_seq, lim)
     if scenario_id not in {sc["id"] for sc in data.json["replays"]}:
         raise not_found(f"Сценарий {scenario_id} не найден")
     t = data.replay_timelines.get(scenario_id)
