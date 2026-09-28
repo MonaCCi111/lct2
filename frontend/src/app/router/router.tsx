@@ -17,6 +17,18 @@ const PredictionInvestigationPage = lazy(
 const TicketsPage = lazy(() => import('../../pages/tickets/TicketsPage'));
 const AnalyticsPage = lazy(() => import('../../pages/analytics/AnalyticsPage'));
 const FoundationPage = lazy(() => import('../../pages/foundation/FoundationPage'));
+const HistoricalOverviewPage = lazy(() => import('../../pages/dispatcher/OverviewPage'));
+const ChannelsPage = lazy(() => import('../../pages/dispatcher/InvestigationPages').then((m) => ({ default: m.ChannelsPage })));
+const ChannelDetailPage = lazy(() => import('../../pages/dispatcher/InvestigationPages').then((m) => ({ default: m.ChannelDetailPage })));
+const SituationsPage = lazy(() => import('../../pages/dispatcher/InvestigationPages').then((m) => ({ default: m.SituationsPage })));
+const SituationDetailPage = lazy(() => import('../../pages/dispatcher/InvestigationPages').then((m) => ({ default: m.SituationDetailPage })));
+const GroupQueuePage = lazy(() => import('../../pages/dispatcher/GroupAndQualityPages').then((m) => ({ default: m.GroupQueuePage })));
+const GroupDetailPage = lazy(() => import('../../pages/dispatcher/GroupAndQualityPages').then((m) => ({ default: m.GroupDetailPage })));
+const QualityPage = lazy(() => import('../../pages/dispatcher/GroupAndQualityPages').then((m) => ({ default: m.QualityPage })));
+const FireHistoryPage = lazy(() => import('../../pages/dispatcher/FireAndReplayPages').then((m) => ({ default: m.FireHistoryPage })));
+const ReplayPage = lazy(() => import('../../pages/dispatcher/FireAndReplayPages').then((m) => ({ default: m.ReplayPage })));
+const HistoricalObjectsPage = lazy(() => import('../../pages/dispatcher/ObjectPages').then((m) => ({ default: m.ObjectsPage })));
+const HistoricalObjectDetailPage = lazy(() => import('../../pages/dispatcher/ObjectPages').then((m) => ({ default: m.ObjectDetailPage })));
 function RouteError() {
   const error = useRouteError();
   return (
@@ -35,17 +47,32 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/overview" replace /> },
       ...[
-        { path: 'overview', Component: OverviewPage },
-        { path: 'objects', Component: ObjectsPage },
-        { path: 'objects/:objectId', Component: ObjectWorkspacePage },
-        { path: 'predictions', Component: PredictionsPage },
-        { path: 'predictions/:predictionId', Component: PredictionInvestigationPage },
-        { path: 'review', Component: ReviewPage },
+        { path: 'overview', Component: HistoricalOverviewPage },
+        { path: 'objects', Component: HistoricalObjectsPage },
+        { path: 'objects/:objectId', Component: HistoricalObjectDetailPage },
+        { path: 'channels', Component: ChannelsPage },
+        { path: 'channels/:channelId', Component: ChannelDetailPage },
+        { path: 'situations', Component: SituationsPage },
+        { path: 'situations/:situationId', Component: SituationDetailPage },
+        { path: 'review', Component: GroupQueuePage },
+        { path: 'review/groups', Component: GroupQueuePage },
+        { path: 'review/groups/:groupId', Component: GroupDetailPage },
+        { path: 'review/drafts', Component: ReviewPage },
         { path: 'review/work-orders', Component: WorkOrdersPage },
         { path: 'review/work-orders/:workOrderId', Component: WorkOrderDetailPage },
         { path: 'review/:draftId', Component: ReviewDetailPage },
-        { path: 'tickets', Component: TicketsPage },
-        { path: 'analytics', Component: AnalyticsPage },
+        { path: 'analytics', Component: QualityPage },
+        { path: 'fire-history', Component: FireHistoryPage },
+        { path: 'replay', Component: ReplayPage },
+        ...(apiConfig.enableMocks ? [
+          { path: 'legacy/overview', Component: OverviewPage },
+          { path: 'legacy/objects', Component: ObjectsPage },
+          { path: 'legacy/predictions', Component: PredictionsPage },
+          { path: 'legacy/tickets', Component: TicketsPage },
+          { path: 'legacy/analytics', Component: AnalyticsPage },
+          { path: 'legacy/objects/:objectId', Component: ObjectWorkspacePage },
+          { path: 'legacy/predictions/:predictionId', Component: PredictionInvestigationPage },
+        ] : []),
         ...(apiConfig.enableMocks ? [{ path: 'foundation', Component: FoundationPage }] : []),
       ].map(({ path, Component }) => ({
         path,

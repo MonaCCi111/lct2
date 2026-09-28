@@ -15,6 +15,7 @@ import { BasisLabel, ReviewState } from './ReviewSemantics';
 import { DecisionPanel } from './DecisionPanel';
 import { WorkOrderPanel } from './WorkOrderPanel';
 import { formatForecastHorizon, formatIts, formatModelScore, parseLimitations } from './review-model';
+import { CasePointsChart } from '../dispatcher/CasePointsChart';
 import type { V2Evidence } from '../../api/v2/domain/types';
 import './review-page.css';
 
@@ -172,6 +173,7 @@ export default function ReviewDetailPage() {
           <p className="review-raw-value">{item.sourceRef ?? '—'}</p>
         </div>
       </section>
+      <CasePointsChart caseId={draftId} kind="draft_id" />
       <DecisionPanel draft={item} />
       <WorkOrderPanel draft={item} />
       <section className="review-evidence-panel" aria-labelledby="review-evidence-heading">

@@ -18,7 +18,7 @@ export function Sidebar({ onSystem, onProfile }: { onSystem: () => void; onProfi
         <p className="nav-label">Рабочее пространство</p>
         {navigation.map((item, index) => (
           <div key={item.path}>
-            {index === 5 && <Divider />}
+            {index === 6 && <Divider />}
             <NavLink
               to={item.path}
               title={item.label}

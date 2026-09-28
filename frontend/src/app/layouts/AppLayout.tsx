@@ -5,18 +5,17 @@ import { Sidebar } from './Sidebar';
 import { SystemIndicator, SystemStatus } from './SystemStatus';
 import { navigation } from '../router/navigation';
 import { Breadcrumbs, type BreadcrumbItem } from '../../components/navigation/Breadcrumbs';
-import { UpdatedAtLabel } from '../../components/feedback/UpdatedAtLabel';
 import { Drawer } from '../../components/ui/Drawer';
 import { Dropdown } from '../../components/ui/Dropdown';
 import { Button } from '../../components/ui/Button';
-import { useSystem } from '../../api/queries/hooks';
+import { useV2Meta } from '../../api/v2/queries/hooks';
 import { apiConfig } from '../../api/client/config';
 import { useTheme, type ThemePreference } from '../providers/ThemeProvider';
 export function AppLayout() {
   const { preference, setPreference } = useTheme();
   const location = useLocation();
   const [panel, setPanel] = useState<'system' | 'profile' | null>(null);
-  const system = useSystem();
+  const historical = useV2Meta();
   const current = navigation.find((item) => location.pathname.startsWith(item.path));
   const detailId = location.pathname.split('/')[2];
   const workOrderRoute = location.pathname === '/review/work-orders';
@@ -49,9 +48,7 @@ export function AppLayout() {
           <Breadcrumbs items={crumbs} />
           <div className="topbar-right">
             <SystemIndicator />
-            {location.pathname !== '/overview' && (
-              <UpdatedAtLabel className="topbar-time" value={system.data?.updatedAt ?? null} />
-            )}
+            <span className="topbar-time">{historical.data ? `Исторический срез ${historical.data.dataCutoff.slice(0, 10)}` : 'Загрузка среза'}</span>
             <Dropdown
               label="Меню профиля"
               trigger={
@@ -71,8 +68,8 @@ export function AppLayout() {
           <Outlet />
         </main>
         <footer className="workspace-footer">
-          <span>Предиктивный мониторинг инфраструктуры</span>
-          <span>{apiConfig.enableMocks ? 'Демонстрационный режим' : 'Рабочее пространство'}</span>
+          <span>Проверка исторических сигналов и решений диспетчера</span>
+          <span>{apiConfig.enableMocks ? 'Тестовые данные' : 'Исторический ML-пакет · без живого потока'}</span>
         </footer>
       </div>
       <Drawer
