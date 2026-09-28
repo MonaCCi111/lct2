@@ -1,0 +1,392 @@
+import type { PredictionDto } from '../dto/prediction';
+import type { ObjectDetailDto } from '../dto/object-detail';
+import type { ObjectTopologyDto, TopologySegmentDto } from '../dto/object-topology';
+import type { MaintenanceUrgency, ModelDomain, RiskLevel } from '../../domain/prediction/types';
+import { formatPiket } from '../../utils/formatters';
+import { objectNames, objectStatusFixtures } from './operational';
+
+const UPDATED_AT = '2026-09-20T15:42:00Z';
+
+// Object types are catalogue attributes of the object, not derived from predictions.
+const objectTypes: Record<number, string> = {
+  101: 'Технический блок',
+  102: 'Насосная станция',
+  201: 'Тяговая подстанция',
+  202: 'Насосная станция',
+  203: 'Инженерный объект',
+  204: 'Вентиляционный комплекс',
+  205: 'Газовый пост',
+  206: 'Водоотливной узел',
+  207: 'Распределительный пункт',
+  208: 'Коллектор',
+};
+
+type PredictionSeed = [
+  objectId: number,
+  piketValue: number | null,
+  sensor: string,
+  type: string,
+  domain: ModelDomain,
+  probability: number,
+  risk: RiskLevel,
+  urgency: MaintenanceUrgency,
+  health: number,
+];
+
+// Object Фита (203) is the full demo object: 24 predictions spread over the piket range,
+// including one channel without a piket reference. Other objects carry a compact set.
+const predictionSeeds: PredictionSeed[] = [
+  [203, 38.2, 'Температура кабельного лотка КЛ-3', 'Температура', 'ANALOG_TEMP', 0.22, 'low', 'NORMAL', 88],
+  [
+    203,
+    82.4,
+    'Вентилятор притока В-7',
+    'Вентилятор',
+    'HYDRO_MECHANICS',
+    0.44,
+    'medium',
+    'PLANNED_24_48H',
+    64,
+  ],
+  [203, 86.1, 'Газ CO · камера 8', 'Газ', 'ANALOG_GAS', 0.39, 'medium', 'PLANNED_24_48H', 70],
+  [203, 89.4, 'Температура ВШ-3', 'Температура', 'ANALOG_TEMP', 0.46, 'critical', 'FLASH_1_6H', 54],
+  [203, 94, 'Фаза B · тяговый ввод', 'Состояние фазы', 'POWER_PHASE', 0.82, 'critical', 'FLASH_1_6H', 18],
+  [203, 103.6, 'Насос дренажа Н-2', 'Насос', 'HYDRO_MECHANICS', 0.67, 'high', 'URGENT_6_24H', 43],
+  [203, 110.2, 'Дым · кабельный отсек', 'Дым', 'FIRE_SAFETY', 0.38, 'medium', 'PLANNED_24_48H', 69],
+  [203, 114.8, 'ИБП · выходная фаза A', 'ИБП', 'POWER_PHASE', 0.68, 'high', 'URGENT_6_24H', 41],
+  [203, 119.5, 'Температура подшипника Н-1', 'Температура', 'ANALOG_TEMP', 0.41, 'high', 'URGENT_6_24H', 57],
+  [203, 124, 'Газ CH4 · нижняя зона', 'Газ', 'ANALOG_GAS', 0.34, 'medium', 'PLANNED_24_48H', 73],
+  [
+    203,
+    133.7,
+    'Вентилятор вытяжки В-5',
+    'Вентилятор',
+    'HYDRO_MECHANICS',
+    0.41,
+    'medium',
+    'PLANNED_24_48H',
+    66,
+  ],
+  [203, 167.3, 'Пожарный извещатель ИП-14', 'Дым', 'FIRE_SAFETY', 0.19, 'low', 'NORMAL', 90],
+  [203, 181.9, 'Температура шкафа ШУ-4', 'Температура', 'ANALOG_TEMP', 0.37, 'medium', 'PLANNED_24_48H', 71],
+  [203, 198.6, 'Фаза C · резервный ввод', 'Состояние фазы', 'POWER_PHASE', 0.64, 'high', 'URGENT_6_24H', 45],
+  [203, 208.4, 'Насос откачки Н-4', 'Насос', 'HYDRO_MECHANICS', 0.59, 'high', 'URGENT_6_24H', 49],
+  [203, 217, 'Газ CO · венткамера ВК-6', 'Газ', 'ANALOG_GAS', 0.77, 'critical', 'FLASH_1_6H', 24],
+  [203, 223.5, 'Температура обмотки ТП-2', 'Температура', 'ANALOG_TEMP', 0.43, 'high', 'URGENT_6_24H', 52],
+  [203, 230.8, 'Дым · распределительный щит', 'Дым', 'FIRE_SAFETY', 0.36, 'medium', 'PLANNED_24_48H', 68],
+  [203, 239.2, 'ИБП · входная фаза B', 'ИБП', 'POWER_PHASE', 0.35, 'medium', 'PLANNED_24_48H', 75],
+  [203, 306.5, 'Газ CO · техническая зона', 'Газ', 'ANALOG_GAS', 0.33, 'medium', 'PLANNED_24_48H', 77],
+  [203, 331.4, 'Насос охлаждения Н-3', 'Насос', 'HYDRO_MECHANICS', 0.58, 'high', 'URGENT_6_24H', 50],
+  [203, 352.7, 'Фаза A · щит освещения', 'Состояние фазы', 'POWER_PHASE', 0.74, 'critical', 'FLASH_1_6H', 27],
+  [203, 365, 'Вентилятор подпора В-9', 'Вентилятор', 'HYDRO_MECHANICS', 0.55, 'high', 'URGENT_6_24H', 53],
+  [203, null, 'Шкаф телемеханики ТМ-1', 'Телемеханика', 'POWER_PHASE', 0.29, 'medium', 'PLANNED_24_48H', 80],
+  [201, 12.4, 'Изолятор ввода 10 кВ', 'Изолятор', 'POWER_PHASE', 0.21, 'low', 'NORMAL', 87],
+  [
+    201,
+    31.6,
+    'Температура трансформатора Т-1',
+    'Температура',
+    'ANALOG_TEMP',
+    0.38,
+    'medium',
+    'PLANNED_24_48H',
+    72,
+  ],
+  [201, 44, 'Фаза B · главный ввод', 'Состояние фазы', 'POWER_PHASE', 0.84, 'critical', 'FLASH_1_6H', 17],
+  [201, 47.5, 'ИБП · батарейный шкаф', 'ИБП', 'POWER_PHASE', 0.52, 'critical', 'FLASH_1_6H', 29],
+  [201, 61.2, 'Вентиляция ячейки КРУ-4', 'Вентилятор', 'HYDRO_MECHANICS', 0.61, 'high', 'URGENT_6_24H', 46],
+  [201, 108.3, 'Газ SF6 · элегазовый выключатель', 'Газ', 'ANALOG_GAS', 0.33, 'medium', 'PLANNED_24_48H', 74],
+  [202, 9.8, 'Уровень приёмного резервуара', 'Уровень', 'HYDRO_MECHANICS', 0.17, 'low', 'NORMAL', 91],
+  [
+    202,
+    27.4,
+    'Температура двигателя Н-5',
+    'Температура',
+    'ANALOG_TEMP',
+    0.36,
+    'medium',
+    'PLANNED_24_48H',
+    73,
+  ],
+  [202, 41.6, 'Насос дренажа Н-2', 'Насос', 'HYDRO_MECHANICS', 0.79, 'critical', 'FLASH_1_6H', 26],
+  [202, 48, 'Вибрация насоса Н-2', 'Вибрация', 'HYDRO_MECHANICS', 0.57, 'high', 'URGENT_6_24H', 47],
+  [202, 63.5, 'Фаза A · щит насосной', 'Состояние фазы', 'POWER_PHASE', 0.62, 'high', 'URGENT_6_24H', 44],
+  [204, 72.1, 'Температура венткамеры ВК-2', 'Температура', 'ANALOG_TEMP', 0.24, 'low', 'NORMAL', 86],
+  [204, 88.9, 'Газ CO · приточная камера', 'Газ', 'ANALOG_GAS', 0.35, 'medium', 'PLANNED_24_48H', 72],
+  [204, 97.2, 'Дым · кабельный отсек', 'Дым', 'FIRE_SAFETY', 0.73, 'critical', 'FLASH_1_6H', 31],
+  [
+    204,
+    105.4,
+    'Вентилятор дымоудаления ВД-1',
+    'Вентилятор',
+    'HYDRO_MECHANICS',
+    0.6,
+    'high',
+    'URGENT_6_24H',
+    45,
+  ],
+  [204, 121.7, 'ИБП · входная фаза B', 'ИБП', 'POWER_PHASE', 0.54, 'high', 'URGENT_6_24H', 48],
+  [205, 104.2, 'Газ CO · венткамера', 'Газ', 'ANALOG_GAS', 0.42, 'medium', 'PLANNED_24_48H', 67],
+  [205, 118.6, 'Газ CH4 · коллектор', 'Газ', 'ANALOG_GAS', 0.64, 'critical', 'URGENT_6_24H', 38],
+  [205, 126, 'Температура шкафа ШУ-9', 'Температура', 'ANALOG_TEMP', 0.3, 'medium', 'PLANNED_24_48H', 76],
+  [205, 139.8, 'Пожарный извещатель ИП-7', 'Дым', 'FIRE_SAFETY', 0.14, 'low', 'NORMAL', 93],
+  [205, 156.3, 'Дым · распределительный щит', 'Дым', 'FIRE_SAFETY', 0.55, 'high', 'URGENT_6_24H', 56],
+  [206, 108.5, 'Уровень зумпфа', 'Уровень', 'HYDRO_MECHANICS', 0.2, 'low', 'NORMAL', 89],
+  [206, 124.6, 'Насос откачки Н-4', 'Насос', 'HYDRO_MECHANICS', 0.63, 'high', 'URGENT_6_24H', 44],
+  [
+    206,
+    141.3,
+    'Температура обратной линии',
+    'Температура',
+    'ANALOG_TEMP',
+    0.31,
+    'medium',
+    'PLANNED_24_48H',
+    78,
+  ],
+  [206, 160.9, 'Вибрация насоса Н-6', 'Вибрация', 'HYDRO_MECHANICS', 0.57, 'high', 'URGENT_6_24H', 49],
+  [206, 179.4, 'Дым · насосное помещение', 'Дым', 'FIRE_SAFETY', 0.28, 'medium', 'PLANNED_24_48H', 80],
+  [207, 128.4, 'Фаза C · резервный ввод', 'Состояние фазы', 'POWER_PHASE', 0.66, 'high', 'URGENT_6_24H', 47],
+  [207, 149.2, 'Газ CO · техническая зона', 'Газ', 'ANALOG_GAS', 0.35, 'medium', 'PLANNED_24_48H', 78],
+  [207, 171.5, 'Дым · помещение ИБП', 'Дым', 'FIRE_SAFETY', 0.22, 'low', 'NORMAL', 88],
+  [207, 190.6, 'Температура сборных шин', 'Температура', 'ANALOG_TEMP', 0.4, 'high', 'URGENT_6_24H', 58],
+  [208, 142.3, 'Газ CH4 · коллектор', 'Газ', 'ANALOG_GAS', 0.33, 'medium', 'PLANNED_24_48H', 82],
+  [208, 165.8, 'Температура трубопровода', 'Температура', 'ANALOG_TEMP', 0.18, 'low', 'NORMAL', 90],
+  [208, 186.1, 'Насос охлаждения Н-3', 'Насос', 'HYDRO_MECHANICS', 0.48, 'medium', 'PLANNED_24_48H', 63],
+  [208, 201.7, 'Фаза A · щит освещения', 'Состояние фазы', 'POWER_PHASE', 0.26, 'low', 'NORMAL', 84],
+];
+
+// Root-cause factors and the recommendation are backend ML output. They are authored here as
+// mock content and are never generated, rewritten or inferred by the frontend.
+const domainFactors: Record<ModelDomain, string[]> = {
+  ANALOG_TEMP: ['Рост дисперсии температурного канала', 'Отклонение от профиля соседних датчиков'],
+  ANALOG_GAS: ['Смещение базовой линии газоанализатора', 'Увеличенное время восстановления после продувки'],
+  POWER_PHASE: ['Асимметрия фазных напряжений', 'Учащённые кратковременные просадки'],
+  FIRE_SAFETY: ['Снижение чувствительности оптической камеры', 'Накопление запылённости'],
+  HYDRO_MECHANICS: ['Повышенная частота пусков', 'Рост потребляемого тока при той же подаче'],
+};
+const domainRecommendations: Record<ModelDomain, string> = {
+  ANALOG_TEMP: 'Проверить измерительный тракт и крепление датчика, при подтверждении — заменить термопару.',
+  ANALOG_GAS: 'Выполнить калибровку газоанализатора по поверочной смеси и проверить линию отбора пробы.',
+  POWER_PHASE: 'Проверить контактные соединения ввода и протяжку клемм, снять термограмму под нагрузкой.',
+  FIRE_SAFETY: 'Провести чистку и функциональную проверку извещателя по регламенту ТО.',
+  HYDRO_MECHANICS: 'Проверить виброконтроль и состояние подшипникового узла, оценить режим работы насоса.',
+};
+// Explicit, channel-specific factors for the predictions used as investigation demo cases.
+const investigationFactors: Record<string, string[]> = {
+  'OW-004': [
+    'Зависание младшего бита АЦП (16 ч постоянного значения)',
+    'Высокий шум термопары (СКО = 2,84 °C)',
+    'Длительный дрейф сигнала относительно соседних каналов',
+  ],
+  'OW-005': [
+    'Кратковременные просадки фазы B под нагрузкой',
+    'Дребезг сигнала состояния ввода',
+    'Асимметрия фазных напряжений выше порога',
+  ],
+  'OW-016': ['Устойчивый рост концентрации CO в венткамере', 'Смещение базовой линии газоанализатора'],
+};
+const investigationRecommendations: Record<string, string> = {
+  'OW-004': 'Калибровка измерительного тракта или замена термопары.',
+  'OW-005': 'Проверить силовые контакты ввода и цепь контроля состояния фазы под нагрузкой.',
+  'OW-016': 'Проверить работу приточной вентиляции и выполнить калибровку газоанализатора.',
+};
+// Indicative planning horizon supplied by backend; it is not a predicted failure moment.
+const leadTimeHours: Record<MaintenanceUrgency, number> = {
+  FLASH_1_6H: 4,
+  URGENT_6_24H: 14,
+  PLANNED_24_48H: 32,
+  NORMAL: 96,
+};
+
+export const objectWorkspacePredictions: PredictionDto[] = predictionSeeds.map(
+  ([objectId, piketValue, sensor, type, domain, probability, risk, urgency, health], index) => ({
+    prediction_id: `OW-${String(index + 1).padStart(3, '0')}`,
+    channel_id: 30001 + index,
+    sensor_name: sensor,
+    sensor_type: type,
+    subsystem: 'Инженерные системы',
+    tag: `CH-${30001 + index}`,
+    object_id: objectId,
+    object_name: objectNames[objectId] ?? `Объект ${objectId}`,
+    parent_object_id: null,
+    piket: formatPiket(piketValue),
+    piket_value: piketValue,
+    prediction_supported: true,
+    model_domain: domain,
+    model_version: '7.2',
+    failure_probability: probability,
+    risk_level: risk,
+    maintenance_urgency: urgency,
+    lead_time_hours: leadTimeHours[urgency],
+    health_index_its: health,
+    top_risk_factors:
+      investigationFactors[`OW-${String(index + 1).padStart(3, '0')}`] ?? domainFactors[domain],
+    recommendation:
+      investigationRecommendations[`OW-${String(index + 1).padStart(3, '0')}`] ??
+      domainRecommendations[domain],
+    generated_at: `2026-09-20T15:${String(41 - (index % 12)).padStart(2, '0')}:00Z`,
+    review_status: 'pending_review',
+    ticket_id: null,
+  }),
+);
+
+// Segment risk and counts are backend aggregates: explicit values, never recomputed here.
+type SegmentSeed = [
+  from: number,
+  to: number,
+  label: string,
+  risk: RiskLevel,
+  active: number,
+  critical: number,
+  high: number,
+  maxProbability: number | null,
+];
+
+const topologySeeds: Record<number, SegmentSeed[]> = {
+  203: [
+    [0, 14.5, 'Входной портал', 'low', 0, 0, 0, null],
+    [14.5, 32, 'Припортальный участок', 'low', 0, 0, 0, null],
+    [32, 48, 'Кабельная галерея', 'low', 1, 0, 0, 0.22],
+    [48, 80, 'Перегон А', 'low', 0, 0, 0, null],
+    [80, 88.5, 'Подход к вентшахте', 'medium', 2, 0, 0, 0.44],
+    [88.5, 112, 'Вентшахта ВШ-3', 'critical', 4, 2, 1, 0.82],
+    [112, 126, 'Тяговый узел', 'high', 3, 0, 2, 0.68],
+    [126, 140, 'Перегон Б', 'medium', 1, 0, 0, 0.41],
+    [140, 158, 'Служебный проход', 'low', 0, 0, 0, null],
+    [158, 176, 'Перегон В', 'low', 1, 0, 0, 0.19],
+    [176, 194.5, 'Подход к ТП-2', 'medium', 1, 0, 0, 0.37],
+    [194.5, 214, 'Тяговая подстанция ТП-2', 'high', 2, 0, 2, 0.64],
+    [214, 232, 'Венткамера ВК-6', 'critical', 3, 1, 1, 0.77],
+    [232, 246, 'Перегон Г', 'medium', 1, 0, 0, 0.35],
+    [246, 268, 'Технический тоннель', 'low', 0, 0, 0, null],
+    [268, 296, 'Перегон Д', 'low', 0, 0, 0, null],
+    [296, 318, 'Подход к насосной', 'medium', 1, 0, 0, 0.33],
+    [318, 344, 'Насосная станция Н-3', 'high', 1, 0, 1, 0.58],
+    [344, 372, 'Щитовая освещения', 'critical', 2, 1, 1, 0.74],
+    [372, 400, 'Выходной портал', 'low', 0, 0, 0, null],
+  ],
+  201: [
+    [0, 24, 'Открытое распредустройство', 'low', 1, 0, 0, 0.21],
+    [24, 38, 'Трансформаторный блок', 'medium', 1, 0, 0, 0.38],
+    [38, 52, 'Главный ввод 10 кВ', 'critical', 2, 2, 0, 0.84],
+    [52, 70, 'Ячейки КРУ', 'high', 1, 0, 1, 0.61],
+    [70, 96, 'Кабельный полуэтаж', 'low', 0, 0, 0, null],
+    [96, 120, 'Элегазовое оборудование', 'medium', 1, 0, 0, 0.33],
+  ],
+  202: [
+    [0, 18, 'Приёмный резервуар', 'low', 1, 0, 0, 0.17],
+    [18, 34, 'Машинный зал', 'medium', 1, 0, 0, 0.36],
+    [34, 52, 'Насосная группа Н-2', 'critical', 2, 1, 1, 0.79],
+    [52, 72, 'Щитовая насосной', 'high', 1, 0, 1, 0.62],
+    [72, 90, 'Напорный коллектор', 'low', 0, 0, 0, null],
+  ],
+  204: [
+    [60, 80, 'Приточная венткамера', 'low', 1, 0, 0, 0.24],
+    [80, 96, 'Воздуховод приточный', 'medium', 1, 0, 0, 0.35],
+    [96, 112, 'Кабельный отсек ВК-2', 'critical', 2, 1, 1, 0.73],
+    [112, 134, 'Узел дымоудаления', 'high', 1, 0, 1, 0.54],
+    [134, 160, 'Вытяжная шахта', 'low', 0, 0, 0, null],
+  ],
+  205: [
+    [96, 114, 'Газовый пост ГП-1', 'medium', 1, 0, 0, 0.42],
+    [114, 130, 'Коллектор метана', 'critical', 2, 1, 0, 0.64],
+    [130, 148, 'Служебная галерея', 'low', 1, 0, 0, 0.14],
+    [148, 164, 'Распределительный щит', 'high', 1, 0, 1, 0.55],
+    [164, 180, 'Резервная линия', 'low', 0, 0, 0, null],
+  ],
+  206: [
+    [100, 118, 'Зумпф водоотлива', 'low', 1, 0, 0, 0.2],
+    [118, 134, 'Насосная группа Н-4', 'high', 1, 0, 1, 0.63],
+    [134, 152, 'Обратный трубопровод', 'medium', 1, 0, 0, 0.31],
+    [152, 172, 'Насосная группа Н-6', 'high', 1, 0, 1, 0.57],
+    [172, 190, 'Насосное помещение', 'low', 1, 0, 0, 0.28],
+  ],
+  207: [
+    [120, 140, 'Резервный ввод', 'high', 1, 0, 1, 0.66],
+    [140, 160, 'Техническая зона', 'medium', 1, 0, 0, 0.35],
+    [160, 182, 'Помещение ИБП', 'low', 1, 0, 0, 0.22],
+    [182, 200, 'Сборные шины', 'high', 1, 0, 1, 0.4],
+  ],
+  208: [
+    [140, 158, 'Головной участок коллектора', 'medium', 1, 0, 0, 0.33],
+    [158, 178, 'Транзитный участок', 'low', 1, 0, 0, 0.18],
+    [178, 194, 'Камера охлаждения', 'medium', 1, 0, 0, 0.48],
+    [194, 210, 'Концевой участок', 'low', 1, 0, 0, 0.26],
+  ],
+};
+
+function toSegmentDto(objectId: number, seed: SegmentSeed, index: number): TopologySegmentDto {
+  const [from, to, label, risk, active, critical, high, maxProbability] = seed;
+  return {
+    segment_id: `SEG-${objectId}-${String(index + 1).padStart(2, '0')}`,
+    label,
+    piket_from: from,
+    piket_to: to,
+    risk_level: risk,
+    active_predictions: active,
+    critical_predictions: critical,
+    high_predictions: high,
+    max_failure_probability: maxProbability,
+  };
+}
+
+export function objectTopologyFixture(objectId: number, objectName: string): ObjectTopologyDto {
+  const seeds = topologySeeds[objectId] ?? [];
+  const segments = seeds.map((seed, index) => toSegmentDto(objectId, seed, index));
+  return {
+    object_id: objectId,
+    object_name: objectName,
+    piket_min: seeds[0]?.[0] ?? null,
+    piket_max: seeds.at(-1)?.[1] ?? null,
+    updated_at: UPDATED_AT,
+    segments,
+  };
+}
+
+// Detail reuses the published object aggregates so both endpoints report the same counts.
+const extraDetails: ObjectDetailDto[] = [
+  {
+    object_id: 101,
+    object_name: 'Технический блок № 1',
+    parent_object_id: null,
+    object_type: objectTypes[101]!,
+    channels_total: 240,
+    ml_supported_channels: 186,
+    risk_level: 'critical',
+    active_predictions: 5,
+    critical_predictions: 2,
+    high_predictions: 0,
+    updated_at: UPDATED_AT,
+  },
+  {
+    object_id: 102,
+    object_name: 'Насосная станция',
+    parent_object_id: null,
+    object_type: objectTypes[102]!,
+    channels_total: 120,
+    ml_supported_channels: 96,
+    risk_level: 'high',
+    active_predictions: 1,
+    critical_predictions: 0,
+    high_predictions: 1,
+    updated_at: UPDATED_AT,
+  },
+];
+
+export const objectDetailFixtures: ObjectDetailDto[] = [
+  ...objectStatusFixtures.map((item) => ({
+    object_id: item.object_id,
+    object_name: item.object_name,
+    parent_object_id: null,
+    object_type: objectTypes[item.object_id] ?? 'Инженерный объект',
+    channels_total: item.channels_total,
+    ml_supported_channels: item.ml_supported_channels,
+    risk_level: item.risk_level,
+    active_predictions: item.active_predictions,
+    critical_predictions: item.critical_predictions,
+    high_predictions: item.high_predictions,
+    updated_at: item.updated_at,
+  })),
+  ...extraDetails,
+];

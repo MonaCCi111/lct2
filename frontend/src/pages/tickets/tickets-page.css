@@ -1,0 +1,311 @@
+.tickets-registry .page-header {
+  margin-bottom: 16px;
+  align-items: center;
+}
+.tickets-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tickets-registry-panel {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.tickets-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.tickets-filters .search-input {
+  flex: 1;
+  min-width: 220px;
+}
+.tickets-status-filter {
+  flex: 0 1 190px;
+  min-width: 160px;
+}
+.tickets-status-filter label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.tickets-registry-panel .table-scroll {
+  max-height: 560px;
+}
+.tickets-registry-panel .data-table {
+  min-width: 1180px;
+}
+.tickets-registry-panel .data-table th,
+.tickets-registry-panel .data-table td {
+  padding: 8px;
+}
+.tk-id {
+  width: 128px;
+}
+.tk-status {
+  width: 112px;
+}
+.tk-object {
+  width: 132px;
+}
+.tk-source {
+  width: 104px;
+}
+.tk-priority {
+  width: 124px;
+}
+.tk-assignee {
+  width: 168px;
+}
+.tk-created,
+.tk-updated {
+  width: 152px;
+  font-size: var(--font-xs);
+}
+.tickets-row-active {
+  background: var(--bg-hover);
+  box-shadow: inset 2px 0 var(--accent);
+}
+.tickets-registry-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 10px 16px;
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+}
+.ticket-form {
+  display: grid;
+  gap: 14px;
+}
+.ticket-field {
+  display: grid;
+  gap: 4px;
+}
+.ticket-field > label {
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.ticket-textarea {
+  height: auto;
+  min-height: 132px;
+  padding: 8px var(--space-3);
+  line-height: 1.5;
+  resize: vertical;
+}
+.field-error {
+  color: var(--danger-text);
+  font-size: var(--font-xs);
+}
+.ticket-mutation-error {
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  background: var(--danger-bg);
+  padding: 8px 10px;
+}
+.ticket-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 2px;
+}
+.ticket-form-note {
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.ticket-form-note a,
+.ticket-detail-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+}
+.ticket-form-note a:hover,
+.ticket-detail-list a:hover {
+  text-decoration: underline;
+}
+.ticket-source {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  padding: 10px 12px;
+}
+.ticket-source h3 {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.ticket-source-id {
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.ticket-source-sensor {
+  font-size: var(--font-sm);
+  font-weight: 500;
+}
+.ticket-source-location {
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.ticket-source-semantics {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.ticket-duplicate,
+.ticket-missing {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  padding: 14px 16px;
+}
+.ticket-missing h3,
+.ticket-duplicate p {
+  font-size: var(--font-sm);
+}
+.ticket-missing p {
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+.ticket-duplicate-id {
+  font-size: var(--font-md);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.ticket-drawer-loading {
+  display: grid;
+  gap: 12px;
+}
+.ticket-drawer-loading .skeleton {
+  height: 14px;
+}
+.ticket-detail {
+  display: grid;
+  gap: 14px;
+}
+.ticket-detail-headline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.ticket-detail-title {
+  font-size: var(--font-md);
+  font-weight: 500;
+}
+.ticket-detail-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 20px;
+  margin: 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 12px 0;
+}
+.ticket-detail-list dt {
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.ticket-detail-list dd {
+  margin: 2px 0 0;
+  font-size: var(--font-sm);
+  overflow-wrap: anywhere;
+}
+.ticket-detail-description h4 {
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.ticket-detail-description p {
+  font-size: var(--font-sm);
+  white-space: pre-line;
+}
+.ticket-detail-link {
+  justify-content: center;
+}
+.ticket-lifecycle {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 14px;
+}
+.ticket-lifecycle-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ticket-lifecycle-actions .button {
+  flex: 1;
+  min-width: 140px;
+}
+.ticket-lifecycle-note {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 14px;
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.confirm-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100vw - 32px));
+  z-index: 60;
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-popover);
+}
+.confirm-dialog-title {
+  font-size: var(--font-md);
+  font-weight: 600;
+}
+.confirm-dialog-description {
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+@media (max-width: 1500px) {
+  /* "Создан" has the lowest responsive priority; the drawer still shows it. */
+  .tk-created {
+    display: none;
+  }
+  .tk-assignee {
+    width: 140px;
+  }
+  .tk-object {
+    width: 118px;
+  }
+}
+@media (max-width: 1100px) {
+  .ticket-detail-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tickets-header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}

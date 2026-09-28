@@ -1,0 +1,66 @@
+import { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useV2Objects } from '../../api/v2/queries/hooks';
+import { DataState, Field, HistoricalHeader, Note, Pager, count, label, query, sourceTime, useHistorical, type Page, type Row } from './shared';
+
+export function GroupQueuePage() {
+  const [from, setFrom] = useState('2026-03-01');
+  const [to, setTo] = useState('2026-06-30');
+  const [objectId, setObjectId] = useState('');
+  const [sensorType, setSensorType] = useState('');
+  const [reviewState, setReviewState] = useState('');
+  const [cursors, setCursors] = useState<string[]>(['']);
+  const objects = useV2Objects({ limit: 200 });
+  const types = useHistorical<Row[]>('/model-types');
+  const groups = useHistorical<Page>(query('/groups', { from, to, object_id: objectId, sensor_type: sensorType, review_state: reviewState, limit: 50, cursor: cursors.at(-1) }));
+  const names = new Map(objects.data?.items.map((o) => [o.objectId, o.objectName]) ?? []);
+  const reset = () => setCursors(['']);
+  return <div className="dispatch-page"><HistoricalHeader title="Очередь групп" description="Близкие сигналы собраны по месту и времени. Каждое решение остаётся привязано к отдельному черновику." />
+    <div className="dispatch-filters"><Field title="С"><input type="date" value={from} max={to} onChange={(e) => { setFrom(e.target.value); reset(); }} /></Field><Field title="По"><input type="date" value={to} min={from} onChange={(e) => { setTo(e.target.value); reset(); }} /></Field><Field title="Объект"><select value={objectId} onChange={(e) => { setObjectId(e.target.value); reset(); }}><option value="">Все объекты</option>{objects.data?.items.map((o) => <option key={o.objectId} value={o.objectId}>{o.objectName}</option>)}</select></Field><Field title="Тип датчика"><select value={sensorType} onChange={(e) => { setSensorType(e.target.value); reset(); }}><option value="">Все типы</option>{types.data?.map((t) => <option key={String(t.sensor_type)} value={String(t.sensor_type)}>{String(t.sensor_type)}</option>)}</select></Field><Field title="Решение"><select value={reviewState} onChange={(e) => { setReviewState(e.target.value); reset(); }}><option value="">Все</option><option value="pending">Ожидает проверки</option><option value="approved">Есть одобрение</option><option value="rejected">Есть отклонение</option></select></Field><Link className="dispatch-link" to="/review/drafts">Плоский список черновиков</Link></div>
+    <section className="dispatch-panel"><DataState loading={groups.isPending} error={groups.error?.message} empty={groups.data?.items.length === 0} /><div className="dispatch-table-scroll"><table className="dispatch-table"><thead><tr><th>Доступно</th><th>Объект</th><th>Черновиков</th><th>Прогнозных</th><th>Наблюдаемых</th><th>Каналов</th><th></th></tr></thead><tbody>{groups.data?.items.map((g) => <tr key={String(g.group_id)}><td>{sourceTime(g.available_at)}</td><td>{names.get(Number(g.object_id)) ?? `Объект ${g.object_id}`}</td><td>{count(g.draft_count)}</td><td>{count(g.forecast_count)}</td><td>{count(g.observed_count)}</td><td>{count(g.primary_channel_count)}</td><td><Link to={`/review/groups/${encodeURIComponent(String(g.group_id))}`}>Разобрать группу</Link></td></tr>)}</tbody></table></div><Pager previous={cursors.length > 1 ? () => setCursors((s) => s.slice(0, -1)) : undefined} next={groups.data?.next_cursor ? () => setCursors((s) => [...s, groups.data!.next_cursor!]) : undefined} /></section>
+    <Note>Порядок строк следует времени доступности в исторической реконструкции. Фильтр типа ищет группу с подходящим черновиком; состав группы может включать другие типы. Порядок не обозначает срочность работ.</Note>
+  </div>;
+}
+
+export function GroupDetailPage() {
+  const { groupId = '' } = useParams();
+  const group = useHistorical<Row>(`/groups/${encodeURIComponent(groupId)}`);
+  const drafts = Array.isArray(group.data?.drafts) ? group.data.drafts as Row[] : [];
+  return <div className="dispatch-page"><Link className="dispatch-link" to="/review/groups">← Очередь групп</Link><HistoricalHeader title="Группа сигналов" description={groupId} /><DataState loading={group.isPending} error={group.error?.message} />
+    {group.data && <><div className="dispatch-metrics"><div className="dispatch-metric"><span>Черновиков</span><strong>{count(group.data.draft_count)}</strong></div><div className="dispatch-metric"><span>Прогнозных</span><strong>{count(group.data.forecast_count)}</strong></div><div className="dispatch-metric"><span>Наблюдаемых</span><strong>{count(group.data.observed_count)}</strong></div><div className="dispatch-metric"><span>Каналов</span><strong>{count(group.data.primary_channel_count)}</strong></div></div>
+      <section className="dispatch-panel"><h2>Состав группы</h2><p>Для каждого черновика можно проверить исходные записи и принять отдельное решение.</p><div className="dispatch-table-scroll"><table className="dispatch-table"><thead><tr><th>Канал</th><th>Основание</th><th>Модель</th><th>Балл</th><th>Время сигнала</th><th>Состояние</th><th></th></tr></thead><tbody>{drafts.map((d) => <tr key={String(d.draft_id)}><td>{label(d.channel_id, '—')}</td><td>{d.basis_kind === 'forecast' ? 'Прогноз SCADA' : 'Наблюдаемый статус'}</td><td>{label(d.model_version, '—')}</td><td>{label(d.score, '—')}</td><td>{sourceTime(d.source_obs_time)}</td><td>{label(d.review_state, 'Ожидает проверки')}</td><td><Link to={`/review/${encodeURIComponent(String(d.draft_id))}`}>Открыть</Link></td></tr>)}</tbody></table></div></section>
+      <Note>Группа связывает сигналы для разбора. Одобрение одного черновика не подтверждает физическую аварию и не принимает решения по остальным.</Note>
+    </>}
+  </div>;
+}
+
+type Day = Row & { activity_date: string; draft_count?: number; review_groups?: number; observed_situations?: number; pending_drafts?: number; multi_draft_groups?: number };
+type ReviewSummary = { days: { activity_date: string; drafts: number; approved: number; rejected: number; pending: number }[]; objects: { object_id: number; drafts: number; approved: number; rejected: number; pending: number }[]; reasons: { decision: string; reason: string; count: number }[]; totals: { drafts: number; approved: number; rejected: number; pending: number } };
+export function QualityPage() {
+  const [from, setFrom] = useState('2026-01-01');
+  const [to, setTo] = useState('2026-06-30');
+  const [objectId, setObjectId] = useState('');
+  const objects = useV2Objects({ limit: 200 });
+  const overview = useHistorical<{ days: Day[] }>(query('/overview', { from, to, object_id: objectId }));
+  const reviews = useHistorical<ReviewSummary>(query('/quality/reviews', { from, to, object_id: objectId }));
+  const days = overview.data?.days ?? [];
+  const names = new Map(objects.data?.items.map((o) => [o.objectId, o.objectName]) ?? []);
+  const totals = (key: keyof Day) => days.reduce((n, d) => n + (typeof d[key] === 'number' ? d[key] as number : 0), 0);
+  const peak = days.reduce<Day | null>((best, day) => !best || (day.draft_count ?? 0) > (best.draft_count ?? 0) ? day : best, null);
+  return <div className="dispatch-page"><HistoricalHeader title="Качество и нагрузка" description="Исторический объём сигналов и групп без жёсткого лимита в сутки." />
+    <div className="dispatch-filters"><Field title="С"><input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} /></Field><Field title="По"><input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} /></Field><Field title="Объект"><select value={objectId} onChange={(e) => setObjectId(e.target.value)}><option value="">Все объекты</option>{objects.data?.items.map((o) => <option key={o.objectId} value={o.objectId}>{o.objectName}</option>)}</select></Field></div>
+    <DataState loading={overview.isPending || reviews.isPending} error={overview.error?.message ?? reviews.error?.message} empty={days.length === 0} />
+    {days.length > 0 && <><div className="dispatch-metrics"><div className="dispatch-metric"><span>Черновики</span><strong>{count(totals('draft_count'))}</strong></div><div className="dispatch-metric"><span>Группы</span><strong>{count(totals('review_groups'))}</strong></div><div className="dispatch-metric"><span>Группы с повторами</span><strong>{count(totals('multi_draft_groups'))}</strong></div><div className="dispatch-metric"><span>Пиковый день</span><strong>{count(peak?.draft_count)}</strong><small>{peak?.activity_date}</small></div></div>
+      <div className="dispatch-grid"><section className="dispatch-panel"><h2>Черновики и группы по дням</h2><div className="dispatch-chart dispatch-chart-lg"><ResponsiveContainer width="100%" height="100%"><BarChart data={days}><CartesianGrid stroke="var(--border-subtle)" vertical={false} /><XAxis dataKey="activity_date" tick={{ fontSize: 10 }} minTickGap={26} /><YAxis allowDecimals={false} /><Tooltip /><Bar dataKey="draft_count" name="Черновики" fill="var(--accent)" /><Bar dataKey="review_groups" name="Группы" fill="var(--status-warning)" /></BarChart></ResponsiveContainer></div></section>
+      <section className="dispatch-panel"><h2>Наблюдаемые ситуации</h2><div className="dispatch-chart dispatch-chart-lg"><ResponsiveContainer width="100%" height="100%"><LineChart data={days}><CartesianGrid stroke="var(--border-subtle)" vertical={false} /><XAxis dataKey="activity_date" tick={{ fontSize: 10 }} minTickGap={26} /><YAxis allowDecimals={false} /><Tooltip /><Line dataKey="observed_situations" name="Ситуации" stroke="var(--status-info)" dot={false} connectNulls={false} /></LineChart></ResponsiveContainer></div></section></div>
+      <section className="dispatch-panel"><h2>Дни с наибольшей нагрузкой</h2><div className="dispatch-table-scroll"><table className="dispatch-table"><thead><tr><th>День источника</th><th>Черновики</th><th>Группы</th><th>Группы с несколькими черновиками</th><th>Ситуации</th></tr></thead><tbody>{[...days].sort((a, b) => (b.draft_count ?? 0) - (a.draft_count ?? 0)).slice(0, 12).map((d) => <tr key={d.activity_date}><td>{d.activity_date}</td><td>{count(d.draft_count)}</td><td>{count(d.review_groups)}</td><td>{count(d.multi_draft_groups)}</td><td>{count(d.observed_situations)}</td></tr>)}</tbody></table></div></section>
+    </>}
+    {reviews.data && <><div className="dispatch-metrics"><div className="dispatch-metric"><span>Ожидают решения</span><strong>{count(reviews.data.totals.pending)}</strong></div><div className="dispatch-metric"><span>Одобрены диспетчером</span><strong>{count(reviews.data.totals.approved)}</strong></div><div className="dispatch-metric"><span>Отклонены диспетчером</span><strong>{count(reviews.data.totals.rejected)}</strong></div><div className="dispatch-metric"><span>Просмотрены</span><strong>{reviews.data.totals.drafts ? `${Math.round(100 * (reviews.data.totals.approved + reviews.data.totals.rejected) / reviews.data.totals.drafts)}%` : '—'}</strong></div></div>
+      <div className="dispatch-grid"><section className="dispatch-panel"><h2>Исход разбора по дате черновика</h2><div className="dispatch-chart dispatch-chart-lg"><ResponsiveContainer width="100%" height="100%"><BarChart data={reviews.data.days}><CartesianGrid stroke="var(--border-subtle)" vertical={false} /><XAxis dataKey="activity_date" tick={{ fontSize: 10 }} minTickGap={26} /><YAxis allowDecimals={false} /><Tooltip /><Bar dataKey="approved" stackId="decisions" name="Одобрены" fill="var(--status-info)" /><Bar dataKey="rejected" stackId="decisions" name="Отклонены" fill="var(--status-warning)" /><Bar dataKey="pending" stackId="decisions" name="Ожидают" fill="var(--border-strong)" /></BarChart></ResponsiveContainer></div></section>
+      <section className="dispatch-panel"><h2>Нагрузка по объектам</h2><div className="dispatch-chart dispatch-chart-lg"><ResponsiveContainer width="100%" height="100%"><BarChart data={reviews.data.objects.slice(0, 15).map((o) => ({ ...o, name: names.get(o.object_id) ?? `Объект ${o.object_id}` }))} layout="vertical" margin={{ left: 24 }}><CartesianGrid stroke="var(--border-subtle)" horizontal={false} /><XAxis type="number" allowDecimals={false} /><YAxis dataKey="name" type="category" width={95} tick={{ fontSize: 10 }} /><Tooltip /><Bar dataKey="drafts" name="Черновики" fill="var(--accent)" /></BarChart></ResponsiveContainer></div><p>Показаны 15 объектов с наибольшим числом черновиков в периоде.</p></section></div>
+      <section className="dispatch-panel"><h2>Основания решений</h2>{reviews.data.reasons.length ? <div className="dispatch-table-scroll"><table className="dispatch-table"><thead><tr><th>Решение</th><th>Причина диспетчера</th><th>Черновиков</th></tr></thead><tbody>{reviews.data.reasons.map((r, i) => <tr key={`${r.decision}-${r.reason}-${i}`}><td>{r.decision === 'approved' ? 'Одобрено' : 'Отклонено'}</td><td>{r.reason}</td><td>{count(r.count)}</td></tr>)}</tbody></table></div> : <Note>В выбранном периоде решений нет. Измените даты или разберите черновик в очереди.</Note>}</section>
+    </>}
+    <Note>Дата решений на графике привязана ко времени доступности черновика в источнике. Одобрение не подтверждает физическую аварию. Историческая нагрузка не измеряет трудозатраты живой смены.</Note>
+  </div>;
+}

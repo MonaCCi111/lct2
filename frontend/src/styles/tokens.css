@@ -1,0 +1,114 @@
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg-app: #18191d;
+  --bg-surface: #202226;
+  --bg-surface-elevated: #25282d;
+  --bg-hover: #2a2d32;
+  --border-subtle: #30333a;
+  --border-default: #383c43;
+  --text-primary: #e7e8ea;
+  --text-secondary: #a5a9b0;
+  --text-muted: #9a9fa8;
+  /* Severity reads as text first: these four stay inside AA on every surface. The hues are held
+     apart on purpose — red 358°, orange 25°, yellow 49° — so the three levels never blend. */
+  --risk-critical: #f4787c;
+  --risk-high: #ff9042;
+  --risk-medium: #f2d75a;
+  --risk-low: #83c79d;
+  /* Markers, stripes and bars are shapes, not text, so they can be a shade louder. */
+  --risk-critical-accent: #f04a52;
+  --risk-high-accent: #ff7d1a;
+  --risk-medium-accent: #ffd426;
+  --risk-low-accent: #4fc184;
+  --status-info: #9eb9d5;
+  --status-success: #83c79d;
+  --status-warning: #f2d75a;
+  --status-error: #f4787c;
+  --accent: #b5c9dd;
+  --focus: #a9c6e5;
+  --accent-hover: #c7d6e5;
+  --on-accent: #18191d;
+  --danger-bg: #442d32;
+  --danger-border: #674048;
+  --danger-text: #f0b3b5;
+  --danger-hover: #53343a;
+  --shadow-popover: 0 4px 12px #0003;
+  --overlay: #0008;
+  --brand-border: #66727e;
+  --nav-active-bg: #30353c;
+  --nav-active-border: #3e4650;
+  --avatar-bg: #30363f;
+  --avatar-border: #424b58;
+  --bg-skeleton: #353940;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+  /* A slightly deeper page background so white cards, tables and panels read as surfaces
+     instead of dissolving into the page. */
+  --bg-app: #eef0f3;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f7f8fa;
+  --bg-hover: #eceff3;
+  --border-subtle: #dde1e6;
+  --border-default: #c8cdd5;
+  --text-primary: #1c1e23;
+  --text-secondary: #575c65;
+  --text-muted: #626873;
+  /* Text severity: saturated but dark enough to stay readable on white. On a light background
+     every level has to stay dark, so the separation is carried by hue — red 353°, orange 30°,
+     yellow 55° — and by full chroma, not by lightness. */
+  --risk-critical: #c2172b;
+  --risk-high: #a85400;
+  --risk-medium: #6f6600;
+  --risk-low: #1d7a4c;
+  /* Shapes carry the "bright orange / bright yellow" reading that text cannot on white. */
+  --risk-critical-accent: #e01b2d;
+  --risk-high-accent: #e06400;
+  --risk-medium-accent: #ab8d00;
+  --risk-low-accent: #149257;
+  --status-info: #2f5e86;
+  --status-success: #1d7a4c;
+  --status-warning: #6f6600;
+  --status-error: #c2172b;
+  --accent: #2f5e86;
+  --accent-hover: #244c6e;
+  --on-accent: #ffffff;
+  --focus: #2f5e86;
+  --danger-bg: #fbecec;
+  --danger-border: #dda7ab;
+  --danger-text: #96222d;
+  --danger-hover: #f5dcde;
+  --shadow-popover: 0 4px 12px #20222720;
+  --overlay: #20222766;
+  --brand-border: #737e8a;
+  --nav-active-bg: #e3e7ec;
+  --nav-active-border: #c2c9d2;
+  --avatar-bg: #e3e7ec;
+  --avatar-border: #c2c9d2;
+  --bg-skeleton: #dce0e6;
+}
+:root {
+  background: var(--bg-app);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --font-xs: 12px;
+  --font-sm: 13px;
+  --font-base: 14px;
+  --font-md: 16px;
+  --font-lg: 20px;
+  --font-xl: 24px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --control-height: 32px;
+  --row-height: 40px;
+  --sidebar-width: 224px;
+  --topbar-height: 52px;
+  --transition: 140ms ease;
+}

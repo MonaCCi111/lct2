@@ -1,0 +1,331 @@
+.object-workspace .page-header {
+  margin-bottom: 16px;
+  align-items: center;
+}
+.object-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.object-summary,
+.object-topology,
+.object-predictions {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.object-summary,
+.object-topology {
+  margin-bottom: 16px;
+}
+.object-summary-metrics {
+  display: grid;
+  grid-template-columns: 1.1fr 0.8fr 0.8fr 0.9fr 1.6fr;
+  margin: 0;
+  min-height: 70px;
+}
+.object-summary-metrics > div {
+  padding: 10px 16px;
+  border-right: 1px solid var(--border-subtle);
+  min-width: 0;
+}
+.object-summary-metrics > div:last-child {
+  border-right: 0;
+}
+.object-summary-metrics dt {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.object-summary-metrics dd {
+  margin: 2px 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 500;
+}
+.object-summary-metrics dd > span {
+  font-size: var(--font-xs);
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.object-summary-risk {
+  font-size: var(--font-base);
+  line-height: 28px;
+}
+.object-summary-coverage dd {
+  font-size: var(--font-md);
+  line-height: 22px;
+}
+.coverage-bar {
+  margin-top: 7px;
+  height: 4px;
+  max-width: 260px;
+  border-radius: 2px;
+  background: var(--bg-hover);
+  overflow: hidden;
+}
+.coverage-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--text-muted);
+}
+.object-summary .skeleton {
+  margin: 6px 0;
+}
+.workspace-block-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  min-height: 58px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.workspace-block-heading h2 {
+  font-size: var(--font-base);
+}
+.workspace-block-heading p {
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+  margin-top: 3px;
+}
+.topology-tools,
+.topology-legend,
+.object-predictions-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.topology-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.topology-canvas {
+  padding: 8px 8px 4px;
+  overflow-x: auto;
+}
+.topology-svg {
+  display: block;
+  max-width: 100%;
+}
+.topology-baseline {
+  stroke: var(--border-default);
+  stroke-width: 2;
+}
+.topology-segment {
+  cursor: pointer;
+  outline: none;
+}
+.topology-segment-hit {
+  fill: transparent;
+}
+.topology-segment-line {
+  fill: var(--text-muted);
+  transition: fill var(--transition);
+}
+.topology-segment.tone-medium .topology-segment-line {
+  fill: var(--risk-medium);
+}
+.topology-segment.tone-high .topology-segment-line {
+  fill: var(--risk-high);
+}
+.topology-segment.tone-critical .topology-segment-line {
+  fill: var(--risk-critical);
+}
+.topology-segment:hover .topology-segment-line {
+  fill: var(--text-primary);
+}
+.topology-segment.tone-medium:hover .topology-segment-line,
+.topology-segment.tone-high:hover .topology-segment-line,
+.topology-segment.tone-critical:hover .topology-segment-line {
+  fill: currentColor;
+}
+.topology-segment-ring {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 1;
+}
+.topology-segment:hover .topology-segment-ring {
+  stroke: var(--border-default);
+}
+.topology-segment.is-selected .topology-segment-ring {
+  stroke: var(--text-secondary);
+}
+.topology-segment:focus-visible .topology-segment-ring {
+  stroke: var(--focus);
+  stroke-width: 2;
+}
+.topology-segment-label text {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  text-anchor: middle;
+}
+.topology-segment-label line,
+.topology-piket line {
+  stroke: var(--border-default);
+  stroke-width: 1;
+}
+.topology-piket text {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  text-anchor: middle;
+  font-variant-numeric: tabular-nums;
+}
+.topology-skeleton {
+  display: grid;
+  gap: 22px;
+  padding: 36px 24px 24px;
+}
+.topology-skeleton-line {
+  height: 8px;
+  width: 100%;
+}
+.topology-skeleton-ticks {
+  height: 10px;
+  width: 92%;
+}
+.topology-canvas .empty-state,
+.topology-canvas .error-state {
+  min-height: 128px;
+}
+.topology-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border-subtle);
+  padding: 6px 16px;
+  min-height: 40px;
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+}
+.topology-tooltip {
+  display: grid;
+  gap: 2px;
+  min-width: 190px;
+}
+.topology-tooltip-range {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.topology-tooltip-label {
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.topology-tooltip dl {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.topology-tooltip dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.topology-tooltip dt {
+  color: var(--text-secondary);
+}
+.topology-tooltip dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.object-prediction-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.object-risk-filter {
+  flex: 0 1 150px;
+  min-width: 128px;
+}
+.object-risk-filter label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.object-prediction-filters .search-input {
+  flex: 1;
+  min-width: 180px;
+}
+.object-predictions .table-scroll {
+  max-height: 420px;
+}
+.object-predictions .data-table {
+  min-width: 760px;
+}
+.object-predictions .data-table th,
+.object-predictions .data-table td {
+  padding: 8px;
+}
+.object-col-urgency {
+  width: 110px;
+}
+.object-col-risk {
+  width: 116px;
+}
+.object-col-piket {
+  width: 104px;
+}
+.object-col-sensor {
+  min-width: 190px;
+}
+.object-col-type {
+  width: 130px;
+}
+.object-col-probability {
+  width: 102px;
+}
+.object-col-health {
+  width: 56px;
+}
+.object-col-updated {
+  width: 88px;
+}
+@media (max-width: 1600px) {
+  .object-summary-metrics {
+    grid-template-columns: 1fr 0.7fr 0.7fr 0.8fr 1.5fr;
+  }
+  /* Same responsive priority as the other registries: "Тип" stays, ИТС yields its width. */
+  .object-col-health {
+    display: none;
+  }
+  .object-col-type {
+    width: 104px;
+    min-width: 96px;
+  }
+  .object-predictions .table-scroll {
+    max-height: 360px;
+  }
+}
+@media (max-width: 1100px) {
+  .object-summary-metrics {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .object-summary-metrics > div {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .topology-legend {
+    display: none;
+  }
+  .object-header-meta {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}

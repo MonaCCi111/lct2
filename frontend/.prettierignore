@@ -1,0 +1,5 @@
+node_modules
+dist
+public/mockServiceWorker.js
+package-lock.json
+test-results

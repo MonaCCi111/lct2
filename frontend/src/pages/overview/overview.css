@@ -1,0 +1,402 @@
+/* Fixed-height operational workspace: the Operational Center fills the viewport and everything
+   that can grow — the queue and the object list — scrolls inside its own panel, so the page
+   itself never scrolls. Scoped to this route; the other pages keep normal page scrolling. */
+.app-shell:has(.overview-page) {
+  height: 100vh;
+  min-height: 0;
+}
+.app-shell:has(.overview-page) .main-column {
+  min-height: 0;
+}
+.app-shell:has(.overview-page) .workspace {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.overview-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.overview-page .operational-workspace {
+  flex: 1;
+  min-height: 0;
+}
+.overview-page .page-header {
+  margin-bottom: 20px;
+  align-items: center;
+}
+.overview-update {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.summary-strip {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.summary-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr 1.4fr;
+  margin: 0;
+  min-height: 72px;
+}
+.summary-metrics > div {
+  padding: 10px 16px;
+  border-right: 1px solid var(--border-subtle);
+  min-width: 0;
+}
+.summary-metrics > div:last-child {
+  border-right: 0;
+}
+.summary-metrics dt {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+/* All four KPIs share one rhythm: label, then the headline number on a common baseline with its
+   supporting text. Three contrast levels carry the hierarchy, not three different sizes. */
+.summary-metrics dd {
+  margin: 4px 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.summary-metrics dd > span {
+  font-size: var(--font-sm);
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+/* Secondary: the denominator of the affected/total pair. */
+.summary-metrics dd > .summary-total {
+  font-size: var(--font-md);
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+/* Tertiary: supporting metadata that must never compete with the headline number. */
+.summary-metrics dd > .summary-note {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  margin-left: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.summary-metrics .skeleton {
+  margin: 6px 0;
+}
+.operational-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 2.15fr) minmax(310px, 1fr);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.risk-queue {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.operational-side {
+  min-width: 0;
+  border-left: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+}
+.operational-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 16px;
+  min-height: 68px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.operational-heading h2 {
+  font-size: 14px;
+}
+.operational-heading p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 3px;
+}
+.queue-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+.queue-object-filter {
+  flex: 0 1 158px;
+  min-width: 130px;
+}
+.queue-object-filter label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.queue-filters .search-input {
+  flex: 1;
+  min-width: 168px;
+}
+.queue-context {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 16px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+/* The queue takes whatever height is left and scrolls inside itself. */
+.risk-queue .table-scroll {
+  flex: 1;
+  min-height: 0;
+}
+.risk-queue .data-table {
+  min-width: 720px;
+}
+.risk-queue .data-table th,
+.risk-queue .data-table td {
+  padding: 8px;
+}
+.queue-urgency {
+  width: 98px;
+}
+.queue-risk {
+  width: 108px;
+}
+.queue-object {
+  width: 120px;
+}
+.queue-piket {
+  width: 86px;
+  font-size: var(--font-xs);
+}
+/* Wide enough for the longest short label ("Вентилятор") without an ellipsis. */
+.queue-type {
+  width: 104px;
+  min-width: 96px;
+}
+.queue-probability {
+  width: 88px;
+}
+.queue-health {
+  width: 44px;
+}
+.queue-updated {
+  width: 56px;
+}
+.queue-sensor {
+  min-width: 150px;
+}
+.ticket-summary a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+}
+.ticket-summary a:hover {
+  text-decoration: underline;
+}
+/* The object panel keeps its heading and its totals in place and scrolls only the list. */
+.operational-side .object-status {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.object-status-list,
+.object-loading {
+  overflow-y: auto;
+  min-height: 0;
+}
+.object-status-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.object-status-list li + li {
+  border-top: 1px solid var(--border-subtle);
+}
+.object-status-list a {
+  display: block;
+  padding: 9px 16px;
+}
+.object-status-list a:hover {
+  background: var(--bg-hover);
+}
+.object-status-list a:focus-visible {
+  outline-offset: -3px;
+}
+.object-status-main,
+.object-status-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+/* Object name leads, risk sits right of it, counts step back on the second line. */
+.object-name {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.object-status-detail {
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.object-status-detail > span:last-child {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.object-loading > div {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ticket-summary {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-default);
+  margin-top: auto;
+}
+.ticket-summary header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.ticket-summary a {
+  font-size: 12px;
+}
+/* Three-column operational summary: labels read down the left, counts align on the right. */
+.ticket-summary dl {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+.ticket-summary dl > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.ticket-summary dt {
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
+}
+.ticket-summary dd {
+  margin: 0;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.coverage-status {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+}
+.coverage-status strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.operational-side .error-state {
+  flex-wrap: wrap;
+}
+.operational-side .stale-state {
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+@media (max-width: 1600px) {
+  /* The queue keeps "Тип": with short labels it stays readable, so ИТС — a supporting index that
+     the prediction detail repeats — yields its width instead. */
+  .queue-health {
+    display: none;
+  }
+  .operational-workspace {
+    grid-template-columns: minmax(0, 2.6fr) minmax(296px, 1fr);
+  }
+  .queue-object {
+    width: 106px;
+  }
+  .queue-piket {
+    width: 80px;
+  }
+  .queue-urgency {
+    width: 92px;
+  }
+  .queue-risk {
+    width: 100px;
+  }
+  .queue-type {
+    width: 96px;
+    min-width: 90px;
+  }
+  .queue-probability {
+    width: 84px;
+  }
+  .summary-metrics dd > span:not(.summary-total) {
+    display: none;
+  }
+  .summary-metrics > div:last-child dd > span:last-child {
+    display: inline;
+  }
+  .object-status-list a {
+    padding: 8px 12px;
+  }
+}
+@media (max-width: 1200px) {
+  .operational-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .operational-side {
+    border-left: 0;
+    border-top: 1px solid var(--border-default);
+  }
+  .overview-update {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 700px) {
+  .summary-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+  .summary-metrics > div {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .summary-metrics dd > span:not(.summary-total) {
+    display: none !important;
+  }
+  .overview-update {
+    justify-content: flex-start;
+  }
+}
