@@ -75,4 +75,4 @@ cd backend
 .\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-Для сквозной проверки после запуска обеих частей: `cd frontend; npm.cmd run test:browser`. Контракт v2 и описание сценариев: [API и интеграция](docs/API_V2_BACKEND_HANDOFF.md), [состояние ML](validation/FINAL_PRODUCT_V1_STATUS.txt), [руководство бэкенда](backend/README.md), [руководство фронта](frontend/README.md).
+Для сквозной проверки после запуска обеих частей: `cd frontend; npm.cmd run test:browser`. Действующий [контракт API v2](backend/data/ml_handoff/api_contract_v1.json), [состояние ML](validation/FINAL_PRODUCT_V1_STATUS.txt), [руководство бэкенда](backend/README.md) и [руководство фронта](frontend/README.md) находятся в репозитории.

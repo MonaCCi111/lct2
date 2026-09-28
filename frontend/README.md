@@ -26,4 +26,4 @@ npm.cmd run dev
 | `/fire-history` | история дымовых сигналов без заявления о подтверждённых пожарах |
 | `/replay` | сценарии и ползунок исторического времени |
 
-Проверьте сборку и тесты командами `npm.cmd run build`, `npm.cmd test`, `npm.cmd run test:browser`. Полный запуск и ограничения данных описаны в [корневом README](../README.md). Контракт API v2: [docs/API_V2_FRONTEND_FOUNDATION.md](../docs/API_V2_FRONTEND_FOUNDATION.md).
+Проверьте сборку и тесты командами `npm.cmd run build`, `npm.cmd test`, `npm.cmd run test:browser`. Полный запуск и ограничения данных описаны в [корневом README](../README.md). Контракт API v2: [api_contract_v1.json](../backend/data/ml_handoff/api_contract_v1.json).
