@@ -1,0 +1,348 @@
+{
+  "package_version": "dispatcher_integration_v1",
+  "data_cutoff": "2026-06-30 23:59:59",
+  "handoff_schema_version": "ml_handoff_v1",
+  "api_contract_sha256": "e35edb6982144c1e7f8b5bf86741907333653818224002aebc8a72323041e179",
+  "files": [
+    {
+      "path": "data/catalog/справочник_каналов_датчиков.csv",
+      "bytes": 1321317,
+      "sha256": "87b3230e93ae00e3f03d915336acde6b3990c8b58d7378175cf02c000f67a45f"
+    },
+    {
+      "path": "data/catalog/справочник_объектов_диспетчер.csv",
+      "bytes": 5266,
+      "sha256": "219b4dbe34a78581640d839837649d3ef481c62c089fef18db1b364cff007084"
+    },
+    {
+      "path": "data/catalog/справочник_состояний.csv",
+      "bytes": 3925,
+      "sha256": "b968f3652ed33fd6e0d2dccee334275436dada67f4549763cfb4b2072108b5cc"
+    },
+    {
+      "path": "data/dispatch_review_v2/diagnostic_2025_2026/forecast_evidence.parquet",
+      "bytes": 110897,
+      "sha256": "15fa65dae7c60bb98f842590d020bcac6de381211093f90a115a8221f8d241e7"
+    },
+    {
+      "path": "data/dispatch_review_v2/diagnostic_2025_2026/forecast_features.parquet",
+      "bytes": 30872,
+      "sha256": "fa74abf5d0b2b32828f98adcfa7f2ee2c35b2cceb60df0466940e89eaf818201"
+    },
+    {
+      "path": "data/dispatch_review_v2/diagnostic_2025_2026/observed_evidence.parquet",
+      "bytes": 74208,
+      "sha256": "b2aea144c6d7bb91c50c11b42a8f22c97c38b72470476a8c84a6802e5af4c548"
+    },
+    {
+      "path": "data/dispatch_review_v2/diagnostic_2025_2026/observed_mapping.parquet",
+      "bytes": 17449,
+      "sha256": "8d9b59efe9847fa9bcfc15d01ee105c6ad5bceafa3f231071a4fc00694b61648"
+    },
+    {
+      "path": "data/dispatch_review_v2/policy_2024/forecast_evidence.parquet",
+      "bytes": 48268,
+      "sha256": "338f6c81ef12b3086ecee56f6808007d4cef8c63bd11e56dd54b008ec3aa6db1"
+    },
+    {
+      "path": "data/dispatch_review_v2/policy_2024/forecast_features.parquet",
+      "bytes": 10942,
+      "sha256": "b0a9b0483b026c35a3be8a8c082a64cb52f7c2f9738232b5b00a791632e14432"
+    },
+    {
+      "path": "data/dispatch_review_v2/policy_2024/observed_evidence.parquet",
+      "bytes": 18582,
+      "sha256": "ef14f89d31cb11ad000fbae46091e6db304385a7cbeba82aad76cbdead2fa76b"
+    },
+    {
+      "path": "data/dispatch_review_v2/policy_2024/observed_mapping.parquet",
+      "bytes": 4366,
+      "sha256": "3ea7ea4790caf596d04228e8cf8080c86e0b984de56438b046882f8fd1789ef6"
+    },
+    {
+      "path": "data/handoff_v1/channel_current.parquet",
+      "bytes": 168431,
+      "sha256": "6c35ac1f07fa8b78010edae0ab64493d3027c20b9f963f50d0762bcb89e2980a"
+    },
+    {
+      "path": "data/handoff_v1/chart_example_index.json",
+      "bytes": 1039,
+      "sha256": "a1c70ac6d9d871f3a302fda66b30c289f8bfd206e2fd0cd584ae7f3d85a51365"
+    },
+    {
+      "path": "data/handoff_v1/chart_examples.parquet",
+      "bytes": 18593,
+      "sha256": "6c68a50cf62a518d57d4e7d664251b5112b81ee920eca83e165236ef0671f7a9"
+    },
+    {
+      "path": "data/handoff_v1/draft_cards.parquet",
+      "bytes": 76378,
+      "sha256": "cf05e8a6257cbad47e919f4b8415710b5f4170aa892cf5ecd2313fab1ea00404"
+    },
+    {
+      "path": "data/handoff_v1/feedback_availability.json",
+      "bytes": 347,
+      "sha256": "ec41febda87329818eda5b3e40ba40d7d228b5892c87e09ed9f9b06e63642fe9"
+    },
+    {
+      "path": "data/handoff_v1/fire_history_view.json",
+      "bytes": 2404,
+      "sha256": "1ebebe2995aa4fa58833de60f0b478fedfdc7816434f3d073017138b6300cef4"
+    },
+    {
+      "path": "data/handoff_v1/group_cards.parquet",
+      "bytes": 46879,
+      "sha256": "6ce4b0f85d985de9e8df215cfee69a165164aa3aa57fa5754ad99457ea5b1455"
+    },
+    {
+      "path": "data/handoff_v1/observation_snapshots.parquet",
+      "bytes": 4421169,
+      "sha256": "c9b80c3c3017f9596025a38eb099463c480255f8d848ab0d8a833920091adc77"
+    },
+    {
+      "path": "data/handoff_v1/schema_manifest.json",
+      "bytes": 34209,
+      "sha256": "50769f0e6d245dd38803668501c35872745f1d8e47d6a06548986b1bd6149ad7"
+    },
+    {
+      "path": "data/handoff_v1/situation_cards.parquet",
+      "bytes": 408031,
+      "sha256": "aa63ba90b3f28aa4f296518d33f234d44a6ce97cd353ef325102ada423726b70"
+    },
+    {
+      "path": "data/handoff_v1/situation_evidence.parquet",
+      "bytes": 1755318,
+      "sha256": "c0fb966c36b287c7fc1c6e6bc1efe4a0dd73cfc118a542812651643e6dd1aad6"
+    },
+    {
+      "path": "data/handoff_v1/state_dictionary.parquet",
+      "bytes": 2586,
+      "sha256": "fad56c3e072405d9c2fe6f2d3044241422862c3856fa246f9cc0166775c0484f"
+    },
+    {
+      "path": "data/power_phase_v2/episodes.parquet",
+      "bytes": 23963893,
+      "sha256": "1486b778e61cddf0d41837d110a566f6e58f4fbe800138b02c46105d5b8f67dd"
+    },
+    {
+      "path": "data/power_phase_v2/features.parquet",
+      "bytes": 7913809,
+      "sha256": "0b71e815244e98d6a0d36f108b9d682ef939ab7e1e90b6dbcf8b59f8942be5f5"
+    },
+    {
+      "path": "data/power_phase_v2/phase_events.parquet",
+      "bytes": 36295652,
+      "sha256": "4a99605783c76567155dbfb000318d665fd95687dbc8109abb4b85db6a0d1fc2"
+    },
+    {
+      "path": "data/pump_v1/episodes.parquet",
+      "bytes": 1805773,
+      "sha256": "a5200f8489fb0c420360cb535fe1ac83a45d3ba1def3d4758bcf9cc587163346"
+    },
+    {
+      "path": "data/pump_v1/events.parquet",
+      "bytes": 19536328,
+      "sha256": "2c9577784bf25c6134169f9de0c7e31b141d152c313a114ab6b312876b9ed965"
+    },
+    {
+      "path": "data/pump_v1/features.parquet",
+      "bytes": 4642611,
+      "sha256": "b4aedaafc4bf48b3ad2d7727be4dfda4cd381ed8641a59dd6e2c0a664e9d5874"
+    },
+    {
+      "path": "data/replay_v1/gas_hour/manifest.json",
+      "bytes": 1180,
+      "sha256": "bf9b8c89206c308abd8303c0d992e5487ae805c67143f3838a6d09feefcc33ce"
+    },
+    {
+      "path": "data/replay_v1/gas_hour/timeline.parquet",
+      "bytes": 25480,
+      "sha256": "c96aad37f8ffae3163fc861665779562a5286bf0af4333db16eed87f6012bb51"
+    },
+    {
+      "path": "data/replay_v1/linked_drafts/manifest.json",
+      "bytes": 1121,
+      "sha256": "30c4052e44ebf33103cd91882fba06b6117d81bb05e457dc00f0670605b0f1ed"
+    },
+    {
+      "path": "data/replay_v1/linked_drafts/timeline.parquet",
+      "bytes": 9890,
+      "sha256": "bba522e5a6779c735c665fad3574be0409667a8871e40687c44b50726eb05241"
+    },
+    {
+      "path": "data/replay_v1/loss_and_return/manifest.json",
+      "bytes": 1152,
+      "sha256": "edf06f9bc50ed22814982013527d298106d67b8baa5ae3ec38e592c6fcd4f7ee"
+    },
+    {
+      "path": "data/replay_v1/loss_and_return/timeline.parquet",
+      "bytes": 168889,
+      "sha256": "8a8b54dd88076c24244d210f87002dc571a57ba26714e548f554c6e6d09916f8"
+    },
+    {
+      "path": "data/replay_v1/mass_smoke/manifest.json",
+      "bytes": 1181,
+      "sha256": "610710d8d0edbb617f84be3ba6177dcbe9a11564cdbfa7381c67faeb88b61141"
+    },
+    {
+      "path": "data/replay_v1/mass_smoke/timeline.parquet",
+      "bytes": 34562,
+      "sha256": "a37429028ce7bf926d93c31bcc4f4599e3e1e8bc8b06b5ec22af56f79242f219"
+    },
+    {
+      "path": "data/replay_v1/observed_draft/manifest.json",
+      "bytes": 1173,
+      "sha256": "0644ea737b16bd1418605b201e73d2a8f60254886b1ade2dfa244f2a0fba7f87"
+    },
+    {
+      "path": "data/replay_v1/observed_draft/timeline.parquet",
+      "bytes": 7730,
+      "sha256": "99d4c0712923be49ca54ae6d2b4e85ed2db349805b877e1a9da89b8c29ec9d74"
+    },
+    {
+      "path": "data/replay_v1/ordinary_shift/manifest.json",
+      "bytes": 1151,
+      "sha256": "836f9a5b575bb91e302d50ba77214755215cb34c37cf821e82f87bb0721c4037"
+    },
+    {
+      "path": "data/replay_v1/ordinary_shift/timeline.parquet",
+      "bytes": 53847,
+      "sha256": "210e7acd3a98a87ab22a42a053a3792a48f3b139a3eb81a196436c24fc8e72f4"
+    },
+    {
+      "path": "data/replay_v1/peak_queue_object/manifest.json",
+      "bytes": 1204,
+      "sha256": "317baf3c3416f6d6190ba30cb39c24a5378ec9bdc0f6ec2f56064cbda23e3fa2"
+    },
+    {
+      "path": "data/replay_v1/peak_queue_object/timeline.parquet",
+      "bytes": 156680,
+      "sha256": "cf49e2cd327801ccb07e55e4ba5acfd595538d08788d054fec47882db18bdb90"
+    },
+    {
+      "path": "data/replay_v1/single_smoke/manifest.json",
+      "bytes": 1177,
+      "sha256": "ce75e776d1820fdeb47ae55576adfcf96ac6192d43b914b86ec9d4356a924a80"
+    },
+    {
+      "path": "data/replay_v1/single_smoke/timeline.parquet",
+      "bytes": 10106,
+      "sha256": "291edf0a42bedf3243f97ed07c31a49e08ad8d6d0c3577afc8f2af0421f0142c"
+    },
+    {
+      "path": "data/visualization_v1/coverage_monthly.parquet",
+      "bytes": 43111,
+      "sha256": "bd2d078508077e0b472fbaf2c73610a84c8418d63cf95eb9e07535b904f5d245"
+    },
+    {
+      "path": "data/visualization_v1/forecast_quality_daily.parquet",
+      "bytes": 5249,
+      "sha256": "7d04d4c69353783cfe443625c79910d7ce589bbd702354686d469be5000fb805"
+    },
+    {
+      "path": "data/visualization_v1/gas_daily.parquet",
+      "bytes": 3675604,
+      "sha256": "2e2a50a83b954c6eb5984585223ef878c2f7f916914d593c207f8af49188ad79"
+    },
+    {
+      "path": "data/visualization_v1/object_day.parquet",
+      "bytes": 84041,
+      "sha256": "9c0eaae722e65c18f2cb34e75056dbe7e2161fa7a42fd83f02c5ff2d93eb2881"
+    },
+    {
+      "path": "data/visualization_v1/object_type_day.parquet",
+      "bytes": 26669,
+      "sha256": "346bde6fa6ea0c5f74c76f176f49fbca2bf565ebe02744317d687ea0315c2bd3"
+    },
+    {
+      "path": "docs/DEMO_ROUTE_V1.txt",
+      "bytes": 6214,
+      "sha256": "c997aa69df38e8b9744ad0e5f8446f1dfc72cd2bab2c546aabeb4ec8ebd14803"
+    },
+    {
+      "path": "docs/USAGE_DISPATCH_REVIEW_V2.txt",
+      "bytes": 7528,
+      "sha256": "1548a41e231c5c8961347d75f5e914d32126b2f66dfedae2012a12ce3fde7af3"
+    },
+    {
+      "path": "docs/USAGE_HANDOFF_V1.txt",
+      "bytes": 14055,
+      "sha256": "706010547a8cfa4db68c6728bb032de9d25d2eb5aacc33a382f5e6244ec090d5"
+    },
+    {
+      "path": "docs/USAGE_REPLAY_V1.txt",
+      "bytes": 8657,
+      "sha256": "bc9cb691e7eea6819495f0ea7a6d04249d6be84a0e7606b6a7cd81803b920d7a"
+    },
+    {
+      "path": "model_type_decisions.json",
+      "bytes": 7965,
+      "sha256": "eed77c101b8217736e61f76671af4ae5cfb2426ff5c033629bcc5363a39c3170"
+    },
+    {
+      "path": "models/power_phase_scada_v2/calibrator.pkl",
+      "bytes": 808,
+      "sha256": "a1a1ef73a5ead11c8810df7ff4931360d00e394f8b3fe86149f84d3973ff2145"
+    },
+    {
+      "path": "models/power_phase_scada_v2/contract.json",
+      "bytes": 2605,
+      "sha256": "13cb272f883b894f09ca7a8de1f1bb987169dbf750db1534e89bbdca9605d605"
+    },
+    {
+      "path": "models/power_phase_scada_v2/model.pkl",
+      "bytes": 768768,
+      "sha256": "425399780cbab7de5c27b3984638e70cd35f5413adcffea4d5064bd9f6a8bc98"
+    },
+    {
+      "path": "models/power_phase_scada_v2/model_meta.json",
+      "bytes": 1170,
+      "sha256": "041a0d3061e1ccb69af3c139bbb76560847ef736db1ca34004ca50828ccdb09f"
+    },
+    {
+      "path": "models/power_phase_scada_v2/policy.json",
+      "bytes": 446,
+      "sha256": "f869b86e72f7f571a4796176a618e2ef5c60f2d7df5c2556f7af542d545fb111"
+    },
+    {
+      "path": "models/power_phase_scada_v2/sha256.json",
+      "bytes": 687,
+      "sha256": "bdb3e1294c1cb3c177e33392cec9aaf89df7178bc108d242abaa87fe1c80d9f6"
+    },
+    {
+      "path": "models/pump_scada_v1/calibrator.pkl",
+      "bytes": 776,
+      "sha256": "b67c62bb616576fd3df7239fad97417685d89fb96b15a56ab0df97b64a27180c"
+    },
+    {
+      "path": "models/pump_scada_v1/contract.json",
+      "bytes": 2755,
+      "sha256": "eca67cfa7f4022f344432a4560a93d15c10974b0a0646ae6d4b67b010937b7e1"
+    },
+    {
+      "path": "models/pump_scada_v1/model.pkl",
+      "bytes": 767680,
+      "sha256": "2f6577703a90d1e1c8e20b2521e96b42c92f1360f8d78d3154edf0278bd12b40"
+    },
+    {
+      "path": "models/pump_scada_v1/model_meta.json",
+      "bytes": 1527,
+      "sha256": "8299781f66db546e12299e22190ab67aed944db1ed231bcfd003b388ee3edae0"
+    },
+    {
+      "path": "models/pump_scada_v1/policy.json",
+      "bytes": 502,
+      "sha256": "da61ed57da14b740a055227fb29913080bdedbb0720484ee1cd3b3e357580866"
+    },
+    {
+      "path": "models/pump_scada_v1/sha256.json",
+      "bytes": 687,
+      "sha256": "053e09710b9df3e50e30f328e2882198f19b0805467d4dcfb9bbc2c62fd3156c"
+    },
+    {
+      "path": "replay_scenarios_v1.json",
+      "bytes": 2457,
+      "sha256": "1b4342c9e72b1a540839656d6b142eb1c9e7b092fd701e349dbbcfdd81072fc7"
+    }
+  ]
+}

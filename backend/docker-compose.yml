@@ -1,0 +1,38 @@
+# Запуск: docker compose up --build   (из папки backend/)
+# Для корневого compose проекта: context: ./backend и те же переменные.
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: moscollector_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: moscollector
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d moscollector"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moscollector_backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgrespassword@db:5432/moscollector
+      CORS_ORIGINS: "*"
+      DATA_DIR: /app/data
+      ML_HANDOFF_DIR: /app/data/ml_handoff
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

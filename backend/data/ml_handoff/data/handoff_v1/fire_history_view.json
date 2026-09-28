@@ -1,0 +1,87 @@
+{
+  "display_state": "NO_CONFIRMED_FIRE_SOURCE",
+  "confirmed_fire_register_available": false,
+  "confirmed_fire_records_in_data": 0,
+  "real_fire_count": null,
+  "telemetry_candidate_count": 1,
+  "smoke_signal_statistics_are_fires": false,
+  "smoke_signal_statistics": [
+    {
+      "yr": 2019,
+      "signal_records": 1763,
+      "channels": 377,
+      "objects": 16,
+      "with_other_status_same_time": 59,
+      "with_recent_temperature": 80,
+      "with_comparable_temperature": 38
+    },
+    {
+      "yr": 2020,
+      "signal_records": 5662,
+      "channels": 1077,
+      "objects": 13,
+      "with_other_status_same_time": 233,
+      "with_recent_temperature": 144,
+      "with_comparable_temperature": 108
+    },
+    {
+      "yr": 2021,
+      "signal_records": 1771,
+      "channels": 1099,
+      "objects": 20,
+      "with_other_status_same_time": 80,
+      "with_recent_temperature": 41,
+      "with_comparable_temperature": 6
+    },
+    {
+      "yr": 2022,
+      "signal_records": 3136,
+      "channels": 1721,
+      "objects": 24,
+      "with_other_status_same_time": 36,
+      "with_recent_temperature": 23,
+      "with_comparable_temperature": 11
+    },
+    {
+      "yr": 2023,
+      "signal_records": 2531,
+      "channels": 454,
+      "objects": 21,
+      "with_other_status_same_time": 17,
+      "with_recent_temperature": 154,
+      "with_comparable_temperature": 149
+    },
+    {
+      "yr": 2024,
+      "signal_records": 3032,
+      "channels": 895,
+      "objects": 23,
+      "with_other_status_same_time": 47,
+      "with_recent_temperature": 83,
+      "with_comparable_temperature": 53
+    },
+    {
+      "yr": 2025,
+      "signal_records": 8590,
+      "channels": 3548,
+      "objects": 30,
+      "with_other_status_same_time": 40,
+      "with_recent_temperature": 1000,
+      "with_comparable_temperature": 515
+    },
+    {
+      "yr": 2026,
+      "signal_records": 15931,
+      "channels": 4336,
+      "objects": 30,
+      "with_other_status_same_time": 93,
+      "with_recent_temperature": 373,
+      "with_comparable_temperature": 108
+    }
+  ],
+  "schema_version": "ml_handoff_v1",
+  "calculation_version": "fire_history_v1",
+  "source_ref": "observed_v1/fire_history_manifest.json;observed_v1/smoke_signal_statistics.csv",
+  "available_at": null,
+  "data_cutoff": "2026-06-30 23:59:59"
+}

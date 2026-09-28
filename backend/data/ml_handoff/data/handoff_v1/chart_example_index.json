@@ -1,0 +1,35 @@
+{
+  "schema_version": "ml_handoff_v1",
+  "cases": [
+    {
+      "folder": "gas_5578_20250407",
+      "case_id": "GAS_NUMERIC:5578:20250407T100000",
+      "view_at": "2025-04-07 13:00:00",
+      "kind": "OBSERVED_GAS_NUMERIC_1PCT"
+    },
+    {
+      "folder": "gas_5657_20250306",
+      "case_id": "GAS_NUMERIC:5657:20250306T100000",
+      "view_at": "2025-03-06 13:00:00",
+      "kind": "OBSERVED_GAS_NUMERIC_1PCT"
+    },
+    {
+      "folder": "phase_draft_20240703",
+      "case_id": "power_phase_scada_v2:115687:20240703T080000",
+      "view_at": "2024-07-03 08:00:00",
+      "kind": "SCADA_STATUS_EPISODE"
+    },
+    {
+      "folder": "smoke_5113_20251029",
+      "case_id": "SMOKE_LOCAL:5113:piket:108:20251029T002416",
+      "view_at": "2025-10-29 02:24:16",
+      "kind": "OBSERVED_SMOKE_LOCAL"
+    },
+    {
+      "folder": "smoke_5113_at_signal",
+      "case_id": "SMOKE_LOCAL:5113:piket:108:20251029T002416",
+      "view_at": "2025-10-29 00:24:16",
+      "kind": "OBSERVED_SMOKE_LOCAL"
+    }
+  ]
+}
