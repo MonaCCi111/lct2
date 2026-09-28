@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useV2Objects } from '../../api/v2/queries/hooks';
-import { DataState, Field, HistoricalHeader, Note, Pager, count, label, query, sourceTime, useHistorical, type Page, type Row } from './shared';
+import { DataState, Field, HistoricalHeader, Metric, Note, Pager, count, label, query, sourceTime, useHistorical, type Page, type Row } from './shared';
 import { CasePointsChart } from './CasePointsChart';
 
 const stateName: Record<string, string> = {
@@ -11,6 +11,7 @@ const stateName: Record<string, string> = {
 };
 const value = (row: Row, key: string) => label(row[key], '—');
 const objName = (names: Map<number, string>, id: unknown) => names.get(Number(id)) ?? `Объект ${id}`;
+type CoverageSummary = { channel_count: number; states: Record<string, number>; forecast_capabilities: Record<string, number>; monthly: { month: string; channels: number; recent: number; no_recent: number; uncertain: number }[]; data_cutoff: string };
 
 export function ChannelsPage() {
   const [objectId, setObjectId] = useState('');
@@ -19,6 +20,7 @@ export function ChannelsPage() {
   const [cursorStack, setCursorStack] = useState<string[]>(['']);
   const objects = useV2Objects({ limit: 200 });
   const types = useHistorical<Row[]>('/model-types');
+  const coverage = useHistorical<CoverageSummary>(query('/coverage/summary', { object_id: objectId, sensor_type: sensorType }));
   const channels = useHistorical<Page>(query('/channels', { object_id: objectId, sensor_type: sensorType, forecast_capability: capability, limit: 50, cursor: cursorStack.at(-1) }));
   const names = new Map(objects.data?.items.map((object) => [object.objectId, object.objectName]) ?? []);
   const reset = () => setCursorStack(['']);
@@ -29,6 +31,10 @@ export function ChannelsPage() {
       <Field title="Тип датчика"><select value={sensorType} onChange={(e) => { setSensorType(e.target.value); reset(); }}><option value="">Все 19 типов</option>{types.data?.map((t) => <option key={String(t.sensor_type)} value={String(t.sensor_type)}>{String(t.sensor_type)}</option>)}</select></Field>
       <Field title="Прогноз"><select value={capability} onChange={(e) => { setCapability(e.target.value); reset(); }}><option value="">Любое состояние</option><option value="active">Рабочий</option><option value="research">Исследовательский</option><option value="not_released">Не выпущен</option></select></Field>
     </div>
+    {coverage.data && <><div className="dispatch-metrics"><Metric title="Каналов в срезе" value={count(coverage.data.channel_count)} /><Metric title="Недавние записи" value={count(coverage.data.states.recent_events)} /><Metric title="Нет недавних записей" value={count(coverage.data.states.no_recent_events)} /><Metric title="Конфликт записей" value={count(coverage.data.states.recent_conflicting_events)} /></div>
+      <div className="dispatch-grid"><section className="dispatch-panel"><h2>Охват записями по месяцам</h2><p>Снимки показывают наличие записей за 72 часа к концу месяца. Число каналов может меняться.</p><div className="dispatch-chart"><ResponsiveContainer width="100%" height="100%"><LineChart data={coverage.data.monthly}><CartesianGrid stroke="var(--border-subtle)" vertical={false} /><XAxis dataKey="month" tick={{ fontSize: 10 }} minTickGap={20} /><YAxis allowDecimals={false} /><Tooltip /><Line dataKey="recent" name="Недавние записи" stroke="var(--status-info)" dot={false} connectNulls={false} /><Line dataKey="no_recent" name="Без недавних записей" stroke="var(--status-warning)" dot={false} connectNulls={false} /><Line dataKey="uncertain" name="Неопределённо" stroke="var(--accent)" dot={false} connectNulls={false} /></LineChart></ResponsiveContainer></div></section>
+      <section className="dispatch-panel"><h2>Участие в прогнозе</h2><p>Решение о прогнозе зависит от типа и доступности входных данных, включая ранее не встречавшиеся каналы.</p><div className="dispatch-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={Object.entries(coverage.data.forecast_capabilities).map(([status, channels]) => ({ status: stateName[status] ?? status, channels }))} layout="vertical" margin={{ left: 25 }}><CartesianGrid stroke="var(--border-subtle)" horizontal={false} /><XAxis type="number" allowDecimals={false} /><YAxis type="category" dataKey="status" width={145} tick={{ fontSize: 10 }} /><Tooltip /><Bar dataKey="channels" name="Каналы" fill="var(--accent)" /></BarChart></ResponsiveContainer></div></section></div></>}
+    <DataState loading={coverage.isPending} error={coverage.error?.message} />
     <section className="dispatch-panel"><div className="dispatch-panel-header"><h2>Реестр каналов</h2><span>{channels.data ? `${channels.data.items.length} на странице` : ''}</span></div>
       <DataState loading={channels.isPending} error={channels.error?.message} empty={channels.data?.items.length === 0} />
       <div className="dispatch-table-scroll"><table className="dispatch-table"><thead><tr><th>Канал</th><th>Объект</th><th>Тип</th><th>Прогноз</th><th>Наблюдение</th><th>Последняя запись</th><th>ИТС</th></tr></thead><tbody>
@@ -84,12 +90,13 @@ export function SituationsPage() {
 export function SituationDetailPage() {
   const { situationId = '' } = useParams();
   const encoded = encodeURIComponent(situationId);
+  const [evidenceCursors, setEvidenceCursors] = useState<string[]>(['']);
   const situation = useHistorical<Row>(`/situations/${encoded}`);
-  const evidence = useHistorical<Page>(`/situations/${encoded}/evidence?limit=200`);
+  const evidence = useHistorical<Page>(query(`/situations/${encoded}/evidence`, { limit: 200, cursor: evidenceCursors.at(-1) }));
   return <div className="dispatch-page"><Link className="dispatch-link" to="/situations">← Все ситуации</Link><HistoricalHeader title={label(situation.data?.situation_kind, 'Ситуация')} description={`ID ${situationId}. Совместные свидетельства и ограничения вывода.`} />
     <DataState loading={situation.isPending} error={situation.error?.message} />
     {situation.data && <div className="dispatch-grid"><section className="dispatch-panel"><h2>Контекст</h2><dl className="dispatch-kv"><dt>Объект</dt><dd>{value(situation.data, 'object_name')}</dd><dt>Первый сигнал</dt><dd>{sourceTime(situation.data.source_first_seen)}</dd><dt>Доступно</dt><dd>{sourceTime(situation.data.available_at)}</dd><dt>Затронуто каналов</dt><dd>{count(situation.data.affected_channels)}</dd><dt>Ограничения</dt><dd>{value(situation.data, 'limitations')}</dd><dt>Физический инцидент</dt><dd>Не подтверждён данными</dd><dt>Исходный ресурс</dt><dd>{value(situation.data, 'source_ref')}</dd></dl></section>
       <CasePointsChart caseId={situationId} kind="situation_id" threshold={typeof situation.data.stated_threshold === 'number' ? situation.data.stated_threshold : null} /></div>}
-    <section className="dispatch-panel"><h2>Исходные свидетельства</h2><DataState loading={evidence.isPending} error={evidence.error?.message} empty={evidence.data?.items.length === 0} /><div className="dispatch-table-scroll"><table className="dispatch-table"><thead><tr><th>Время источника</th><th>Канал</th><th>Значение / статус</th><th>Число</th><th>Тревога</th><th>Источник</th></tr></thead><tbody>{evidence.data?.items.map((e, i) => <tr key={`${e.event_id}-${i}`}><td>{sourceTime(e.source_time ?? e.event_time)}</td><td>{value(e, 'channel_id')}</td><td>{label(e.observed_value ?? e.sensor_value, '—')}</td><td>{label(e.numeric_value, '—')} {label(e.numeric_unit, '')}</td><td>{e.source_alarm === true ? 'Да' : e.source_alarm === false ? 'Нет' : 'Неизвестно'}</td><td>{value(e, 'source_ref')}</td></tr>)}</tbody></table></div>{evidence.data?.next_cursor && <Note>Показаны первые 200 свидетельств. Для полного разбора доступна следующая страница API.</Note>}</section>
+    <section className="dispatch-panel"><h2>Исходные свидетельства</h2><DataState loading={evidence.isPending} error={evidence.error?.message} empty={evidence.data?.items.length === 0} /><div className="dispatch-table-scroll"><table className="dispatch-table"><thead><tr><th>Время источника</th><th>Канал</th><th>Значение / статус</th><th>Число</th><th>Тревога</th><th>Источник</th></tr></thead><tbody>{evidence.data?.items.map((e, i) => <tr key={`${e.event_id}-${i}`}><td>{sourceTime(e.source_time ?? e.event_time)}</td><td>{value(e, 'channel_id')}</td><td>{label(e.observed_value ?? e.sensor_value, '—')}</td><td>{label(e.numeric_value, '—')} {label(e.numeric_unit, '')}</td><td>{e.source_alarm === true ? 'Да' : e.source_alarm === false ? 'Нет' : 'Неизвестно'}</td><td>{value(e, 'source_ref')}</td></tr>)}</tbody></table></div><Pager previous={evidenceCursors.length > 1 ? () => setEvidenceCursors((s) => s.slice(0, -1)) : undefined} next={evidence.data?.next_cursor ? () => setEvidenceCursors((s) => [...s, evidence.data!.next_cursor!]) : undefined} /></section>
   </div>;
 }

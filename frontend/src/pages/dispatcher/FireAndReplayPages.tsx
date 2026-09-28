@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { v2ApiGet } from '../../api/v2/client/http';
+import { v2ApiGet, v2ApiSend } from '../../api/v2/client/http';
+import { useV2Objects } from '../../api/v2/queries/hooks';
 import { DataState, Field, HistoricalHeader, Metric, Note, count, label, sourceTime, useHistorical, type Page, type Row } from './shared';
 
 type SmokeYear = { yr: number; signal_records: number; channels: number; objects: number; with_other_status_same_time: number; with_recent_temperature: number; with_comparable_temperature: number };
@@ -23,6 +24,7 @@ export function FireHistoryPage() {
 
 type Scenario = { id: string; title: string; object_id: number; start: string; end: string; events_available: boolean };
 type ReplayEvent = { seq: number; event_time: string; event_kind: string; object_id: number; channel_id: number | null; source_id: string; payload: string; availability_basis: string };
+type ReplayBuild = { id: string; status: 'building' | 'ready' | 'failed'; message?: string; object_id?: number; start?: string; end?: string; event_count?: number };
 const eventLabels: Record<string, string> = {
   coverage_baseline: 'Состояние наблюдения', coverage_lost: 'Пауза записей', coverage_restored: 'Запись возобновилась',
   reading: 'Показание', observed_signal: 'Наблюдаемый сигнал', situation_ready: 'Ситуация доступна', draft_created: 'Черновик доступен',
@@ -48,15 +50,22 @@ function parsedPayload(value: string): Row {
 
 export function ReplayPage() {
   const scenarios = useHistorical<Scenario[]>('/replays');
+  const objects = useV2Objects({ limit: 200 });
   const [scenarioId, setScenarioId] = useState('observed_draft');
+  const [buildObjectId, setBuildObjectId] = useState('5333');
+  const [buildStart, setBuildStart] = useState('2025-02-02T02:30');
+  const [buildEnd, setBuildEnd] = useState('2025-02-02T05:30');
+  const [customId, setCustomId] = useState('');
+  const [buildError, setBuildError] = useState('');
   const [position, setPosition] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(10);
   const [reason, setReason] = useState('');
   const [simulated, setSimulated] = useState<Record<string, string>>({});
   const events = useQuery({ queryKey: ['replay-events', scenarioId], queryFn: ({ signal }) => loadScenarioEvents(scenarioId, signal), staleTime: Infinity });
+  const build = useQuery({ queryKey: ['replay-build', customId], queryFn: ({ signal }) => v2ApiGet<ReplayBuild>(`/replay-builds/${customId}`, signal), enabled: !!customId, refetchInterval: (q) => q.state.data?.status === 'building' ? 2000 : false });
   const rows = events.data ?? [];
-  const scenario = scenarios.data?.find((s) => s.id === scenarioId);
+  const scenario = scenarios.data?.find((s) => s.id === scenarioId) ?? (scenarioId === customId && build.data?.status === 'ready' ? { id: customId, title: 'Выбранный объект и период', object_id: build.data.object_id, start: build.data.start, end: build.data.end } : undefined);
   const current = rows[position - 1];
   const visible = useMemo(() => rows.slice(0, position), [rows, position]);
   const recent = visible.slice(-24).reverse();
@@ -72,6 +81,15 @@ export function ReplayPage() {
   const seek = (next: number) => { setPlaying(false); setPosition(next); setSimulated({}); setReason(''); };
   const nextSignal = rows.findIndex((event, index) => index >= position && !['reading', 'coverage_baseline'].includes(event.event_kind));
   const changeScenario = (id: string) => { setScenarioId(id); seek(0); };
+  useEffect(() => { if (build.data?.status === 'ready' && customId && scenarioId !== customId) changeScenario(customId); }, [build.data?.status, customId]);
+  const buildCustom = async () => {
+    setBuildError('');
+    try {
+      const result = await v2ApiSend<ReplayBuild>('/replay-builds', { object_id: Number(buildObjectId), start: `${buildStart}:00`, end: `${buildEnd}:00` });
+      setCustomId(result.id);
+      if (result.status === 'ready') changeScenario(result.id);
+    } catch (error) { setBuildError(error instanceof Error ? error.message : 'Не удалось построить сценарий'); }
+  };
   const shownDraft = [...visible].reverse().find((e) => e.event_kind === 'draft_created');
   const shownDraftId = shownDraft ? String(parsedPayload(shownDraft.payload).draft_id ?? shownDraft.source_id) : null;
   const decide = (choice: string) => {
@@ -81,7 +99,8 @@ export function ReplayPage() {
   };
 
   return <div className="dispatch-page"><HistoricalHeader title="Исторический таймлайн" description="Ползунок показывает только события, доступные к выбранному шагу. Это реконструкция, не живой поток." />
-    <div className="dispatch-filters"><Field title="Сценарий"><select value={scenarioId} onChange={(e) => changeScenario(e.target.value)}>{scenarios.data?.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}</select></Field><span>Объект {scenario?.object_id ?? '…'} · {scenario?.start ?? '…'} – {scenario?.end ?? '…'}</span></div>
+    <section className="dispatch-panel"><h2>Выбрать объект и период</h2><p>Построение использует полный локальный архив ML. Если архив не подключён, доступны восемь проверенных сценариев ниже.</p><div className="dispatch-replay-toolbar"><Field title="Объект"><select value={buildObjectId} onChange={(e) => setBuildObjectId(e.target.value)}>{objects.data?.items.filter((o) => o.channelCount > 0).map((o) => <option key={o.objectId} value={o.objectId}>{o.objectName} · {o.objectId}</option>)}</select></Field><Field title="Начало"><input type="datetime-local" value={buildStart} onChange={(e) => setBuildStart(e.target.value)} /></Field><Field title="Конец"><input type="datetime-local" value={buildEnd} min={buildStart} onChange={(e) => setBuildEnd(e.target.value)} /></Field><button className="dispatch-button" disabled={build.data?.status === 'building' || !buildObjectId || !buildStart || !buildEnd} onClick={() => void buildCustom()}>Построить таймлайн</button></div>{build.data?.status === 'building' && <Note>Идёт подготовка событий. Очередь и другие разделы остаются доступны.</Note>}{build.data?.status === 'failed' && <p className="dispatch-error">{build.data.message}</p>}{buildError && <p className="dispatch-error" role="alert">{buildError}</p>}</section>
+    <div className="dispatch-filters"><Field title="Сценарий"><select value={scenarioId} onChange={(e) => changeScenario(e.target.value)}>{scenarios.data?.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}{customId && build.data?.status === 'ready' && <option value={customId}>Выбранный объект и период · {build.data.event_count} событий</option>}</select></Field><span>Объект {scenario?.object_id ?? '…'} · {scenario?.start ?? '…'} – {scenario?.end ?? '…'}</span></div>
     <DataState loading={scenarios.isPending || events.isPending} error={scenarios.error?.message ?? events.error?.message} empty={events.data?.length === 0} />
     {rows.length > 0 && <><section className="dispatch-panel dispatch-replay-controls"><div className="dispatch-replay-clock">{current ? sourceTime(current.event_time) : sourceTime(scenario?.start)} <small>· шаг {count(position)} из {count(rows.length)}</small></div>
       <input className="dispatch-slider" type="range" min={0} max={rows.length} value={position} aria-label="Ползунок исторического таймлайна" onChange={(e) => seek(Number(e.target.value))} />
@@ -92,6 +111,6 @@ export function ReplayPage() {
       <section className="dispatch-panel"><h2>События до ползунка</h2><p>Последние 24 события. Более поздние записи скрыты до перемотки или воспроизведения.</p><ol className="dispatch-event-list">{recent.map((e) => <li className="dispatch-event" key={e.seq}><span>#{e.seq} · {sourceTime(e.event_time)}</span><strong>{eventLabels[e.event_kind] ?? e.event_kind}</strong><pre>{e.channel_id !== null ? `Канал ${e.channel_id} · ` : ''}{label(parsedPayload(e.payload).sensor_value ?? parsedPayload(e.payload).observed_value ?? parsedPayload(e.payload).value ?? e.source_id)}</pre></li>)}</ol>{!recent.length && <Note>Переведите ползунок или запустите воспроизведение.</Note>}</section>
       {shownDraftId && <section className="dispatch-panel"><h2>Имитация решения диспетчера</h2><p>Черновик {shownDraftId}. Эти действия не записываются в журнал реальных решений.</p><div className="dispatch-replay-toolbar"><Field title="Причина решения"><input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Напишите основание" /></Field><button className="dispatch-button" disabled={!reason.trim()} onClick={() => decide('Одобрено')}>Одобрить в сценарии</button><button className="dispatch-button" disabled={!reason.trim()} onClick={() => decide('Отклонено')}>Отклонить в сценарии</button></div>{simulated[shownDraftId] && <Note>Имитационное решение: {simulated[shownDraftId]}</Note>}</section>}
     </>}
-    <Note>Сейчас доступны восемь проверенных исторических сценариев. Для произвольного объекта и периода нужен архив исходных событий; в переносимом пакете его нет.</Note>
+    <Note>Восемь проверенных сценариев доступны без полного архива. Произвольный период строится только там, где архив подключён; данные не загружаются в Git.</Note>
   </div>;
 }
