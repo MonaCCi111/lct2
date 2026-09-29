@@ -4,30 +4,66 @@ Dolos показывает исторические показания датч�
 
 ![Обзор Dolos](docs/assets/overview.png)
 
-## Развёртывание на сервере – ветка `forvps`
+## Запуск в Docker на Windows
 
-Для запуска на сервере и проверки по ссылке используйте ветку [`forvps`](https://github.com/MonaCCi111/lct2/tree/forvps). Она добавляет к `main` Docker-стенд из трёх контейнеров: интерфейс за nginx, API и PostgreSQL. Код приложения, модели и данные в ней те же.
+Самый простой способ поднять весь сервис: интерфейс, API и PostgreSQL запускаются одной командой. Нужны [Docker Desktop](https://www.docker.com/products/docker-desktop/) с включённым WSL 2 и [Git LFS](https://git-lfs.com/).
 
-```bash
-git clone -b forvps https://github.com/MonaCCi111/lct2.git
+В PowerShell:
+
+```powershell
+git clone https://github.com/MonaCCi111/lct2.git
 cd lct2
 git lfs pull
 docker compose up -d --build
 ```
 
-После старта интерфейс открывается по адресу `http://<адрес-сервера>/overview`, Swagger по адресу `http://<адрес-сервера>/docs`. Подготовка сервера, настройки и HTTPS описаны в [DEPLOY.md](https://github.com/MonaCCi111/lct2/blob/forvps/DEPLOY.md), устройство стенда – в [README ветки](https://github.com/MonaCCi111/lct2/blob/forvps/README.md#запуск-в-docker).
+Первая сборка занимает 5–10 минут. Затем API загружает пакет ML, обычно меньше минуты. Готовность видна по строке `startup complete` в выводе `docker compose logs -f backend`.
 
-| Файл в `forvps` | Назначение |
+| Адрес | Что открывается |
 | --- | --- |
-| [`docker-compose.yml`](https://github.com/MonaCCi111/lct2/blob/forvps/docker-compose.yml) | общий запуск базы, API и интерфейса одной командой, наружу открыт только порт 80 |
-| [`frontend/Dockerfile`](https://github.com/MonaCCi111/lct2/blob/forvps/frontend/Dockerfile) | сборка интерфейса с относительными адресами `/api/v1` и `/api/v2`, без моков |
-| [`frontend/nginx.conf`](https://github.com/MonaCCi111/lct2/blob/forvps/frontend/nginx.conf) | раздача интерфейса, проксирование `/api/*` и `/docs` в API, кэш статики |
-| [`frontend/.dockerignore`](https://github.com/MonaCCi111/lct2/blob/forvps/frontend/.dockerignore) | исключает `node_modules`, сборки и локальные `.env` из образа |
-| [`DEPLOY.md`](https://github.com/MonaCCi111/lct2/blob/forvps/DEPLOY.md) | пошаговая установка на Linux-сервер |
+| [http://localhost/overview](http://localhost/overview) | интерфейс диспетчера |
+| [http://localhost/docs](http://localhost/docs) | Swagger с описанием REST API |
+| [http://localhost/api/v2/meta](http://localhost/api/v2/meta) | версия данных; `data_source` должен быть `ml_handoff_parquet` |
 
-Инструкция ниже подходит для разработки на одном компьютере. Там интерфейс ищет API на `http://localhost:8000`, поэтому для доступа с других устройств нужна ветка `forvps`.
+Если порт 80 на компьютере занят (IIS, другой веб-сервер), задайте другой порт и перезапустите:
 
-### Требования к серверу
+```powershell
+Set-Content .env "HTTP_PORT=8080"
+docker compose up -d
+```
+
+После этого интерфейс откроется на `http://localhost:8080/overview`. Остановить стенд: `docker compose down`. Сбросить базу вместе с решениями и нарядами: `docker compose down -v`.
+
+Без `git lfs pull` в репозитории остаются только указатели на Parquet, и API переходит на fixtures.
+
+### Как устроен стенд
+
+| Контейнер | Образ | Назначение |
+| --- | --- | --- |
+| `frontend` | сборка из [`frontend/Dockerfile`](frontend/Dockerfile) | nginx раздаёт собранный интерфейс и передаёт `/api/*`, `/docs`, `/openapi.json` в API ([`nginx.conf`](frontend/nginx.conf)) |
+| `backend` | сборка из [`backend/Dockerfile`](backend/Dockerfile) | FastAPI, API v1 и v2, пакет ML из `backend/data/ml_handoff` |
+| `db` | `postgres:15-alpine` | решения диспетчера и наряды; данные хранятся в томе `pgdata` |
+
+Все три контейнера описаны в [`docker-compose.yml`](docker-compose.yml). Наружу открыт только порт интерфейса. Интерфейс собирается с относительными адресами `/api/v1` и `/api/v2`, поэтому работает на любом адресе без пересборки. [`.gitattributes`](.gitattributes) сохраняет LF в файлах для контейнеров, даже если на Windows включён `core.autocrlf`.
+
+| Переменная в `.env` | По умолчанию | Назначение |
+| --- | --- | --- |
+| `HTTP_PORT` | `80` | внешний порт интерфейса |
+| `POSTGRES_PASSWORD` | `postgrespassword` | пароль базы; порт БД наружу не открыт |
+| `DATABASE_URL` | PostgreSQL в контейнере `db` | можно указать `sqlite+aiosqlite:///./app.db` |
+
+## Развёртывание на сервере
+
+Для проверки по ссылке тот же стенд запускается на Linux-сервере. Команды те же, что и на Windows; установка Docker и Git LFS, обновление и HTTPS описаны в [DEPLOY.md](DEPLOY.md).
+
+```bash
+git clone https://github.com/MonaCCi111/lct2.git
+cd lct2
+git lfs pull
+docker compose up -d --build
+```
+
+Интерфейс открывается по адресу `http://<адрес-сервера>/overview`, Swagger – `http://<адрес-сервера>/docs`.
 
 | | CPU | RAM | Диск |
 | --- | --- | --- | --- |
@@ -35,9 +71,11 @@ docker compose up -d --build
 | Рекомендуется | 2 vCPU | 4 ГБ | 20 ГБ SSD |
 | С запасом под нагрузку | 4 vCPU | 8 ГБ | 30 ГБ SSD |
 
-ОС: Ubuntu 22.04/24.04 или Debian 12 на x86_64. После запуска API занимает около 600 МБ памяти; больше всего памяти нужно при сборке образов. Сервер должен открываться из России без VPN, а порт 80 должен быть свободен и открыт в файрволе. Если порт занят, укажите другой в `HTTP_PORT` (см. DEPLOY.md).
+ОС: Ubuntu 22.04/24.04 или Debian 12 на x86_64. Работающий стенд занимает около 800 МБ памяти, больше всего памяти нужно при сборке образов. Сервер должен открываться из России без VPN, порт 80 должен быть открыт в файрволе.
 
-## Запуск на Windows
+## Запуск на Windows без Docker
+
+Вариант для разработки: фронт и API запускаются отдельно, с горячей перезагрузкой. Интерфейс в этом режиме обращается к API по адресу `http://localhost:8000`, поэтому открывается только на этом же компьютере.
 
 Нужны Python 3.11+, Node.js 24.15+ с npm и Git LFS. После клонирования выполните `git lfs pull`: пакет исторического инференса хранится в LFS.
 
@@ -85,8 +123,8 @@ npm.cmd run dev
 
 | Каталог | Содержимое |
 | --- | --- |
-| `frontend/` | React, TypeScript, страницы диспетчера, проверки интерфейса |
-| `backend/` | FastAPI, API v1 и v2, локальное хранение решений и нарядов, данные для инференса |
+| `frontend/` | React, TypeScript, страницы диспетчера, проверки интерфейса, Dockerfile и конфигурация nginx |
+| `backend/` | FastAPI, API v1 и v2, локальное хранение решений и нарядов, данные для инференса, Dockerfile |
 | `production_ml/` | код подготовки данных, модели и правила выдачи карточек |
 | `integration/` | контракты и примеры передачи между ML, бэкендом и фронтом |
 | `validation/` | протоколы проверок и метрики |
