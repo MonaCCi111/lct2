@@ -4,6 +4,15 @@ Dolos показывает исторические показания датч�
 
 ![Обзор Dolos](docs/assets/overview.png)
 
+## Запуск в Docker
+
+```bash
+git lfs pull
+docker compose up -d --build
+```
+
+Интерфейс откроется на `http://localhost/overview`, API на `http://localhost/docs`. Развёртывание на сервере описано в [DEPLOY.md](DEPLOY.md).
+
 ## Запуск на Windows
 
 Нужны Python 3.11+, Node.js 24.15+ с npm и Git LFS. После клонирования выполните `git lfs pull`: пакет исторического инференса хранится в LFS.
