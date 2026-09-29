@@ -4,6 +4,39 @@ Dolos показывает исторические показания датч�
 
 ![Обзор Dolos](docs/assets/overview.png)
 
+## Развёртывание на сервере – ветка `forvps`
+
+Для запуска на сервере и проверки по ссылке используйте ветку [`forvps`](https://github.com/MonaCCi111/lct2/tree/forvps). Она добавляет к `main` Docker-стенд из трёх контейнеров: интерфейс за nginx, API и PostgreSQL. Код приложения, модели и данные в ней те же.
+
+```bash
+git clone -b forvps https://github.com/MonaCCi111/lct2.git
+cd lct2
+git lfs pull
+docker compose up -d --build
+```
+
+После старта интерфейс открывается по адресу `http://<адрес-сервера>/overview`, Swagger по адресу `http://<адрес-сервера>/docs`. Подготовка сервера, настройки и HTTPS описаны в [DEPLOY.md](https://github.com/MonaCCi111/lct2/blob/forvps/DEPLOY.md), устройство стенда – в [README ветки](https://github.com/MonaCCi111/lct2/blob/forvps/README.md#запуск-в-docker).
+
+| Файл в `forvps` | Назначение |
+| --- | --- |
+| [`docker-compose.yml`](https://github.com/MonaCCi111/lct2/blob/forvps/docker-compose.yml) | общий запуск базы, API и интерфейса одной командой, наружу открыт только порт 80 |
+| [`frontend/Dockerfile`](https://github.com/MonaCCi111/lct2/blob/forvps/frontend/Dockerfile) | сборка интерфейса с относительными адресами `/api/v1` и `/api/v2`, без моков |
+| [`frontend/nginx.conf`](https://github.com/MonaCCi111/lct2/blob/forvps/frontend/nginx.conf) | раздача интерфейса, проксирование `/api/*` и `/docs` в API, кэш статики |
+| [`frontend/.dockerignore`](https://github.com/MonaCCi111/lct2/blob/forvps/frontend/.dockerignore) | исключает `node_modules`, сборки и локальные `.env` из образа |
+| [`DEPLOY.md`](https://github.com/MonaCCi111/lct2/blob/forvps/DEPLOY.md) | пошаговая установка на Linux-сервер |
+
+Инструкция ниже подходит для разработки на одном компьютере. Там интерфейс ищет API на `http://localhost:8000`, поэтому для доступа с других устройств нужна ветка `forvps`.
+
+### Требования к серверу
+
+| | CPU | RAM | Диск |
+| --- | --- | --- | --- |
+| Минимум | 1–2 vCPU | 2 ГБ и swap 2 ГБ | 15 ГБ SSD |
+| Рекомендуется | 2 vCPU | 4 ГБ | 20 ГБ SSD |
+| С запасом под нагрузку | 4 vCPU | 8 ГБ | 30 ГБ SSD |
+
+ОС: Ubuntu 22.04/24.04 или Debian 12 на x86_64. После запуска API занимает около 600 МБ памяти; больше всего памяти нужно при сборке образов. Сервер должен открываться из России без VPN, а порт 80 должен быть свободен и открыт в файрволе. Если порт занят, укажите другой в `HTTP_PORT` (см. DEPLOY.md).
+
 ## Запуск на Windows
 
 Нужны Python 3.11+, Node.js 24.15+ с npm и Git LFS. После клонирования выполните `git lfs pull`: пакет исторического инференса хранится в LFS.
